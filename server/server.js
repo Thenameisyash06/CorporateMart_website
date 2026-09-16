@@ -50,14 +50,35 @@ async function requireAuth(req, res, next) {
   }
 }
 
-// Load Schemes from Server Store
+// Healthcheck / Root API endpoint
+app.get('/api', (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'CorporateMart API is running',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Load Schemes from Server Store (with automatic bundling support)
+let cachedMasterSchemes = null;
 function loadMasterSchemes() {
-  if (!fs.existsSync(SCHEMES_FILE)) return [];
+  if (cachedMasterSchemes && cachedMasterSchemes.length > 0) {
+    return cachedMasterSchemes;
+  }
   try {
-    const raw = fs.readFileSync(SCHEMES_FILE, 'utf8');
-    return JSON.parse(raw);
-  } catch (err) {
-    console.error('Error loading master schemes:', err);
+    cachedMasterSchemes = require('./data/schemes.json');
+    return cachedMasterSchemes;
+  } catch (e1) {
+    try {
+      if (fs.existsSync(SCHEMES_FILE)) {
+        const raw = fs.readFileSync(SCHEMES_FILE, 'utf8');
+        cachedMasterSchemes = JSON.parse(raw);
+        return cachedMasterSchemes;
+      }
+    } catch (e2) {
+      console.error('Error loading master schemes from file:', e2);
+    }
+    console.error('Error loading master schemes:', e1);
     return [];
   }
 }
@@ -362,12 +383,16 @@ app.post('/api/payment/verify', requireAuth, async (req, res) => {
   }
 });
 
-// Start Server
-app.listen(PORT, '0.0.0.0', () => {
-  console.log('====================================================');
-  console.log('  CorporateMart Secure Server Running!             ');
-  console.log('  Local URL: http://localhost:' + PORT);
-  console.log('  Fundraising Portal: http://localhost:' + PORT + '/fundraising.html');
-  console.log('  Short URL: http://localhost:' + PORT + '/fundraising');
-  console.log('====================================================');
-});
+// Start Server if run directly
+if (require.main === module) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log('====================================================');
+    console.log('  CorporateMart Secure Server Running!             ');
+    console.log('  Local URL: http://localhost:' + PORT);
+    console.log('  Fundraising Portal: http://localhost:' + PORT + '/fundraising.html');
+    console.log('  Short URL: http://localhost:' + PORT + '/fundraising');
+    console.log('====================================================');
+  });
+}
+
+module.exports = app;

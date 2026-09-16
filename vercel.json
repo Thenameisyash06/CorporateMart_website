@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/fundraising",
+      "destination": "/fundraising.html"
+    },
+    {
+      "source": "/schemes",
+      "destination": "/fundraising.html"
+    },
+    {
+      "source": "/api",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
+    }
+  ]
+}

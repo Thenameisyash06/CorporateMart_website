@@ -7,32 +7,54 @@ const mongoose = require('mongoose');
 const User = require('./models/User');
 const Transaction = require('./models/Transaction');
 
-const DB_FILE = path.join(__dirname, 'data', 'database.json');
+const IS_SERVERLESS = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const DB_FILE = IS_SERVERLESS
+  ? path.join('/tmp', 'database.json')
+  : path.join(__dirname, 'data', 'database.json');
 const JWT_SECRET = process.env.JWT_SECRET || 'corporate_mart_secret_key_2026_x89a!secure';
 
 let isMongoConnected = false;
+let mongoPromise = null;
 
-// Connect to MongoDB Atlas if URI is provided in .env
+// Connect to MongoDB Atlas if URI is provided in .env or environment variables
 async function initMongo() {
+  if (mongoose.connection && mongoose.connection.readyState >= 1) {
+    isMongoConnected = true;
+    return true;
+  }
   const uri = (process.env.MONGODB_URI || process.env.MONGO_DB_URI || '').trim();
   if (!uri || uri.includes('<password>') || uri.includes('YOUR_PASSWORD') || uri === '') {
-    console.log('ℹ [DB] Using Local File Database (server/data/database.json).');
-    console.log('ℹ [DB] To connect to MongoDB Atlas, add your MONGODB_URI in server/.env');
+    if (!IS_SERVERLESS) {
+      console.log('ℹ [DB] Using Local File Database (server/data/database.json).');
+      console.log('ℹ [DB] To connect to MongoDB Atlas, add your MONGODB_URI in server/.env or Vercel Environment Variables');
+    }
     return false;
   }
 
   try {
-    await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 5000
-    });
+    if (!mongoPromise) {
+      mongoPromise = mongoose.connect(uri, {
+        serverSelectionTimeoutMS: 5000
+      });
+    }
+    await mongoPromise;
     isMongoConnected = true;
     console.log('✔ [DB] Successfully connected to MongoDB Atlas!');
     return true;
   } catch (err) {
+    mongoPromise = null;
     isMongoConnected = false;
     console.warn('⚠️ [DB] MongoDB Atlas connection failed (' + err.message + '). Falling back to Local File Database.');
     return false;
   }
+}
+
+async function ensureMongoConnected() {
+  if (mongoose.connection && mongoose.connection.readyState >= 1) {
+    isMongoConnected = true;
+    return true;
+  }
+  return await initMongo();
 }
 
 // Attempt initial connection at module load
@@ -42,6 +64,21 @@ initMongo().catch(() => {});
 // LOCAL FILE DATABASE (FALLBACK ENGINE)
 // ==========================================
 function initDB() {
+  if (IS_SERVERLESS) {
+    if (!fs.existsSync(DB_FILE)) {
+      const srcFile = path.join(__dirname, 'data', 'database.json');
+      if (fs.existsSync(srcFile)) {
+        try {
+          fs.copyFileSync(srcFile, DB_FILE);
+          return;
+        } catch (e) {}
+      }
+      try {
+        fs.writeFileSync(DB_FILE, JSON.stringify({ users: [], transactions: [] }, null, 2), 'utf8');
+      } catch (e) {}
+    }
+    return;
+  }
   if (!fs.existsSync(DB_FILE)) {
     const initialData = {
       users: [],
@@ -63,9 +100,13 @@ function readDB() {
 }
 
 function writeDB(data) {
-  const tmpFile = DB_FILE + '.tmp.' + Date.now();
-  fs.writeFileSync(tmpFile, JSON.stringify(data, null, 2), 'utf8');
-  fs.renameSync(tmpFile, DB_FILE);
+  try {
+    const tmpFile = DB_FILE + '.tmp.' + Date.now();
+    fs.writeFileSync(tmpFile, JSON.stringify(data, null, 2), 'utf8');
+    fs.renameSync(tmpFile, DB_FILE);
+  } catch (err) {
+    console.warn('Warning: Could not persist local file database:', err.message);
+  }
 }
 
 // ==========================================
@@ -129,6 +170,7 @@ function sanitizeUser(user) {
 // ==========================================
 async function findUserByEmail(email) {
   const cleanEmail = String(email).trim().toLowerCase();
+  await ensureMongoConnected();
 
   if (isMongoConnected) {
     try {
@@ -145,6 +187,7 @@ async function findUserByEmail(email) {
 
 async function findUserById(id) {
   if (!id) return null;
+  await ensureMongoConnected();
 
   if (isMongoConnected) {
     try {
@@ -168,6 +211,7 @@ async function findUserById(id) {
 async function createUser({ name, email, phone = '', password }) {
   const cleanEmail = String(email).trim().toLowerCase();
   const cleanPhone = String(phone || '').trim();
+  await ensureMongoConnected();
   const existing = await findUserByEmail(cleanEmail);
   if (existing) {
     throw new Error('User with this email already exists');
@@ -214,6 +258,7 @@ async function createUser({ name, email, phone = '', password }) {
 
 async function updateUserSubscription(userId, { plan, durationDays }) {
   const now = Date.now();
+  await ensureMongoConnected();
 
   if (isMongoConnected) {
     try {
@@ -268,6 +313,8 @@ async function updateUserSubscription(userId, { plan, durationDays }) {
 }
 
 async function recordTransaction({ userId, orderId, paymentId, amount, planId, status = 'success' }) {
+  await ensureMongoConnected();
+
   if (isMongoConnected) {
     try {
       const txDoc = await Transaction.create({
@@ -311,6 +358,7 @@ function matchesPhone(storedPhone, inputPhone) {
 async function resetUserPassword({ email, phone, newPassword }) {
   const cleanEmail = String(email).trim().toLowerCase();
   const { salt, hash } = hashPassword(newPassword);
+  await ensureMongoConnected();
 
   if (isMongoConnected) {
     try {
@@ -353,7 +401,7 @@ async function resetUserPassword({ email, phone, newPassword }) {
 }
 
 function isConnectedToMongo() {
-  return isMongoConnected;
+  return Boolean(isMongoConnected || (mongoose.connection && mongoose.connection.readyState >= 1));
 }
 
 module.exports = {
