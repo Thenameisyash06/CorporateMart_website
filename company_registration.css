@@ -1079,6 +1079,10 @@ body.dark-mode .cr-cert-card {
   border-color: var(--cr-border, #2b3a51);
 }
 
+body.dark-mode .cr-service h3{
+    color: white;
+}
+
 body.dark-mode .si-cert-title,
 body.dark-mode .cr-cert-title {
   color: var(--cr-text, #edf4ff);
@@ -1521,8 +1525,10 @@ body.dark-mode .cr-cert-frame {
 
     margin:
         16px 0 8px;
-
+    
 }
+
+
 
 
 .cr-service p {
