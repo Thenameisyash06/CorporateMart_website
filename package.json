@@ -1,0 +1,19 @@
+{
+  "name": "corporatemart_3row_dropdown_final",
+  "version": "1.0.0",
+  "main": "about_us.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "test": "node server/test_suite.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mongoose": "^9.10.1"
+  }
+}

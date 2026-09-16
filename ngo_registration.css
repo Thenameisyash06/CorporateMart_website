@@ -1,0 +1,93 @@
+/* =========================================================
+   NGO REGISTRATION PAGE
+   Extends company_registration.css using the same design
+   tokens (--cr-*). Only adds what that stylesheet doesn't
+   already provide: a comparison table component.
+   ========================================================= */
+
+.cr-table-wrap {
+
+    overflow-x: auto;
+
+    border: 1px solid var(--cr-border);
+    border-radius: var(--cr-radius);
+
+    background: var(--cr-white);
+
+    box-shadow: var(--cr-shadow);
+
+}
+
+.cr-table {
+
+    width: 100%;
+    min-width: 640px;
+
+    border-collapse: collapse;
+
+    font-size: 14.5px;
+
+}
+
+.cr-table thead th {
+
+    text-align: left;
+
+    padding: 16px 20px;
+
+    background: var(--cr-blue-light);
+    color: var(--cr-blue-dark);
+
+    font-size: 12.5px;
+    font-weight: 800;
+    letter-spacing: .4px;
+
+    white-space: nowrap;
+
+}
+
+.cr-table tbody td {
+
+    padding: 14px 20px;
+
+    border-top: 1px solid var(--cr-border);
+
+    color: var(--cr-text);
+
+}
+
+.cr-table tbody td:first-child {
+
+    color: var(--cr-text-soft);
+    font-weight: 600;
+
+}
+
+.cr-table tbody tr:nth-child(even) {
+
+    background: var(--cr-bg-soft);
+
+}
+
+.cr-table-note {
+
+    margin-top: 14px;
+
+    font-size: 13px;
+    color: var(--cr-muted);
+
+}
+
+
+@media (max-width: 720px) {
+
+    .cr-table {
+        font-size: 13.5px;
+    }
+
+    .cr-table thead th,
+    .cr-table tbody td {
+        padding: 12px 14px;
+    }
+
+}
