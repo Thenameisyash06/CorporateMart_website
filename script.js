@@ -487,13 +487,15 @@ const mobileServices = document.querySelectorAll(".mobile-service");
 mobileServices.forEach(service => {
     const button = service.querySelector("button");
     const submenu = service.querySelector(".mobile-submenu");
+    if (!button || !submenu) return;
 
     button.addEventListener("click", () => {
         const isOpen = service.classList.contains("open");
 
         mobileServices.forEach(item => {
             item.classList.remove("open");
-            item.querySelector(".mobile-submenu").classList.remove("open");
+            const sub = item.querySelector(".mobile-submenu");
+            if (sub) sub.classList.remove("open");
         });
 
         if (!isOpen) {

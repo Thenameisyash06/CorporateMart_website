@@ -429,6 +429,7 @@ const mobileServices = document.querySelectorAll(".mobile-service");
 mobileServices.forEach(service => {
     const button = service.querySelector("button");
     const submenu = service.querySelector(".mobile-submenu");
+    if (!button || !submenu) return;
 
     button.addEventListener("click", () => {
         const isOpen = service.classList.contains("open");
@@ -437,7 +438,8 @@ mobileServices.forEach(service => {
         mobileServices.forEach(item => {
             if (item !== service) {
                 item.classList.remove("open");
-                item.querySelector(".mobile-submenu").classList.remove("open");
+                const sub = item.querySelector(".mobile-submenu");
+                if (sub) sub.classList.remove("open");
                 // Also close any open sub-groups inside them
                 item.querySelectorAll(".mobile-sub-title.open").forEach(st => {
                     st.classList.remove("open");
@@ -1389,4 +1391,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 })();
+
+// Set current year in footer
+(function () {
+  var y = document.getElementById("footerYear");
+  if (y) y.textContent = new Date().getFullYear();
+})();
+
+// Support .reveal on pages using company_registration.js
+(function () {
+  if (typeof IntersectionObserver === "undefined") return;
+  var reveals = document.querySelectorAll(".reveal, .reveal-left, .reveal-right, .reveal-scale, .reveal-stagger");
+  if (!reveals.length) return;
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("is-visible");
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(function (el) { observer.observe(el); });
+})();
+
 

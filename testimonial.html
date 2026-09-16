@@ -8,6 +8,943 @@
     <link rel="stylesheet" href="company_registration.css">
 </head>
 <body>
+<header class="site-header" id="siteHeader">
+
+  <!-- ROW 1: ISO | toll-free, language, theme -->
+  <div class="header-row header-row-1">
+    <div class="header-row-inner">
+      <a href="#" class="header-iso" id="isoCertTrigger" aria-label="View ISO certificate"></a>
+      <div class="header-utils">
+        <a href="tel:18001234567" class="toll-free">
+          <span class="toll-icon" aria-hidden="true">☎</span>
+          <span class="toll-content">
+            <small>Toll Free</small>
+            <strong>1800-123-4567</strong>
+          </span>
+        </a>
+        <div class="help-control">
+          <button type="button" class="help-toggle" id="helpToggle" aria-expanded="false" aria-haspopup="true" aria-controls="helpMenu">
+            Need Help ?
+            <span class="help-chevron" aria-hidden="true">▾</span>
+          </button>
+          <div class="help-menu" id="helpMenu" hidden>
+            <a href="faqs.html" class="help-menu-item">FAQs</a>
+            <a href="feedback.html" class="help-menu-item">Feedback</a>
+          </div>
+        </div>
+
+        <label class="language-control">
+          <span aria-hidden="true">文</span>
+          <select id="languageSelect" aria-label="Select language">
+            <option value="en">English</option>
+            <option value="hi">हिन्दी</option>
+            <option value="gu">ગુજરાતી</option>
+          </select>
+        </label>
+        <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+          <span class="theme-icon">☾</span>
+          <span class="theme-label">Dark</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2: logo, services, hamburger -->
+  <div class="header-row header-row-2">
+    <div class="header-row-inner topbar">
+      <a class="brand" href="index.html" aria-label="Home">
+        <img src="icons/Your_paragraph_text__8_-removebg-preview.png" alt="CorporateMart - Business Registration & Compliance Portal" class="navbar-logo" id="navbarLogo">
+      </a>
+
+      <nav class="service-nav" aria-label="Primary services">
+        <!-- Incorporations -->
+        <div class="nav-dropdown mega-panel-dropdown">
+          <button class="service-btn" type="button" aria-expanded="false">
+            Incorporation
+            <span class="chevron">
+              <img src="icons/icons8-dropdown-30.png" class="dropdown-icon" width="10" height="10" alt="" loading="lazy" decoding="async">
+            </span>
+          </button>
+          <div class="mega-panel" role="menu">
+            <div class="mega-panel-body">
+              <aside class="mega-panel-side">
+                <button type="button" class="mega-side-item is-active" data-mega-panel="company-registration">
+                  <span class="mega-side-label">Company Registration</span>
+                  <span class="mega-side-arrow">›</span>
+                </button>
+                <button type="button" class="mega-side-item" data-mega-panel="ngo-registration">
+                  <span class="mega-side-label">NGO Registration</span>
+                  <span class="mega-side-arrow">›</span>
+                </button>
+                <button type="button" class="mega-side-item" data-mega-panel="partnership-firm">
+                  <span class="mega-side-label">Partnership Firm</span>
+                  <span class="mega-side-arrow">›</span>
+                </button>
+                <a href="Business_registration/Company_registration/startup_india.html" class="mega-side-item mega-side-direct" aria-label="Startup India Registration">
+                  <span class="mega-side-label">Startup India</span>
+                  <span class="mega-side-badge">Popular <img src="icons/shining.png" width="25px" height="25px" alt=""></span>
+                </a>
+              </aside>
+              <div class="mega-panel-main">
+                <div class="mega-panel-pane is-active" data-mega-pane="company-registration">
+                  <a class="mega-panel-title" href="company_registration.html">Company Registration <span>›</span></a>
+                  <div class="mega-panel-grid">
+                    <a href="Business_registration/Company_registration/private_limited_company.html">Private Limited Company</a>
+                    <a href="Business_registration/Company_registration/llp_registration.html">Limited Liability Partnership (LLP)</a>
+                    <a href="Business_registration/Company_registration/opc_registration.html">One Person Company (OPC)</a>
+                    <a href="Business_registration/Company_registration/sole_proprietorship.html">Sole Proprietorship</a>
+                    <a href="Business_registration/Company_registration/startup_india.html">Startup India</a>
+                    <a href="Business_registration/Company_registration/public_ltd.html">Public Limited Company</a>
+                  </div>
+                </div>
+                <div class="mega-panel-pane" data-mega-pane="ngo-registration" hidden>
+                  <a class="mega-panel-title" href="ngo_registration.html">NGO Registration <span>›</span></a>
+                  <div class="mega-panel-grid">
+                    <a href="Business_registration/NGOs/trust_registration.html">Trust Registration</a>
+                    <a href="Business_registration/NGOs/society_registration.html">Society Registration</a>
+                    <a href="Business_registration/NGOs/fcra_registration.html">FCRA Registration</a>
+                    <a href="Business_registration/NGOs/Section_8.html">Section 8 Company</a>
+                  </div>
+                </div>
+                <div class="mega-panel-pane" data-mega-pane="partnership-firm" hidden>
+                  <a class="mega-panel-title" href="Business_registration/Partnership_firm/partnership_firm_registration.html">Partnership Firm <span>›</span></a>
+                  <div class="mega-panel-grid">
+                    <a href="Business_registration/Partnership_firm/partnership_firm_registration.html">Partnership Registration</a>
+                    <a href="Business_registration/Partnership_firm/partnership_firm_compliance.html">Partnership Compliance</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tax & Compliance -->
+        <div class="nav-dropdown mega-panel-dropdown">
+          <button class="service-btn" type="button" aria-expanded="false">
+            Tax & Compliance
+            <span class="chevron">
+              <img src="icons/icons8-dropdown-30.png" class="dropdown-icon" width="10" height="10" alt="" loading="lazy" decoding="async">
+            </span>
+          </button>
+          <div class="mega-panel" role="menu">
+            <div class="mega-panel-body">
+              <aside class="mega-panel-side">
+                <button type="button" class="mega-side-item is-active" data-mega-panel="income-tax">
+                  <span class="mega-side-label">Income Tax</span>
+                  <span class="mega-side-arrow">›</span>
+                </button>
+                <button type="button" class="mega-side-item" data-mega-panel="goods-service-tax-gst">
+                  <span class="mega-side-label">Goods & Service Tax (GST)</span>
+                  <span class="mega-side-arrow">›</span>
+                </button>
+                <button type="button" class="mega-side-item" data-mega-panel="corporate-compliances">
+                  <span class="mega-side-label">Corporate Compliances</span>
+                  <span class="mega-side-arrow">›</span>
+                </button>
+                <button type="button" class="mega-side-item" data-mega-panel="event-based-roc-filing">
+                  <span class="mega-side-label">Event-Based ROC Filing</span>
+                  <span class="mega-side-arrow">›</span>
+                </button>
+                <button type="button" class="mega-side-item" data-mega-panel="accounting-finance">
+                  <span class="mega-side-label">Accounting & Finance</span>
+                  <span class="mega-side-arrow">›</span>
+                </button>
+              </aside>
+              <div class="mega-panel-main">
+                <div class="mega-panel-pane is-active" data-mega-pane="income-tax">
+                  <a class="mega-panel-title" href="income_tax_filing.html">Income Tax <span>›</span></a>
+                  <div class="mega-panel-grid">
+                    <a href="Tax & Compliance/Income_Tax/tax_efiling.html">Income Tax E-Filing</a>
+                    <a href="Tax & Compliance/Income_Tax/business_tax_filing.html">Business Tax Filing</a>
+                    <a href="Tax & Compliance/Income_Tax/tan_registration.html">TAN Registration</a>
+                    <a href="Tax & Compliance/Income_Tax/tds_return_filing.html">TDS Return Filing</a>
+                    <a href="Tax & Compliance/Income_Tax/tax_notice.html">Income Tax Notice</a>
+                    <a href="Tax & Compliance/Income_Tax/itr1_return_filing.html">ITR 1 Return Filing</a>
+                    <a href="Tax & Compliance/Income_Tax/itr2_return_filing.html">ITR 2 Return Filing</a>
+                    <a href="Tax & Compliance/Income_Tax/itr3_retun_filing.html">ITR 3 Return Filing</a>
+                    <a href="Tax & Compliance/Income_Tax/itr4_return_filing.html">ITR 4 Return Filing</a>
+                    <a href="Tax & Compliance/Income_Tax/itr5_return_filing.html">ITR 5 Return Filing</a>
+                    <a href="Tax & Compliance/Income_Tax/itr6_return_filing.html">ITR 6 Return Filing</a>
+                    <a href="Tax & Compliance/Income_Tax/itr7_return_filing.html">ITR 7 Return Filing</a>
+                  </div>
+                </div>
+                <div class="mega-panel-pane" data-mega-pane="goods-service-tax-gst" hidden>
+                  <a class="mega-panel-title" href="gst_services.html">Goods & Service Tax (GST) <span>›</span></a>
+                  <div class="mega-panel-grid">
+                    <a href="Tax & Compliance/Goods & Services Tax/gst_registration.html">GST Registration</a>
+                    <a href="Tax & Compliance/Goods & Services Tax/gst_return_filing.html">GST Return Filing</a>
+                    <a href="Tax & Compliance/Goods & Services Tax/gst_amendment.html">GST Amendment</a>
+                    <a href="Tax & Compliance/Goods & Services Tax/gstr9.html">GSTR 9 Annual Return</a>
+                    <a href="Tax & Compliance/Goods & Services Tax/gstr10.html">GSTR 10 Final Return</a>
+                  </div>
+                </div>
+                <div class="mega-panel-pane" data-mega-pane="corporate-compliances" hidden>
+                  <a class="mega-panel-title" href="corporate_compliance.html">Corporate Compliances <span>›</span></a>
+                  <div class="mega-panel-grid">
+                    <a href="Tax & Compliance/corporate_compliance/privated_limited_compliance.html">Private Limited Compliance</a>
+                    <a href="Tax & Compliance/corporate_compliance/llp_annual_compliance.html">LLP Annual Compliance</a>
+                    <a href="Tax & Compliance/corporate_compliance/opc_compliance.html">OPC Compliance</a>
+                    <a href="Tax & Compliance/corporate_compliance/section8_compliance.html">Section 8 Compliance</a>
+                    <a href="Tax & Compliance/corporate_compliance/partnership_firm_compliance.html">Partnership Firm Compliance</a>
+                    <a href="Tax & Compliance/corporate_compliance/roc_annual_filing.html">ROC Annual Filing</a>
+                    <a href="Tax & Compliance/corporate_compliance/dir3_kyc_filing.html">DIR-3 KYC Filing</a>
+                    <a href="Tax & Compliance/corporate_compliance/adt1_filing.html">ADT-1 Filing</a>
+                    <a href="Tax & Compliance/corporate_compliance/dpt3-filing.html">DPT-3 Filing</a>
+                  </div>
+                </div>
+                <div class="mega-panel-pane" data-mega-pane="event-based-roc-filing" hidden>
+                  <a class="mega-panel-title" href="event_based_roc.html">Event-Based ROC Filing <span>›</span></a>
+                  <div class="mega-panel-grid">
+                    <a href="Tax & Compliance/Event_based_ROC/add_partner_llp.html">Add Partner in LLP</a>
+                    <a href="Tax & Compliance/Event_based_ROC/remove_partner_llp.html">Remove Partner from LLP</a>
+                    <a href="Tax & Compliance/Event_based_ROC/change_llp_agreement.html">Change LLP Agreement</a>
+                    <a href="Tax & Compliance/Event_based_ROC/add_director.html">Add Director</a>
+                    <a href="Tax & Compliance/Event_based_ROC/remove_director.html">Remove Director</a>
+                    <a href="Tax & Compliance/Event_based_ROC/increase_share_capital.html">Increase Share Capital</a>
+                    <a href="Tax & Compliance/Event_based_ROC/change_office_add.html">Change Office Address</a>
+                    <a href="Tax & Compliance/Event_based_ROC/change_company_name.html">Change Company Name</a>
+                    <a href="Tax & Compliance/Event_based_ROC/change_activity.html">Change Business Activity</a>
+                    <a href="Tax & Compliance/Event_based_ROC/issue_new_share.html">Issue New Shares</a>
+                    <a href="Tax & Compliance/Event_based_ROC/change_auditor.html">Change Auditor</a>
+                    <a href="Tax & Compliance/Event_based_ROC/update_director_kyc.html">Update Director KYC</a>
+                    <a href="Tax & Compliance/Event_based_ROC/create_charge_filing.html">Create Company Charge</a>
+                    <a href="Tax & Compliance/Event_based_ROC/close_company_charge.html">Close Company Charge</a>
+                    <a href="Tax & Compliance/Event_based_ROC/change_management_details.html">Change Management Details</a>
+                    <a href="Tax & Compliance/Event_based_ROC/change_director_add.html">Change Director Address</a>
+                  </div>
+                </div>
+                <div class="mega-panel-pane" data-mega-pane="accounting-finance" hidden>
+                  <a class="mega-panel-title" href="account_financial_service.html">Accounting & Finance <span>›</span></a>
+                  <div class="mega-panel-grid">
+                    <a href="Tax & Compliance/accounting & finance/bookkepping_services.html">Bookkeeping Services</a>
+                    <a href="Tax & Compliance/accounting & finance/accounting_services.html">Accounting Services</a>
+                    <a href="Tax & Compliance/accounting & finance/financial_audit_services.html">Financial Audit Services</a>
+                    <a href="Tax & Compliance/accounting & finance/tax_audit_services.html">Tax Audit Services</a>
+                    <a href="Tax & Compliance/accounting & finance/business_due_diligence.html">Business Due Diligence</a>
+                    <a href="Tax & Compliance/accounting & finance/accounts_payable_services.html">Accounts Payable Support</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trademark & IP -->
+        <div class="nav-dropdown mega-panel-dropdown">
+          <button class="service-btn" type="button" aria-expanded="false">
+            Trademark & IP
+            <span class="chevron">
+              <img src="icons/icons8-dropdown-30.png" class="dropdown-icon" width="10" height="10" alt="" loading="lazy" decoding="async">
+            </span>
+          </button>
+          <div class="mega-panel" role="menu">
+            <div class="mega-panel-body">
+              <aside class="mega-panel-side">
+                <button type="button" class="mega-side-item is-active" data-mega-panel="trademark-services">
+                  <span class="mega-side-label">Trademark Services</span>
+                  <span class="mega-side-arrow">›</span>
+                </button>
+                <button type="button" class="mega-side-item" data-mega-panel="copyright-services">
+                  <span class="mega-side-label">Copyright Services</span>
+                  <span class="mega-side-arrow">›</span>
+                </button>
+                <button type="button" class="mega-side-item" data-mega-panel="patent-services">
+                  <span class="mega-side-label">Patent Services</span>
+                  <span class="mega-side-arrow">›</span>
+                </button>
+                <button type="button" class="mega-side-item" data-mega-panel="infringement-protection">
+                  <span class="mega-side-label">Infringement & Protection</span>
+                  <span class="mega-side-arrow">›</span>
+                </button>
+              </aside>
+              <div class="mega-panel-main">
+                <div class="mega-panel-pane is-active" data-mega-pane="trademark-services">
+                  <a class="mega-panel-title" href="trademark_and_ip.html">Trademark Services <span>›</span></a>
+                  <div class="mega-panel-grid">
+                    <a href="Trademark & Ip/trademark_services/trademark_registration.html">Trademark Registration</a>
+                    <a href="Trademark & Ip/trademark_services/trademark_certificate.html">Trademark Certificate</a>
+                    <a href="Trademark & Ip/trademark_services/trademark_objection.html">Trademark Objection</a>
+                    <a href="Trademark & Ip/trademark_services/trademark_hearing.html">Trademark Hearing</a>
+                    <a href="Trademark & Ip/trademark_services/trademark_opposition.html">Trademark Opposition</a>
+                    <a href="Trademark & Ip/trademark_services/trademark_renewal.html">Trademark Renewal</a>
+                    <a href="Trademark & Ip/trademark_services/trademark_rectification.html">Trademark Rectification</a>
+                    <a href="Trademark & Ip/trademark_services/trademark_transfer.html">Trademark Transfer</a>
+                  </div>
+                </div>
+                <div class="mega-panel-pane" data-mega-pane="copyright-services" hidden>
+                  <a class="mega-panel-title" href="Trademark & Ip/copyright_services/copyright_registration.html">Copyright Services <span>›</span></a>
+                  <div class="mega-panel-grid">
+                    <a href="Trademark & Ip/copyright_services/copyright_registration.html">Copyright Registration</a>
+                    <a href="Trademark & Ip/copyright_services/copyright_objection.html">Copyright Objection</a>
+                  </div>
+                </div>
+                <div class="mega-panel-pane" data-mega-pane="patent-services" hidden>
+                  <a class="mega-panel-title" href="Trademark & Ip/patent_services/patent_registration.html">Patent Services <span>›</span></a>
+                  <div class="mega-panel-grid">
+                    <a href="Trademark & Ip/patent_services/patent_registration.html">Patent Registration</a>
+                    </div>
+                </div>
+                <div class="mega-panel-pane" data-mega-pane="infringement-protection" hidden>
+                  <a class="mega-panel-title" href="Trademark & Ip/infringment_protection/TM_infringment.html">Infringement & Protection <span>›</span></a>
+                  <div class="mega-panel-grid">
+                    <a href="Trademark & Ip/infringment_protection/TM_infringment.html">TM Infringement Notice</a>
+                    </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Licenses -->
+        <div class="nav-dropdown mega-panel-dropdown">
+          <button class="service-btn" type="button" aria-expanded="false">
+            Licenses
+            <span class="chevron">
+              <img src="icons/icons8-dropdown-30.png" class="dropdown-icon" width="10" height="10" alt="" loading="lazy" decoding="async">
+            </span>
+          </button>
+          <div class="mega-panel" role="menu">
+            <div class="mega-panel-body">
+              <aside class="mega-panel-side">
+                <button type="button" class="mega-side-item is-active" data-mega-panel="business-municipal-license">
+                  <span class="mega-side-label">Business & Municipal</span>
+                  <span class="mega-side-arrow">›</span>
+                </button>
+                <button type="button" class="mega-side-item" data-mega-panel="food-health-license">
+                  <span class="mega-side-label">Food & Health</span>
+                  <span class="mega-side-arrow">›</span>
+                </button>
+                <button type="button" class="mega-side-item" data-mega-panel="import-export-licenses">
+                  <span class="mega-side-label">Import & Export</span>
+                  <span class="mega-side-arrow">›</span>
+                </button>
+                <button type="button" class="mega-side-item" data-mega-panel="workforce-operations-labour">
+                  <span class="mega-side-label">Workforce & Labour</span>
+                  <span class="mega-side-arrow">›</span>
+                </button>
+                <button type="button" class="mega-side-item" data-mega-panel="environmental-pollution-licenses">
+                  <span class="mega-side-label">Environmental & Pollution</span>
+                  <span class="mega-side-arrow">›</span>
+                </button>
+                <a href="Licenses/workforce, operations and labour/iso_certification.html" class="mega-side-item mega-side-direct" aria-label="Startup India Registration">
+                  <span class="mega-side-label">ISO Registration</span>
+                  <span class="mega-side-badge">Popular <img src="icons/shining.png" width="25px" height="25px" alt=""></span>
+                </a>
+              </aside>
+              <div class="mega-panel-main">
+                <div class="mega-panel-pane is-active" data-mega-pane="business-municipal-license">
+                  <a class="mega-panel-title" href="Licenses/business & municipal/msme_registration.html">Business & Municipal Licenses <span>›</span></a>
+                  <div class="mega-panel-grid">
+                    <a href="Licenses/business & municipal/trade_license_registration.html">Trade License Registration</a>
+                    <a href="Licenses/business & municipal/shop_establishment_license.html">Shop & Establishment License</a>
+                    <a href="Licenses/business & municipal/msme_registration.html">MSME Registration</a>
+                    <a href="Licenses/business & municipal/professional_tax_registration.html">Professional Tax Registration</a>
+                    <a href="Licenses/business & municipal/factory_license_registration.html">Factory License Registration</a>
+                    <a href="Licenses/business & municipal/labour_welfare_registration.html">Labour Welfare Registration</a>
+                  </div>
+                </div>
+                <div class="mega-panel-pane" data-mega-pane="food-health-license" hidden>
+                  <a class="mega-panel-title" href="Licenses/food & health/fssai_registration.html">Food and Health Product Licenses <span>›</span></a>
+                  <div class="mega-panel-grid">
+                    <a href="Licenses/food & health/fssai_registration.html">FSSAI Registration</a>
+                    <a href="Licenses/food & health/fssai_license.html">FSSAI License</a>
+                    <a href="Licenses/food & health/drug_cosmetic_license.html">Drug & Cosmetic License</a>
+                    <a href="Licenses/food & health/food_import_clearance.html">Food Import Clearance (FSSAI)</a>
+                    <a href="Licenses/food & health/bis_isi_registration.html">BIS ISI Registration</a>
+                  </div>
+                </div>
+                <div class="mega-panel-pane" data-mega-pane="import-export-licenses" hidden>
+                  <a class="mega-panel-title" href="Licenses/import export registration/iec_registration.html">Import Export Registration <span>›</span></a>
+                  <div class="mega-panel-grid">
+                    <a href="Licenses/import export registration/iec_registration.html">IEC Registration</a>
+                    <a href="Licenses/import export registration/icegate_registration.html">ICEGATE Registration</a>
+                    <a href="Licenses/import export registration/merchant_exporter_registration.html">Merchant Exporter Registration</a>
+                    <a href="Licenses/import export registration/customs_clearance_services.html">Customs Clearance Services</a>
+                    <a href="Licenses/import export registration/rcmc_registration.html">RCMC Registration</a>
+                    <a href="Licenses/import export registration/apeda_registration.html">APEDA Registration</a>
+                    <a href="Licenses/import export registration/dgft_digital_certificate.html">DGFT Digital Signature (DSC)</a>
+                  </div>
+                </div>
+                <div class="mega-panel-pane" data-mega-pane="workforce-operations-labour" hidden>
+                  <a class="mega-panel-title" href="Licenses/workforce, operations and labour/iso_certification.html">Workforce, Operation & Labour <span>›</span></a>
+                  <div class="mega-panel-grid">
+                    <a href="Licenses/workforce, operations and labour/pf_registration.html">PF Registration</a>
+                    <a href="Licenses/workforce, operations and labour/esi_registration.html">ESI Registration</a>
+                    <a href="Licenses/workforce, operations and labour/contractor_license.html">Contractor License</a>
+                    <a href="Licenses/workforce, operations and labour/psara_license.html">PSARA License</a>
+                    <a href="Licenses/workforce, operations and labour/digital_signature_certificate.html">Digital Signature Certificate</a>
+                    <a href="Licenses/workforce, operations and labour/ngo_darpan.html">NGO DARPAN Registration</a>
+                    <a href="Licenses/workforce, operations and labour/factory_plan_approval.html">Factory Plan Approval</a>
+                  </div>
+                </div>
+                <div class="mega-panel-pane" data-mega-pane="environmental-pollution-licenses" hidden>
+                  <a class="mega-panel-title" href="Licenses/Environmental&pollution/epr_registration.html">Environmental & Pollution Control <span>›</span></a>
+                  <div class="mega-panel-grid">
+                    <a href="Licenses/Environmental&pollution/epr_registration.html">EPR Registration</a>
+                    <a href="Licenses/Environmental&pollution/plastic_waste_auth.html">Plastic Waste Authorization</a>
+                    <a href="Licenses/Environmental&pollution/epr_authorization_e-waste.html">EPR Authorization for E-Waste</a>
+                    <a href="Licenses/Environmental&pollution/consent_to_establish.html">Consent to Establish (CTE)</a>
+                    <a href="Licenses/Environmental&pollution/environmental_impact_assess.html">Environmental Impact Assessment</a>
+                    <a href="Licenses/Environmental&pollution/environmental_audit_services.html">Environmental Audit Services</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <a class="service-btn" href="fundraising.html">Fundraising <img src="icons/shining.png" width="25px" height="25px" alt=""></a>
+
+        <!-- DIGITAL (UPDATED) -->
+        <div class="nav-dropdown mega-panel-dropdown align-end">
+          <button class="service-btn" type="button" aria-expanded="false">
+            Digital
+            <span class="chevron">
+              <img src="icons/icons8-dropdown-30.png" class="dropdown-icon" width="10" height="10" alt="" loading="lazy" decoding="async">
+            </span>
+          </button>
+          <div class="mega-panel" role="menu">
+            <div class="mega-panel-body">
+              <aside class="mega-panel-side">
+                <button type="button" class="mega-side-item is-active" data-mega-panel="web-solutions">
+                  <span class="mega-side-label">Web Solutions</span>
+                  <span class="mega-side-arrow">›</span>
+                </button>
+                <button type="button" class="mega-side-item" data-mega-panel="digital-marketing">
+                  <span class="mega-side-label">Digital Marketing</span>
+                  <span class="mega-side-arrow">›</span>
+                </button>
+                <button type="button" class="mega-side-item" data-mega-panel="branding-design">
+                  <span class="mega-side-label">Branding & Design</span>
+                  <span class="mega-side-arrow">›</span>
+                </button>
+              </aside>
+              <div class="mega-panel-main">
+                <div class="mega-panel-pane is-active" data-mega-pane="web-solutions">
+                  <a class="mega-panel-title" href="Digital/web_solutions/dynamic_website.html">Web Solutions <span>›</span></a>
+                  <div class="mega-panel-grid">
+                    <a href="Digital/web_solutions/dynamic_website.html">Dynamic Website</a>
+                    <a href="Digital/web_solutions/static_website.html">Static Website</a>
+                    <a href="Digital/web_solutions/ecommerce_website.html">E-commerce Website</a>
+                  </div>
+                </div>
+                <div class="mega-panel-pane" data-mega-pane="digital-marketing" hidden>
+                  <a class="mega-panel-title" href="Digital/digital_marketing/seo_optimization.html">Digital Marketing <span>›</span></a>
+                  <div class="mega-panel-grid">
+                    <a href="Digital/digital_marketing/seo_optimization.html">SEO Optimization</a>
+                    <a href="Digital/digital_marketing/social_media_marketing.html">Social Media Marketing (SMM)</a>
+                    <a href="Digital/digital_marketing/google_ads_ppc.html">Google Ads & PPC</a>
+                    <a href="Digital/digital_marketing/lead_generation.html">Lead Generation</a>
+                  </div>
+                </div>
+                <div class="mega-panel-pane" data-mega-pane="branding-design" hidden>
+                  <a class="mega-panel-title" href="Digital/branding_design/logo_design.html">Branding & Design <span>›</span></a>
+                  <div class="mega-panel-grid">
+                    <a href="Digital/branding_design/logo_design.html">Logo Design</a>
+                    <a href="Digital/branding_design/profile_designing.html">Profile Designing</a>
+                    <a href="Digital/branding_design/ui_ux_design.html">UI/UX Design</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Other -->
+        <div class="nav-dropdown mega-panel-dropdown">
+          <button class="service-btn" type="button" aria-expanded="false">
+            Other
+            <span class="chevron">
+              <img src="icons/icons8-dropdown-30.png" class="dropdown-icon" width="10" height="10" alt="" loading="lazy" decoding="async">
+            </span>
+          </button>
+          <div class="mega-panel" role="menu">
+            <div class="mega-panel-body">
+              <aside class="mega-panel-side">
+                <button type="button" class="mega-side-item is-active" data-mega-panel="business-closure">
+                  <span class="mega-side-label">Business Closure</span>
+                  <span class="mega-side-arrow">›</span>
+                </button>
+                <button type="button" class="mega-side-item" data-mega-panel="business-conversion">
+                  <span class="mega-side-label">Business Conversion</span>
+                  <span class="mega-side-arrow">›</span>
+                </button>
+              </aside>
+              <div class="mega-panel-main">
+                <div class="mega-panel-pane is-active" data-mega-pane="business-closure">
+                  <a class="mega-panel-title" href="business_closuer.html">Business Closure <span>›</span></a>
+                  <div class="mega-panel-grid">
+                    <a href="others/business_closuer/pvt_ltd_closuer.html">Pvt Ltd Closure</a>
+                    <a href="others/business_closuer/llp_closuer.html">LLP Closure</a>
+                    <a href="others/business_closuer/opc_closuer.html">OPC Closure</a>
+                    <a href="others/business_closuer/sole_prop_closuer.html">Sole Proprietorship Closure</a>
+                    <a href="others/business_closuer/partnership_closuer.html">Partnership Firm Closure</a>
+                    <a href="others/business_closuer/dissolution_trust.html">Dissolution of Trust</a>
+                    <a href="others/business_closuer/dissolution_society.html">Dissolution of Society</a>
+                  </div>
+                </div>
+                <div class="mega-panel-pane" data-mega-pane="business-conversion" hidden>
+                  <a class="mega-panel-title" href="business_conversion.html">Business Conversion <span>›</span></a>
+                  <div class="mega-panel-grid">
+                    <a href="others/business_conversion/pvt_to_public.html">Pvt to Public Ltd Company</a>
+                    <a href="others/business_conversion/llp_to_pvt.html">LLP to Pvt Ltd Company</a>
+                    <a href="others/business_conversion/opc_to_pvt.html">OPC to Pvt Ltd Company</a>
+                    <a href="others/business_conversion/solo_prop_to_pvt.html">Proprietorship to Pvt Ltd Company</a>
+                    <a href="others/business_conversion/partnership_to_pvt.html">Partnership to Pvt Ltd Company</a>
+                    <a href="others/business_conversion/pvt_to_opc.html">Pvt Ltd to OPC Company</a>
+                    <a href="others/business_conversion/partnership_to_llp.html">Partnership to LLP Company</a>
+                    <a href="others/business_conversion/public_to_pvt.html">Public to Pvt Ltd Company</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div class="header-actions">
+        <button class="menu-trigger" type="button" aria-label="Open menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 3: inline search -->
+  <div class="header-row header-row-3">
+    <div class="header-row-inner header-search-wrap">
+      <form class="header-search-inline search-form" id="searchForm" role="search" autocomplete="off">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="6.5"></circle>
+          <path d="m16 16 5 5"></path>
+        </svg>
+        <input id="siteSearch" type="search" placeholder="Search services, blogs, certifications..." autocomplete="off" aria-label="Search services" aria-autocomplete="list" aria-controls="searchSuggestions">
+      </form>
+      <div class="search-suggestions" id="searchSuggestions">
+        <div class="search-popular" id="searchPopular">
+          <span>Popular:</span>
+          <button type="button" data-q="GST Registration">GST Registration</button>
+          <button type="button" data-q="Trademark">Trademark</button>
+          <button type="button" data-q="Company Registration">Company Registration</button>
+          <button type="button" data-q="Business Closure">Business Closure</button>
+        </div>
+        <div class="search-results" id="searchResults" hidden></div>
+      </div>
+    </div>
+  </div>
+
+</header>
+
+<!-- ISO certificate lightbox -->
+<div class="si-cert-lightbox" id="isoCertLightbox" aria-hidden="true" role="dialog" aria-label="ISO Certificate">
+  <div class="si-cert-lightbox-backdrop" data-close-iso></div>
+  <div class="si-cert-lightbox-dialog">
+    <button type="button" class="si-cert-lightbox-close" data-close-iso aria-label="Close">&times;</button>
+    <img src="icons/iso-certificate.jpg" alt="ISO Certificate" class="si-cert-lightbox-img" id="isoCertLightboxImg">
+  </div>
+</div>
+
+        <div class="menu-overlay" aria-hidden="true"></div>
+
+<aside class="side-menu" aria-hidden="true" aria-label="Website menu">
+        <div class="side-menu-header">
+            <div>
+                <p class="menu-eyebrow">Explore</p>
+                <h2>More from us</h2>
+            </div>
+            <button class="side-menu-close" type="button" aria-label="Close menu">&times;</button>
+        </div>
+
+        <nav class="secondary-nav">
+            <div class="mobile-services">
+                <p class="menu-section-title">Business Services</p>
+                <!-- Business Registration -->
+                <div class="mobile-service">
+                    <button type="button">Business Registration <span><img src="icons/icons8-dropdown-30.png" class="dropdown-icon" height="10" width="10" alt="Dropdown Navigation Arrow" loading="lazy" decoding="async"></span></button>
+                    <div class="mobile-submenu">
+                        <div class="mobile-sub-title" role="button" tabindex="0" aria-expanded="false">Company Registration<span class="sub-arrow">›</span></div>
+                        <div class="mobile-subgroup">
+                            <a href="Business_registration/Company_registration/private_limited_company.html">Private Limited Company</a>
+                            <a href="Business_registration/Company_registration/llp_registration.html">Limited Liability Partnership(LLP)</a>
+                            <a href="Business_registration/Company_registration/opc_registration.html">One Person Company(OPC)</a>
+                            <a href="Business_registration/Company_registration/sole_proprietorship.html">Sole Proprietorship</a>
+                            <a href="Business_registration/Company_registration/startup_india.html">Startup India</a>
+                            <a href="Business_registration/Company_registration/public_ltd.html">Public Limited Company</a>
+                        </div>
+                        <div class="mobile-sub-title" role="button" tabindex="0" aria-expanded="false">NGO Registration<span class="sub-arrow">›</span></div>
+                        <div class="mobile-subgroup">
+                            <a href="Business_registration/NGOs/trust_registration.html">Trust Registration</a>
+                            <a href="Business_registration/NGOs/society_registration.html">Society Registration</a>
+                            <a href="Business_registration/NGOs/fcra_registration.html">FCRA Registration</a>
+                            <a href="Business_registration/NGOs/Section_8.html">Section 8 Company</a>
+                        </div>
+                        <div class="mobile-sub-title" role="button" tabindex="0" aria-expanded="false">Partnership Firm<span class="sub-arrow">›</span></div>
+                        <div class="mobile-subgroup">
+                            <a href="Business_registration/Partnership_firm/partnership_firm_registration.html">Partnership Registration</a>
+                            <a href="Business_registration/Partnership_firm/partnership_firm_compliance.html">Partnership Compliance</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Tax & Compliance -->
+                <div class="mobile-service">
+                    <button type="button">Tax & Compliance <span><img src="icons/icons8-dropdown-30.png" class="dropdown-icon" height="10" width="10" alt="Dropdown Navigation Arrow" loading="lazy" decoding="async"></span></button>
+                    <div class="mobile-submenu">
+                        <div class="mobile-sub-title" role="button" tabindex="0" aria-expanded="false">Income Tax<span class="sub-arrow">›</span></div>
+                        <div class="mobile-subgroup">
+                            <a href="Tax & Compliance/Income_Tax/tax_efiling.html">Income Tax E-Filing</a>
+                            <a href="Tax & Compliance/Income_Tax/business_tax_filing.html">Business Tax Filing</a>
+                            <a href="Tax & Compliance/Income_Tax/tan_registration.html">TAN Registration</a>
+                            <a href="Tax & Compliance/Income_Tax/tds_return_filing.html">TDS Return Filing</a>
+                            <a href="Tax & Compliance/Income_Tax/tax_notice.html">Income Tax Notice</a>
+                            <a href="Tax & Compliance/Income_Tax/itr1_return_filing.html">ITR-1 Return Filing</a>
+                            <a href="Tax & Compliance/Income_Tax/itr2_return_filing.html">ITR-2 Return Filing</a>
+                            <a href="Tax & Compliance/Income_Tax/itr3_retun_filing.html">ITR-3 Return Filing</a>
+                            <a href="Tax & Compliance/Income_Tax/itr4_return_filing.html">ITR-4 Return Filing</a>
+                            <a href="Tax & Compliance/Income_Tax/itr5_return_filing.html">ITR-5 Return Filing</a>
+                            <a href="Tax & Compliance/Income_Tax/itr6_return_filing.html">ITR-6 Return Filing</a>
+                            <a href="Tax & Compliance/Income_Tax/itr7_return_filing.html">ITR-7 Return Filing</a>
+                        </div>
+                        <div class="mobile-sub-title" role="button" tabindex="0" aria-expanded="false">Goods & Service Tax(GST)<span class="sub-arrow">›</span></div>
+                        <div class="mobile-subgroup">
+                            <a href="Tax & Compliance/Goods & Services Tax/gst_registration.html">GST Registration</a>
+                            <a href="Tax & Compliance/Goods & Services Tax/gst_amendment.html">GST Amendement</a>
+                            <a href="Tax & Compliance/Goods & Services Tax/gst_return_filing.html">GST Return Filing</a>
+                            <a href="Tax & Compliance/Goods & Services Tax/gstr9.html">GST Annual Return Filing(GSTR-9)</a>
+                            <a href="Tax & Compliance/Goods & Services Tax/gstr10.html">GSTR-10</a>
+                        </div>
+                        <div class="mobile-sub-title" role="button" tabindex="0" aria-expanded="false">Corporate Compliances<span class="sub-arrow">›</span></div>
+                        <div class="mobile-subgroup">
+                            <a href="Tax & Compliance/corporate_compliance/privated_limited_compliance.html">Private Limited Compliance</a>
+                            <a href="Tax & Compliance/corporate_compliance/llp_annual_compliance.html">LLP Annual Compliance</a>
+                            <a href="Tax & Compliance/corporate_compliance/opc_compliance.html">OPC Annual Compliance</a>
+                            <a href="Tax & Compliance/corporate_compliance/roc_annual_filing.html">ROC Annual Filing</a>
+                            <a href="Tax & Compliance/corporate_compliance/dir3_kyc_filing.html">DIR-3 KYC Filing</a>
+                            <a href="Tax & Compliance/corporate_compliance/section8_compliance.html">Section-8 Compliance</a>
+                            <a href="Tax & Compliance/corporate_compliance/partnership_firm_compliance.html">Partnership Firm Compliance</a>
+                            <a href="Tax & Compliance/corporate_compliance/adt1_filing.html">ADT-1 Filing</a>
+                            <a href="Tax & Compliance/corporate_compliance/dpt3-filing.html">DPT-3 Filing</a>
+                        </div>
+                        <div class="mobile-sub-title" role="button" tabindex="0" aria-expanded="false">Event-Based ROC Filing<span class="sub-arrow">›</span></div>
+                        <div class="mobile-subgroup">
+                            <a href="Tax & Compliance/Event_based_ROC/add_partner_llp.html">Add Partner in LLP</a>
+                            <a href="Tax & Compliance/Event_based_ROC/remove_partner_llp.html">Remove Partner from LLP</a>
+                            <a href="Tax & Compliance/Event_based_ROC/change_llp_agreement.html">Change LLP Agreement</a>
+                            <a href="Tax & Compliance/Event_based_ROC/add_director.html">Add Director</a>
+                            <a href="Tax & Compliance/Event_based_ROC/remove_director.html">Remove Director</a>
+                            <a href="Tax & Compliance/Event_based_ROC/increase_share_capital.html">Increase Share Capital</a>
+                            <a href="Tax & Compliance/Event_based_ROC/change_office_add.html">Change Office Address</a>
+                            <a href="Tax & Compliance/Event_based_ROC/change_company_name.html">Change Company Name</a>
+                            <a href="Tax & Compliance/Event_based_ROC/change_activity.html">Change Business Activity</a>
+                            <a href="Tax & Compliance/Event_based_ROC/issue_new_share.html">Issue New Shares</a>
+                            <a href="Tax & Compliance/Event_based_ROC/change_auditor.html">Change Auditor</a>
+                            <a href="Tax & Compliance/Event_based_ROC/update_director_kyc.html">Update Director KYC</a>
+                            <a href="Tax & Compliance/Event_based_ROC/create_charge_filing.html">Create Company Charge</a>
+                            <a href="Tax & Compliance/Event_based_ROC/close_company_charge.html">Close Company Charge</a>
+                            <a href="Tax & Compliance/Event_based_ROC/change_management_details.html">Change Management Details</a>
+                            <a href="Tax & Compliance/Event_based_ROC/change_director_add.html">Change Director Address</a>
+                        </div>
+                        <div class="mobile-sub-title" role="button" tabindex="0" aria-expanded="false">Accounting & Finance<span class="sub-arrow">›</span></div>
+                        <div class="mobile-subgroup">
+                            <a href="Tax & Compliance/accounting & finance/accounting_services.html">Accounting Services</a>
+                            <a href="Tax & Compliance/accounting & finance/bookkepping_services.html">Bookkeeping Services</a>
+                            <a href="Tax & Compliance/accounting & finance/tax_audit_services.html">Tax Audit Support</a>
+                            <a href="Tax & Compliance/accounting & finance/financial_audit_services.html">Financial Audit Support</a>
+                            <a href="Tax & Compliance/accounting & finance/business_due_diligence.html">Business Due Diligence</a>
+                            <a href="Tax & Compliance/accounting & finance/accounts_payable_services.html">Accounts Payable Support</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Trademark & IP -->
+                <div class="mobile-service">
+                    <button type="button">Trademark & IP <span><img src="icons/icons8-dropdown-30.png" class="dropdown-icon" height="10" width="10" alt="Dropdown Navigation Arrow" loading="lazy" decoding="async"></span></button>
+                    <div class="mobile-submenu">
+                        <div class="mobile-sub-title" role="button" tabindex="0" aria-expanded="false">Trademark Services<span class="sub-arrow">›</span></div>
+                        <div class="mobile-subgroup">
+                            <a href="Trademark & Ip/trademark_services/trademark_registration.html">Trademark Registration</a>
+                            <a href="Trademark & Ip/trademark_services/trademark_certificate.html">Trademark Certificate</a>
+                            <a href="Trademark & Ip/trademark_services/trademark_objection.html">Trademark Objection</a>
+                            <a href="Trademark & Ip/trademark_services/trademark_opposition.html">Trademark Opposition</a>
+                            <a href="Trademark & Ip/trademark_services/trademark_transfer.html">Trademark Transfer</a>
+                            <a href="Trademark & Ip/trademark_services/trademark_hearing.html">Trademark Hearing</a>
+                            <a href="Trademark & Ip/trademark_services/trademark_renewal.html">Trademark Renewal</a>
+                            <a href="Trademark & Ip/trademark_services/trademark_rectification.html">Trademark Rectification</a>
+                        </div>
+                        <div class="mobile-sub-title" role="button" tabindex="0" aria-expanded="false">Copyright Services<span class="sub-arrow">›</span></div>
+                        <div class="mobile-subgroup">
+                            <a href="Trademark & Ip/copyright_services/copyright_registration.html">Copyright Registration</a>
+                            <a href="Trademark & Ip/copyright_services/copyright_objection.html">Copyright Objection</a>
+                        </div>
+                        <div class="mobile-sub-title" role="button" tabindex="0" aria-expanded="false">Patent Services<span class="sub-arrow">›</span></div>
+                        <div class="mobile-subgroup">
+                            <a href="Trademark & Ip/patent_services/patent_registration.html">Patent Registration</a>
+                        </div>
+                        <div class="mobile-sub-title" role="button" tabindex="0" aria-expanded="false">Infringement & Protection<span class="sub-arrow">›</span></div>
+                        <div class="mobile-subgroup">
+                            <a href="Trademark & Ip/infringment_protection/TM_infringment.html">TM Infringement Notice</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Licenses -->
+                <div class="mobile-service">
+                    <button type="button">Licenses <span><img src="icons/icons8-dropdown-30.png" class="dropdown-icon" height="10" width="10" alt="Dropdown Navigation Arrow" loading="lazy" decoding="async"></span></button>
+                    <div class="mobile-submenu">
+                        <div class="mobile-sub-title" role="button" tabindex="0" aria-expanded="false">Business & Municipal Licenses<span class="sub-arrow">›</span></div>
+                        <div class="mobile-subgroup">
+                            <a href="Licenses/business & municipal/trade_license_registration.html">Trade License Registration</a>
+                            <a href="Licenses/business & municipal/shop_establishment_license.html">Shop & Establishment License</a>
+                            <a href="Licenses/business & municipal/msme_registration.html">MSME Registration</a>
+                            <a href="Licenses/business & municipal/professional_tax_registration.html">Professional Tax Registration</a>
+                            <a href="Licenses/business & municipal/factory_license_registration.html">Factory License Registration</a>
+                            <a href="Licenses/business & municipal/labour_welfare_registration.html">Labour Welfare Registration</a>
+                        </div>
+                        <div class="mobile-sub-title" role="button" tabindex="0" aria-expanded="false">Food and Health Product Licenses<span class="sub-arrow">›</span></div>
+                        <div class="mobile-subgroup">
+                            <a href="Licenses/food & health/fssai_registration.html">FSSAI Registration</a>
+                            <a href="Licenses/food & health/fssai_license.html">FSSAI License</a>
+                            <a href="Licenses/food & health/drug_cosmetic_license.html">Drug & Cosmetic License</a>
+                            <a href="Licenses/food & health/food_import_clearance.html">Food Import Clearance (FSSAI)</a>
+                            <a href="Licenses/food & health/bis_isi_registration.html">BIS ISI Registration</a>
+                        </div>
+                        <div class="mobile-sub-title" role="button" tabindex="0" aria-expanded="false">Import Export Registration<span class="sub-arrow">›</span></div>
+                        <div class="mobile-subgroup">
+                            <a href="Licenses/import export registration/iec_registration.html">IEC Registration</a>
+                            <a href="Licenses/import export registration/icegate_registration.html">ICEGATE Registration</a>
+                            <a href="Licenses/import export registration/merchant_exporter_registration.html">Merchant Exporter Registration</a>
+                            <a href="Licenses/import export registration/customs_clearance_services.html">Customs Clearance Services</a>
+                            <a href="Licenses/import export registration/rcmc_registration.html">RCMC Registration</a>
+                            <a href="Licenses/import export registration/apeda_registration.html">APEDA Registration</a>
+                            <a href="Licenses/import export registration/dgft_digital_certificate.html">DGFT Digital Signature (DSC)</a>
+                        </div>
+                        <div class="mobile-sub-title" role="button" tabindex="0" aria-expanded="false">Workforce, Operation & Labour<span class="sub-arrow">›</span></div>
+                        <div class="mobile-subgroup">
+                            <a href="Licenses/workforce, operations and labour/iso_certification.html">ISO Registration</a>
+                            <a href="Licenses/workforce, operations and labour/pf_registration.html">PF Registration</a>
+                            <a href="Licenses/workforce, operations and labour/esi_registration.html">ESI Registration</a>
+                            <a href="Licenses/workforce, operations and labour/contractor_license.html">Contractor License</a>
+                            <a href="Licenses/workforce, operations and labour/psara_license.html">PSARA License</a>
+                            <a href="Licenses/workforce, operations and labour/digital_signature_certificate.html">Digital Signature Certificate</a>
+                            <a href="Licenses/workforce, operations and labour/ngo_darpan.html">NGO DARPAN Registration</a>
+                            <a href="Licenses/workforce, operations and labour/factory_plan_approval.html">Factory Plan Approval</a>
+                        </div>
+                        <div class="mobile-sub-title" role="button" tabindex="0" aria-expanded="false">Environmental & Pollution Control<span class="sub-arrow">›</span></div>
+                        <div class="mobile-subgroup">
+                            <a href="Licenses/Environmental&pollution/epr_registration.html">EPR Registration</a>
+                            <a href="Licenses/Environmental&pollution/plastic_waste_auth.html">Plastic Waste Authorization</a>
+                            <a href="Licenses/Environmental&pollution/epr_authorization_e-waste.html">EPR Authorization for E-Waste</a>
+                            <a href="Licenses/Environmental&pollution/consent_to_establish.html">Consent to Establish (CTE)</a>
+                            <a href="Licenses/Environmental&pollution/environmental_impact_assess.html">Environmental Impact Assessment</a>
+                            <a href="Licenses/Environmental&pollution/environmental_audit_services.html">Environmental Audit Services</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Fundraising -->
+                <div class="mobile-service-link">
+                    <a href="fundraising.html">
+                        <span>Fundraising</span>
+                        <img src="icons/shining.png" width="22" height="22" alt="" loading="lazy">
+                    </a>
+                </div>
+                <!-- Digital -->
+                <div class="mobile-service">
+                    <button type="button">Digital <span><img src="icons/icons8-dropdown-30.png" class="dropdown-icon" height="10" width="10" alt="Dropdown Navigation Arrow" loading="lazy" decoding="async"></span></button>
+                    <div class="mobile-submenu">
+                        <div class="mobile-sub-title" role="button" tabindex="0" aria-expanded="false">Web Solutions<span class="sub-arrow">›</span></div>
+                        <div class="mobile-subgroup">
+                            <a href="Digital/web_solutions/dynamic_website.html">Dynamic Website</a>
+                            <a href="Digital/web_solutions/static_website.html">Static Website</a>
+                            <a href="Digital/web_solutions/ecommerce_website.html">E-commerce Website</a>
+                        </div>
+                        <div class="mobile-sub-title" role="button" tabindex="0" aria-expanded="false">Digital Marketing<span class="sub-arrow">›</span></div>
+                        <div class="mobile-subgroup">
+                            <a href="Digital/digital_marketing/seo_optimization.html">SEO Optimization</a>
+                            <a href="Digital/digital_marketing/social_media_marketing.html">Social Media Marketing (SMM)</a>
+                            <a href="Digital/digital_marketing/google_ads_ppc.html">Google Ads & PPC</a>
+                            <a href="Digital/digital_marketing/lead_generation.html">Lead Generation</a>
+                        </div>
+                        <div class="mobile-sub-title" role="button" tabindex="0" aria-expanded="false">Branding & Design<span class="sub-arrow">›</span></div>
+                        <div class="mobile-subgroup">
+                            <a href="Digital/branding_design/logo_design.html">Logo Design</a>
+                            <a href="Digital/branding_design/profile_designing.html">Profile Designing</a>
+                            <a href="Digital/branding_design/ui_ux_design.html">UI/UX Design</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Other -->
+                <div class="mobile-service">
+                    <button type="button">Other <span><img src="icons/icons8-dropdown-30.png" class="dropdown-icon" height="10" width="10" alt="Dropdown Navigation Arrow" loading="lazy" decoding="async"></span></button>
+                    <div class="mobile-submenu">
+                        <div class="mobile-sub-title" role="button" tabindex="0" aria-expanded="false">Business Closuer<span class="sub-arrow">›</span></div>
+                        <div class="mobile-subgroup">
+                            <a href="others/business_closuer/pvt_ltd_closuer.html">Pvt Ltd Closure</a>
+                            <a href="others/business_closuer/llp_closuer.html">LLP Closure</a>
+                            <a href="others/business_closuer/opc_closuer.html">OPC Closure</a>
+                            <a href="others/business_closuer/sole_prop_closuer.html">Sole Proprietorship Closure</a>
+                            <a href="others/business_closuer/partnership_closuer.html">Partnership Firm</a>
+                            <a href="others/business_closuer/dissolution_trust.html">Dissolution of Trust</a>
+                            <a href="others/business_closuer/dissolution_society.html">Dissolution of Society</a>
+                        </div>
+                        <div class="mobile-sub-title" role="button" tabindex="0" aria-expanded="false">Business Conversion<span class="sub-arrow">›</span></div>
+                        <div class="mobile-subgroup">
+                            <a href="others/business_conversion/pvt_to_public.html">Pvt to Public Ltd Company</a>
+                            <a href="others/business_conversion/llp_to_pvt.html">LLP to Pvt Ltd Company</a>
+                            <a href="others/business_conversion/opc_to_pvt.html">OPC to Pvt Ltd Company</a>
+                            <a href="others/business_conversion/solo_prop_to_pvt.html">Proprietorship to Pvt Ltd Company</a>
+                            <a href="others/business_conversion/partnership_to_pvt.html">Partnership to Pvt Ltd Company</a>
+                            <a href="others/business_conversion/pvt_to_opc.html">Pvt Ltd to OPC Company</a>
+                            <a href="others/business_conversion/partnership_to_llp.html">Partnership to LLP Company</a>
+                            <a href="others/business_conversion/public_to_pvt.html">Public to Pvt Ltd Company</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <a href="about_us.html"><span>01</span> About Us </a>
+            <a href="contact_us.html"><span>02</span> Contact Us </a>
+            <a href="career.html"><span>03</span> Careers </a>
+            <a href="blogs.html"><span>04</span> Blogs </a>
+            <a href="testimonial.html"><span>05</span> Testimonials </a>
+            <a href="partner_apply.html"><span>06</span> Become Partner </a>
+        </nav>
+
+        <div class="menu-footer">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms &amp; Conditions</a>
+        </div>
+    </aside>
+
+<main id="main" style="max-width: 1200px; margin: 40px auto; padding: 0 20px; min-height: 60vh;">
+    <div style="text-align: center; margin-bottom: 40px;">
+        <h1 style="font-size: 36px; font-weight: 800; color: var(--blue-strong, #1676bb); margin-bottom: 12px;">What Our Clients Say</h1>
+        <p style="color: var(--muted, #64748b); font-size: 16px; max-width: 600px; margin: 0 auto;">Trusted by 10,000+ businesses across India for incorporation, compliance, and trademark protection.</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;">
+        <div style="background: var(--white, #fff); border: 1px solid var(--line, #e2e8f0); border-radius: 16px; padding: 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
+            <div style="display: flex; gap: 4px; color: #f59e0b; margin-bottom: 14px; font-size: 18px;">★★★★★</div>
+            <p style="color: var(--text, #1e293b); font-size: 15px; line-height: 1.6; margin-bottom: 16px;">"CorporateMart made registering our Private Limited company seamless and hassle-free. From name approval to DSC and PAN, everything was handled professionally within 5 days!"</p>
+            <div>
+                <strong style="display: block; color: var(--text, #0f172a); font-size: 15px;">Rajesh Sharma</strong>
+                <span style="color: var(--muted, #64748b); font-size: 13px;">Founder, NexaTech Solutions</span>
+            </div>
+        </div>
+        <div style="background: var(--white, #fff); border: 1px solid var(--line, #e2e8f0); border-radius: 16px; padding: 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
+            <div style="display: flex; gap: 4px; color: #f59e0b; margin-bottom: 14px; font-size: 18px;">★★★★★</div>
+            <p style="color: var(--text, #1e293b); font-size: 15px; line-height: 1.6; margin-bottom: 16px;">"Got our Trademark registered without any objections. Their legal experts guided us through the exact class search and filed on the same day. Highly recommended!"</p>
+            <div>
+                <strong style="display: block; color: var(--text, #0f172a); font-size: 15px;">Priya Patel</strong>
+                <span style="color: var(--muted, #64748b); font-size: 13px;">Co-Founder, Aura Organics</span>
+            </div>
+        </div>
+        <div style="background: var(--white, #fff); border: 1px solid var(--line, #e2e8f0); border-radius: 16px; padding: 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
+            <div style="display: flex; gap: 4px; color: #f59e0b; margin-bottom: 14px; font-size: 18px;">★★★★★</div>
+            <p style="color: var(--text, #1e293b); font-size: 15px; line-height: 1.6; margin-bottom: 16px;">"We use CorporateMart for our annual ROC filings and GST compliance. Transparent pricing with no hidden charges, and continuous updates via WhatsApp."</p>
+            <div>
+                <strong style="display: block; color: var(--text, #0f172a); font-size: 15px;">Anand Verma</strong>
+                <span style="color: var(--muted, #64748b); font-size: 13px;">Director, Zenith Logistics</span>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="site-footer reveal" id="footer">
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <!-- Brand -->
+      <div class="footer-brand">
+        <a href="index.html" class="footer-logo">
+          <img src="icons/Your_paragraph_text__9_-removebg-preview.png" alt="Corporate Mart" width="160" height="40" loading="lazy" decoding="async">
+        </a>
+        <p>
+          End-to-end business registration, tax, compliance, trademarks and
+          licenses and guided by experts, priced transparently.
+        </p>
+        <div class="footer-social">
+          <a href="#" aria-label="LinkedIn" rel="noopener">in</a>
+          <a href="#" aria-label="Instagram" rel="noopener">ig</a>
+          <a href="#" aria-label="Facebook" rel="noopener">fb</a>
+          <a href="#" aria-label="YouTube" rel="noopener">yt</a>
+        </div>
+      </div>
+
+      <!-- Quick links -->
+      <div class="footer-col">
+        <h4>Quick links</h4>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about_us.html">About us</a></li>
+          <li><a href="index.html#our-approach">Services</a></li>
+          <li><a href="index.html#plans">Plans</a></li>
+          <li><a href="testimonial.html">Testimonials</a></li>
+          <li><a href="blogs.html">Blogs</a></li>
+          <li><a href="career.html">Careers</a></li>
+          <li><a href="contact_us.html">Contact us</a></li>
+        </ul>
+      </div>
+
+      <!-- Services -->
+      <div class="footer-col">
+        <h4>Services</h4>
+        <ul>
+          <li><a href="company_registration.html">Company registration</a></li>
+          <li><a href="Tax & Compliance/Goods & Services Tax/gst_registration.html">GST registration</a></li>
+          <li><a href="Trademark & Ip/trademark_services/trademark_registration.html">Trademark</a></li>
+          <li><a href="Tax & Compliance/corporate_compliance/roc_annual_filing.html">Annual compliance</a></li>
+          <li><a href="Licenses/business & municipal/msme_registration.html">MSME / Udyam</a></li>
+          <li><a href="Licenses/food & health/fssai_registration.html">FSSAI</a></li>
+        </ul>
+      </div>
+
+      <!-- Contact -->
+      <div class="footer-col footer-contact">
+        <h4>Contact</h4>
+        <ul>
+          <li>
+            <span class="footer-label">Phone</span>
+            <a href="tel:+919876543210">+91 98765 43210</a>
+            <br>
+            <a href="tel:+910000000000">+91 00000 00000</a>
+          </li>
+           <li>
+            <span class="footer-label">Sales Inquiry No.</span>
+            <a href="tel:+919876543210">+91 98765 43210</a>
+            <br>
+            <a href="tel:+910000000000">+91 00000 00000</a>
+          </li>
+          <li>
+            <span class="footer-label">Email</span>
+            <a href="mailto:hello@corporate-mart.com">hello@corporate-mart.com</a>
+          </li>
+          <li>
+            <span class="footer-label">WhatsApp</span>
+            <a href="https://wa.me/9081000886" target="_blank" rel="noopener">Chat with us</a>
+          </li>
+          <li>
+            <span class="footer-label">Address</span>
+            <a href="https://www.google.com/maps/place/Corporatemart+private+Limited/@23.0351896,72.5592683,17z/data=!3m1!4b1!4m6!3m5!1s0x395e85f403f5b091:0xc45f2c1c51d8f2b4!8m2!3d23.0351847!4d72.5618432!16s%2Fg%2F11nqbfhrxz?authuser=0&entry=ttu&g_ep=EgoyMDI2MDkxMy4wIKXMDSoASAFQAw%3D%3D">
+            <address>
+              Corporatemart private Limited<br>
+              Emerald, 403, Mithakhali<br>
+              Navrangpura, Ahmedabad, Gujarat 380009
+            </address>
+            </a>
+          </li>
+          <li>
+            <span class="footer-label">Hours</span>
+            <span>Mon to Sat · 9:30 AM to 6:30 PM</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p> © <span id="footerYear"></span> Corporate Mart. All rights reserved.</p>
+      <div class="footer-legal">
+        <a href="#">Privacy policy</a>
+        <a href="#">Terms of use</a>
+        <a href="#">Refund policy</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
     <div class="theme-transition-overlay" id="themeOverlay" aria-hidden="true"></div>
     <script src="company_registration.js"></script>
 </body>

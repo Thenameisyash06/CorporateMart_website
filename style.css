@@ -954,6 +954,33 @@ a.service-btn {
   transition: transform .25s ease;
 }
 
+.mobile-service-link {
+  border-bottom: 1px solid #edf1f6;
+}
+
+.mobile-service-link>a {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 10px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: background .18s ease;
+}
+
+.mobile-service-link>a:hover {
+  background: var(--blue);
+  border-radius: 10px;
+}
+
 .mobile-submenu {
   display: none;
   padding: 0 10px 8px 20px;
@@ -2397,6 +2424,11 @@ body.dark-mode .search-suggestions button {
   color: var(--text)
 }
 
+body.dark-mode .mobile-service,
+body.dark-mode .mobile-service-link {
+  border-bottom-color: var(--line);
+}
+
 body.dark-mode .dropdown-menu a:hover{
   color: var(--white);
 }
@@ -3263,7 +3295,18 @@ body.dark-mode .india-stat-card span {
   height: auto;
   position: relative;
   z-index: 1;
-  /* filter:brightness(1) invert(0.7); */
+}
+
+.bizhero-monitor-frame.bizhero-monitor-dark {
+  display: none;
+}
+
+body.dark-mode .bizhero-monitor-frame.bizhero-monitor-light {
+  display: none;
+}
+
+body.dark-mode .bizhero-monitor-frame.bizhero-monitor-dark {
+  display: block;
 }
 
 /* Screen area — tune these % if the image crop differs */
@@ -8610,7 +8653,8 @@ body.dark-mode .help-menu-item:hover {
     font-size: 13px !important;
   }
 
-  .mobile-service button {
+  .mobile-service button,
+  .mobile-service-link a {
     padding: 11px 8px !important;
     font-size: 13px !important;
   }
