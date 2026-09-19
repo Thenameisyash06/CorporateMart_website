@@ -1,6 +1,6 @@
 User-agent: *
 Allow: /
-Disallow: /scratch/
+Disallow: /docs_and_references/
 Disallow: /icons/WhatsApp*
 
 Sitemap: https://corporatemart.in/sitemap.xml

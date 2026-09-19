@@ -1,6 +1,19 @@
 {
   "users": [
     {
+      "id": "usr_admin_corporatemart",
+      "name": "CorporateMart Admin",
+      "email": "admin@corporatemart.in",
+      "phone": "+919876543210",
+      "salt": "c1c28e78cdf2b31ea4db89ca2e683499",
+      "passwordHash": "9e000efecfa2722374c02c392038d54a4546986ee9c14d5a72ecd706aa8534694c81683c15b28f602e99ca69dda03caad16bfb10e9242f26286323a7ba397111",
+      "role": "admin",
+      "plan": "pro",
+      "isSubscribed": true,
+      "subscriptionExpiresAt": "2030-01-01T00:00:00.000Z",
+      "createdAt": "2026-09-19T11:59:33.915Z"
+    },
+    {
       "id": "usr_cb8c897098eb31a3",
       "name": "Rohan Sharma",
       "email": "test_1789448844042@corporatemart.in",
@@ -101,7 +114,8 @@
       "passwordHash": "86de82dcffa6de56a1c40f649e2c196567582a138d89c3e6b62d34aacb023daff22a0f298f950bd437fb2f6562e229d37b793ff58ed778f0bea51e8253d5c9cd",
       "plan": "pro",
       "subscriptionExpiresAt": "2026-10-15T08:28:25.297Z",
-      "createdAt": "2026-09-15T08:24:15.550Z"
+      "createdAt": "2026-09-15T08:24:15.550Z",
+      "role": "admin"
     },
     {
       "id": "usr_4d00e2ea415f3d37",
@@ -157,6 +171,54 @@
       "plan": "pro",
       "subscriptionExpiresAt": "2026-10-15T14:59:02.452Z",
       "createdAt": "2026-09-15T14:59:02.340Z"
+    },
+    {
+      "id": "usr_21746fb701cde4b1",
+      "name": "Regular User",
+      "email": "regular_1789819248136@example.com",
+      "phone": "9999999999",
+      "salt": "9f7881679219cd7fdb59fe5dcc955a3e",
+      "passwordHash": "10f6b77a498e7d47ce6fd76e856a1b17522f92ec0fe5e923108afa4b7fce77e96c7f9cef849a5e5b67e137032bd13a1d32140b48f8d5075d35af3cf86c7d3ca5",
+      "role": "user",
+      "plan": "free",
+      "subscriptionExpiresAt": null,
+      "createdAt": "2026-09-19T12:00:48.212Z"
+    },
+    {
+      "id": "usr_0e2cd129acad870d",
+      "name": "Regular User",
+      "email": "regular_1789819277969@example.com",
+      "phone": "9999999999",
+      "salt": "099eda7123df4e27445de25ae90971ec",
+      "passwordHash": "8ccb6047a282c9a8bd5246d4f87057ba51c6afedc862da46b44eca7ded2d5ef69f35ee1516961fc3fbb6be3c339372f706ddcb959d76f34706ae181290bbda19",
+      "role": "user",
+      "plan": "free",
+      "subscriptionExpiresAt": null,
+      "createdAt": "2026-09-19T12:01:18.035Z"
+    },
+    {
+      "id": "usr_fd6daa062791eeea",
+      "name": "Regular User",
+      "email": "regular_1789819468941@example.com",
+      "phone": "9999999999",
+      "salt": "b8108700caeff1c55b75b181b98de59b",
+      "passwordHash": "5747b92a72d47760ded29d86520a81872fee2d743fb86f98feefd373e6d0d9871a84b98e6626c0f63625e3ca1dc7c1525d3861243fe80bcb2fda043b55d37c2a",
+      "role": "user",
+      "plan": "free",
+      "subscriptionExpiresAt": null,
+      "createdAt": "2026-09-19T12:04:29.003Z"
+    },
+    {
+      "id": "usr_43bf6bf98d2ed748",
+      "name": "Rohan Sharma",
+      "email": "test_1789819472677@corporatemart.in",
+      "phone": "+91 98765 43210",
+      "salt": "a3cc81931329e74698ac99596cec945d",
+      "passwordHash": "07a06a83b0a3e572b1d1c9c498808892e1aef8daf147c4d5bbeb0d6b81263a497040fffe19fc92bb1d32f5b70357e01ae921e2e97f5d1504ac4d26450cbdcbb9",
+      "role": "user",
+      "plan": "pro",
+      "subscriptionExpiresAt": "2026-10-19T12:04:32.837Z",
+      "createdAt": "2026-09-19T12:04:32.730Z"
     }
   ],
   "transactions": [
@@ -289,6 +351,16 @@
       "planId": "pro_99",
       "status": "success",
       "createdAt": "2026-09-15T14:59:02.456Z"
+    },
+    {
+      "id": "tx_7bb6f04b6e6a1785",
+      "userId": "usr_43bf6bf98d2ed748",
+      "orderId": "order_test_123",
+      "paymentId": "pay_test_456",
+      "amount": 99,
+      "planId": "pro_99",
+      "status": "success",
+      "createdAt": "2026-09-19T12:04:32.859Z"
     }
   ]
 }

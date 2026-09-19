@@ -34,7 +34,8 @@ async function initMongo() {
   try {
     if (!mongoPromise) {
       mongoPromise = mongoose.connect(uri, {
-        serverSelectionTimeoutMS: 5000
+        serverSelectionTimeoutMS: 2500,
+        bufferCommands: false
       });
     }
     await mongoPromise;
@@ -62,7 +63,43 @@ initMongo().catch(() => {});
 
 // ==========================================
 // LOCAL FILE DATABASE (FALLBACK ENGINE)
-// ==========================================
+function seedDefaultAdmin(data) {
+  let modified = false;
+  if (!Array.isArray(data.users)) data.users = [];
+
+  // Ensure yashd9405@gmail.com is admin
+  const yash = data.users.find(u => u.email && u.email.toLowerCase() === 'yashd9405@gmail.com');
+  if (yash && yash.role !== 'admin') {
+    yash.role = 'admin';
+    modified = true;
+  }
+
+  // Ensure admin@corporatemart.in exists as an admin
+  const adminExists = data.users.find(u => u.email && u.email.toLowerCase() === 'admin@corporatemart.in');
+  if (!adminExists) {
+    const { salt, hash } = hashPassword('Admin@123');
+    data.users.unshift({
+      id: 'usr_admin_corporatemart',
+      name: 'CorporateMart Admin',
+      email: 'admin@corporatemart.in',
+      phone: '+919876543210',
+      salt,
+      passwordHash: hash,
+      role: 'admin',
+      plan: 'pro',
+      isSubscribed: true,
+      subscriptionExpiresAt: '2030-01-01T00:00:00.000Z',
+      createdAt: new Date().toISOString()
+    });
+    modified = true;
+  } else if (adminExists.role !== 'admin') {
+    adminExists.role = 'admin';
+    modified = true;
+  }
+
+  return modified;
+}
+
 function initDB() {
   if (IS_SERVERLESS) {
     if (!fs.existsSync(DB_FILE)) {
@@ -74,7 +111,9 @@ function initDB() {
         } catch (e) {}
       }
       try {
-        fs.writeFileSync(DB_FILE, JSON.stringify({ users: [], transactions: [] }, null, 2), 'utf8');
+        const initialData = { users: [], transactions: [] };
+        seedDefaultAdmin(initialData);
+        fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2), 'utf8');
       } catch (e) {}
     }
     return;
@@ -84,7 +123,16 @@ function initDB() {
       users: [],
       transactions: []
     };
+    seedDefaultAdmin(initialData);
     fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2), 'utf8');
+  } else {
+    try {
+      const raw = fs.readFileSync(DB_FILE, 'utf8');
+      const data = JSON.parse(raw);
+      if (seedDefaultAdmin(data)) {
+        writeDB(data);
+      }
+    } catch (e) {}
   }
 }
 
@@ -92,7 +140,11 @@ function readDB() {
   initDB();
   try {
     const raw = fs.readFileSync(DB_FILE, 'utf8');
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (seedDefaultAdmin(parsed)) {
+      writeDB(parsed);
+    }
+    return parsed;
   } catch (err) {
     console.error('Error reading DB, resetting to safe empty state:', err);
     return { users: [], transactions: [] };
@@ -158,6 +210,7 @@ function sanitizeUser(user) {
     name: user.name,
     email: user.email,
     phone: user.phone || '',
+    role: user.role || 'user',
     plan: isSubscribed ? 'pro' : 'free',
     isSubscribed: Boolean(isSubscribed),
     subscriptionExpiresAt: expiresAt ? expiresAt.toISOString() : null,
@@ -172,7 +225,7 @@ async function findUserByEmail(email) {
   const cleanEmail = String(email).trim().toLowerCase();
   await ensureMongoConnected();
 
-  if (isMongoConnected) {
+  if (mongoose.connection && mongoose.connection.readyState === 1) {
     try {
       const user = await User.findOne({ email: cleanEmail }).exec();
       return user ? user.toObject() : null;
@@ -189,10 +242,10 @@ async function findUserById(id) {
   if (!id) return null;
   await ensureMongoConnected();
 
-  if (isMongoConnected) {
+  if (mongoose.connection && mongoose.connection.readyState === 1) {
     try {
       let user = null;
-      if (mongoose.Types.ObjectId.isValid(id)) {
+      if (mongoose.Types.ObjectId.isValid(id) && !String(id).startsWith('usr_')) {
         user = await User.findById(id).exec();
       }
       if (!user) {
@@ -208,9 +261,10 @@ async function findUserById(id) {
   return localDb.users.find(u => u.id === id) || null;
 }
 
-async function createUser({ name, email, phone = '', password }) {
+async function createUser({ name, email, phone = '', password, role = 'user' }) {
   const cleanEmail = String(email).trim().toLowerCase();
   const cleanPhone = String(phone || '').trim();
+  const userRole = (role === 'admin' || cleanEmail === 'admin@corporatemart.in' || cleanEmail === 'yashd9405@gmail.com') ? 'admin' : 'user';
   await ensureMongoConnected();
   const existing = await findUserByEmail(cleanEmail);
   if (existing) {
@@ -219,7 +273,7 @@ async function createUser({ name, email, phone = '', password }) {
 
   const { salt, hash } = hashPassword(password);
 
-  if (isMongoConnected) {
+  if (mongoose.connection && mongoose.connection.readyState === 1) {
     try {
       const userDoc = await User.create({
         name: name.trim(),
@@ -227,6 +281,7 @@ async function createUser({ name, email, phone = '', password }) {
         phone: cleanPhone,
         salt,
         passwordHash: hash,
+        role: userRole,
         plan: 'free',
         isSubscribed: false,
         subscriptionExpiresAt: null
@@ -245,6 +300,7 @@ async function createUser({ name, email, phone = '', password }) {
     phone: cleanPhone,
     salt,
     passwordHash: hash,
+    role: userRole,
     plan: 'free',
     subscriptionExpiresAt: null,
     createdAt: new Date().toISOString()

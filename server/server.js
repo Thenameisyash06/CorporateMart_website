@@ -24,6 +24,9 @@ app.use(express.static(path.join(__dirname, '..'), { extensions: ['html'] }));
 // Page shortcuts so URLs without .html work seamlessly
 app.get('/fundraising', (req, res) => res.sendFile(path.join(__dirname, '..', 'fundraising.html')));
 app.get('/schemes', (req, res) => res.sendFile(path.join(__dirname, '..', 'fundraising.html')));
+app.get('/admin/schemes', (req, res) => res.sendFile(path.join(__dirname, '..', 'fundraising_admin.html')));
+app.get('/fundraising-admin', (req, res) => res.sendFile(path.join(__dirname, '..', 'fundraising_admin.html')));
+app.get('/fundraising_admin', (req, res) => res.sendFile(path.join(__dirname, '..', 'fundraising_admin.html')));
 
 // Optional Auth Helper: checks if valid token is provided
 async function extractUser(req) {
@@ -50,6 +53,24 @@ async function requireAuth(req, res, next) {
   }
 }
 
+// Require Admin Middleware
+async function requireAdmin(req, res, next) {
+  try {
+    const user = await extractUser(req);
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized: Please log in as administrator to continue' });
+    }
+    if (user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied: Administrator privileges required' });
+    }
+    req.user = user;
+    req.userId = user.id;
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: 'Unauthorized: Authentication failed' });
+  }
+}
+
 // Healthcheck / Root API endpoint
 app.get('/api', (req, res) => {
   res.json({
@@ -59,43 +80,75 @@ app.get('/api', (req, res) => {
   });
 });
 
-// Load Schemes from Server Store (with automatic bundling support)
+// Amount value parsing helper for scheme sorting & filtering
+function parseAmountValue(amountStr) {
+  if (!amountStr) return 0;
+  const str = String(amountStr).toLowerCase();
+  const nums = str.match(/[\d\.]+/g);
+  if (!nums) return 0;
+  const val = parseFloat(nums[nums.length - 1]);
+  if (isNaN(val)) return 0;
+  if (str.includes('cr') || str.includes('crore')) {
+    return val * 10000000;
+  }
+  if (str.includes('lakh') || str.includes('lac') || str.includes('l')) {
+    return val * 100000;
+  }
+  if (str.includes('k') || str.includes('thousand')) {
+    return val * 1000;
+  }
+  return val;
+}
+
+// Load Schemes from Server Store
 let cachedMasterSchemes = null;
 function loadMasterSchemes() {
   if (cachedMasterSchemes && cachedMasterSchemes.length > 0) {
     return cachedMasterSchemes;
   }
   try {
+    if (fs.existsSync(SCHEMES_FILE)) {
+      const raw = fs.readFileSync(SCHEMES_FILE, 'utf8');
+      cachedMasterSchemes = JSON.parse(raw);
+      return cachedMasterSchemes;
+    }
+  } catch (e2) {
+    console.error('Error loading master schemes from file:', e2);
+  }
+  try {
     cachedMasterSchemes = require('./data/schemes.json');
     return cachedMasterSchemes;
   } catch (e1) {
-    try {
-      if (fs.existsSync(SCHEMES_FILE)) {
-        const raw = fs.readFileSync(SCHEMES_FILE, 'utf8');
-        cachedMasterSchemes = JSON.parse(raw);
-        return cachedMasterSchemes;
-      }
-    } catch (e2) {
-      console.error('Error loading master schemes from file:', e2);
-    }
-    console.error('Error loading master schemes:', e1);
+    console.error('Error requiring master schemes:', e1);
     return [];
   }
 }
 
+// Persist Schemes to schemes.json
+function saveMasterSchemes(schemes) {
+  cachedMasterSchemes = schemes;
+  try {
+    fs.writeFileSync(SCHEMES_FILE, JSON.stringify(schemes, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Error saving master schemes to disk:', err);
+    throw new Error('Failed to persist scheme changes');
+  }
+}
+
 // ==========================================
-// 1. SCHEMES API (Gated & Server-Protected)
+// 1. SCHEMES API (Public & Gated View)
 // ==========================================
 app.get('/api/schemes', async (req, res) => {
   const user = await extractUser(req);
-  const isSubscriber = user && user.plan === 'pro' &&
+  const isAdmin = user && user.role === 'admin';
+  const isSubscriber = isAdmin || (user && user.plan === 'pro' &&
     user.subscriptionExpiresAt &&
-    new Date(user.subscriptionExpiresAt).getTime() > Date.now();
+    new Date(user.subscriptionExpiresAt).getTime() > Date.now());
 
   const masterSchemes = loadMasterSchemes();
 
   if (isSubscriber) {
-    // Pro member: full access to all schemes
+    // Pro member or Admin: full access to all schemes
     const fullSchemes = masterSchemes.map(s => ({
       ...s,
       isLocked: false
@@ -103,6 +156,7 @@ app.get('/api/schemes', async (req, res) => {
     return res.json({
       success: true,
       isSubscriber: true,
+      isAdmin: Boolean(isAdmin),
       count: fullSchemes.length,
       schemes: fullSchemes
     });
@@ -141,9 +195,162 @@ app.get('/api/schemes', async (req, res) => {
   return res.json({
     success: true,
     isSubscriber: false,
+    isAdmin: false,
     count: redactedSchemes.length,
     schemes: redactedSchemes
   });
+});
+
+// ==========================================
+// 1B. ADMIN SCHEMES CRUD APIS (requireAdmin)
+// ==========================================
+
+// Get all schemes for admin management (unfiltered)
+app.get('/api/admin/schemes', requireAdmin, (req, res) => {
+  const masterSchemes = loadMasterSchemes();
+  res.json({
+    success: true,
+    count: masterSchemes.length,
+    schemes: masterSchemes
+  });
+});
+
+// Add new scheme (all 11 Excel columns supported)
+app.post('/api/admin/schemes', requireAdmin, (req, res) => {
+  try {
+    const {
+      name,
+      stage = 'Idea',
+      fundingType = 'Grant',
+      amount = '',
+      deadline = 'Rolling / Ongoing',
+      industry = 'All sectors',
+      state = 'All India',
+      founderType = 'All Founder Eligible',
+      entityType = 'Pvt Ltd , LLP , Proprietor',
+      programType = '',
+      registrations = 'No Mandatory Registration',
+      description = '',
+      tier = 'pro'
+    } = req.body;
+
+    if (!name || !String(name).trim()) {
+      return res.status(400).json({ error: 'Scheme name is required' });
+    }
+
+    const masterSchemes = loadMasterSchemes();
+    const newId = 'scheme-' + Date.now();
+    const parsedAmountValue = parseAmountValue(amount);
+
+    const newScheme = {
+      id: newId,
+      name: String(name).trim(),
+      stage: String(stage || 'Idea').trim(),
+      fundingType: String(fundingType || 'Grant').trim(),
+      amount: String(amount || 'Custom Grant Support').trim(),
+      amountValue: parsedAmountValue,
+      deadline: String(deadline || 'Rolling / Ongoing').trim(),
+      industry: String(industry || 'All sectors').trim(),
+      state: String(state || 'All India').trim(),
+      founderType: String(founderType || 'All Founder Eligible').trim(),
+      entityType: String(entityType || 'Pvt Ltd , LLP , Proprietor').trim(),
+      programType: String(programType || '').trim(),
+      registrations: String(registrations || 'No Mandatory Registration').trim(),
+      description: String(description || `Comprehensive funding program providing ${fundingType} assistance for ${stage} stage ventures across ${industry}.`).trim(),
+      tier: (tier === 'free' ? 'free' : 'pro')
+    };
+
+    masterSchemes.unshift(newScheme);
+    saveMasterSchemes(masterSchemes);
+
+    res.status(201).json({
+      success: true,
+      message: `Scheme "${newScheme.name}" created successfully!`,
+      scheme: newScheme
+    });
+  } catch (err) {
+    console.error('Error creating scheme:', err);
+    res.status(500).json({ error: err.message || 'Failed to create scheme' });
+  }
+});
+
+// Update scheme by ID
+app.put('/api/admin/schemes/:id', requireAdmin, (req, res) => {
+  try {
+    const { id } = req.params;
+    const masterSchemes = loadMasterSchemes();
+    const index = masterSchemes.findIndex(s => s.id === id);
+
+    if (index === -1) {
+      return res.status(404).json({ error: `Scheme with ID "${id}" not found` });
+    }
+
+    const existing = masterSchemes[index];
+    const b = req.body;
+
+    const updatedName = b.name !== undefined ? String(b.name).trim() : existing.name;
+    if (!updatedName) {
+      return res.status(400).json({ error: 'Scheme name cannot be empty' });
+    }
+
+    const updatedAmount = b.amount !== undefined ? String(b.amount).trim() : existing.amount;
+    const updatedAmountVal = b.amount !== undefined ? parseAmountValue(updatedAmount) : (existing.amountValue || 0);
+
+    const updatedScheme = {
+      ...existing,
+      name: updatedName,
+      stage: b.stage !== undefined ? String(b.stage).trim() : existing.stage,
+      fundingType: b.fundingType !== undefined ? String(b.fundingType).trim() : existing.fundingType,
+      amount: updatedAmount,
+      amountValue: updatedAmountVal,
+      deadline: b.deadline !== undefined ? String(b.deadline).trim() : existing.deadline,
+      industry: b.industry !== undefined ? String(b.industry).trim() : existing.industry,
+      state: b.state !== undefined ? String(b.state).trim() : existing.state,
+      founderType: b.founderType !== undefined ? String(b.founderType).trim() : existing.founderType,
+      entityType: b.entityType !== undefined ? String(b.entityType).trim() : existing.entityType,
+      programType: b.programType !== undefined ? String(b.programType).trim() : existing.programType,
+      registrations: b.registrations !== undefined ? String(b.registrations).trim() : existing.registrations,
+      description: b.description !== undefined ? String(b.description).trim() : existing.description,
+      tier: b.tier !== undefined ? (b.tier === 'free' ? 'free' : 'pro') : existing.tier
+    };
+
+    masterSchemes[index] = updatedScheme;
+    saveMasterSchemes(masterSchemes);
+
+    res.json({
+      success: true,
+      message: `Scheme "${updatedScheme.name}" updated successfully!`,
+      scheme: updatedScheme
+    });
+  } catch (err) {
+    console.error('Error updating scheme:', err);
+    res.status(500).json({ error: err.message || 'Failed to update scheme' });
+  }
+});
+
+// Delete scheme by ID
+app.delete('/api/admin/schemes/:id', requireAdmin, (req, res) => {
+  try {
+    const { id } = req.params;
+    const masterSchemes = loadMasterSchemes();
+    const index = masterSchemes.findIndex(s => s.id === id);
+
+    if (index === -1) {
+      return res.status(404).json({ error: `Scheme with ID "${id}" not found` });
+    }
+
+    const deleted = masterSchemes.splice(index, 1)[0];
+    saveMasterSchemes(masterSchemes);
+
+    res.json({
+      success: true,
+      message: `Scheme "${deleted.name}" deleted successfully!`,
+      deletedId: id
+    });
+  } catch (err) {
+    console.error('Error deleting scheme:', err);
+    res.status(500).json({ error: err.message || 'Failed to delete scheme' });
+  }
 });
 
 // ==========================================
@@ -167,7 +374,7 @@ app.post('/api/auth/register', async (req, res) => {
     }
 
     const user = await db.createUser({ name, email: cleanEmail, phone: cleanPhone, password });
-    const token = db.createToken({ id: user.id, email: user.email });
+    const token = db.createToken({ id: user.id, email: user.email, role: user.role });
 
     res.status(201).json({
       success: true,
@@ -199,7 +406,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     const user = db.sanitizeUser(rawUser);
-    const token = db.createToken({ id: user.id, email: user.email });
+    const token = db.createToken({ id: user.id, email: user.email, role: user.role });
 
     res.json({
       success: true,

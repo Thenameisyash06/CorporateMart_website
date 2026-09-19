@@ -50,6 +50,7 @@
       modalCloseBtn: document.getElementById('modalCloseBtn'),
       modalContent: document.getElementById('modalSchemeContent'),
       modalApplyBtn: document.getElementById('modalApplyBtn'),
+      modalSowBtn: document.getElementById('modalSowBtn'),
 
       // Auth & Pro Elements
       userBar: document.getElementById('schemesUserBar'),
@@ -768,6 +769,11 @@
       }
     }
 
+    if (elements.modalSowBtn) {
+      const isLoan = ft.includes('loan');
+      elements.modalSowBtn.href = isLoan ? 'images/Loan_SOW.jpeg' : 'images/Fund_SOW.jpeg';
+    }
+
     elements.modalBackdrop.classList.add('is-open');
     document.body.style.overflow = 'hidden';
   }
@@ -959,7 +965,7 @@
 
           state.user = data.user;
           state.token = data.token;
-          state.isSubscriber = !!data.user.isSubscribed;
+          state.isSubscriber = !!(data.user.isSubscribed || data.user.role === 'admin');
           localStorage.setItem('cm_auth_token', data.token);
           localStorage.setItem('cm_user', JSON.stringify(data.user));
 
@@ -1143,7 +1149,21 @@
   function updateAccountUI() {
     if (!elements.userBar) return;
 
-    if (state.user && state.isSubscriber) {
+    if (state.user && state.user.role === 'admin') {
+      if (elements.userStatusIcon) elements.userStatusIcon.textContent = '🛡️';
+      if (elements.userBarTitle) elements.userBarTitle.textContent = `Administrator: ${state.user.name}`;
+      if (elements.userBarSubtitle) {
+        elements.userBarSubtitle.textContent = 'Full administrative control active. You can Add, Update, and Delete fundraising schemes.';
+      }
+      if (elements.userBarActions) {
+        elements.userBarActions.innerHTML = `
+          <a href="fundraising_admin.html" class="btn-upgrade-pro" style="background: linear-gradient(135deg, #1e40af, #2563eb); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);">
+            ⚙️ Manage Schemes (Admin)
+          </a>
+          <button type="button" class="btn-user-auth" id="btnSignOut">Sign Out</button>
+        `;
+      }
+    } else if (state.user && state.isSubscriber) {
       if (elements.userStatusIcon) elements.userStatusIcon.textContent = '👑';
       if (elements.userBarTitle) elements.userBarTitle.textContent = `Pro Member: ${state.user.name}`;
       if (elements.userBarSubtitle) {
@@ -1400,7 +1420,7 @@
         const data = await res.json();
         if (data && data.schemes) {
           state.schemes = data.schemes;
-          state.isSubscriber = !!data.isSubscriber;
+          state.isSubscriber = !!(data.isSubscriber || data.isAdmin || (state.user && state.user.role === 'admin'));
           return;
         }
       }
@@ -1411,14 +1431,22 @@
     state.schemes = (typeof SCHEMES_DATA !== 'undefined' ? SCHEMES_DATA : []).map((s, idx) => ({
       ...s,
       tier: idx < 2 ? 'free' : 'pro',
-      isLocked: idx >= 2
+      isLocked: (state.isSubscriber || (state.user && state.user.role === 'admin')) ? false : (idx >= 2)
     }));
   }
 
   async function checkAuthStatus() {
     if (!state.token) {
-      state.user = null;
-      state.isSubscriber = false;
+      const stored = localStorage.getItem('cm_user');
+      if (stored) {
+        try {
+          state.user = JSON.parse(stored);
+          state.isSubscriber = !!(state.user.isSubscribed || state.user.role === 'admin');
+        } catch (err) {}
+      } else {
+        state.user = null;
+        state.isSubscriber = false;
+      }
       updateAccountUI();
       return;
     }
@@ -1430,7 +1458,7 @@
       if (res.ok) {
         const data = await res.json();
         state.user = data.user;
-        state.isSubscriber = !!data.user.isSubscribed;
+        state.isSubscriber = !!(data.user.isSubscribed || data.user.role === 'admin');
         localStorage.setItem('cm_user', JSON.stringify(data.user));
       } else {
         state.token = null;
@@ -1443,7 +1471,7 @@
       if (stored) {
         try {
           state.user = JSON.parse(stored);
-          state.isSubscriber = !!state.user.isSubscribed;
+          state.isSubscriber = !!(state.user.isSubscribed || state.user.role === 'admin');
         } catch (err) {}
       }
     }

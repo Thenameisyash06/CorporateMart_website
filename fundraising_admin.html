@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Scheme Management | CorporateMart</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1a365d;
+      --primary-dark: #0f2240;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --radius: 12px;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'Outfit', sans-serif;
+      color: var(--text);
+    }
+
+    .admin-header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .admin-header-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+    }
+    .header-logo {
+      height: 38px;
+      width: auto;
+      object-fit: contain;
+    }
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+    }
+    .brand-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: -0.02em;
+    }
+    .brand-badge {
+      font-size: 11px;
+      font-weight: 700;
+      color: #ffffff;
+      background: linear-gradient(135deg, #1e40af, #3b82f6);
+      padding: 2px 8px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      width: fit-content;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .user-badge-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .btn-portal-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-portal-link:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+    .btn-signout {
+      padding: 8px 14px;
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      color: #991b1b;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-signout:hover {
+      background: #fecaca;
+    }
+
+    .admin-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 28px 24px 60px;
+      width: 100%;
+      flex: 1;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .stat-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      background: #eff6ff;
+      color: var(--accent);
+    }
+    .stat-val {
+      font-size: 24px;
+      font-weight: 800;
+      line-height: 1.1;
+      color: var(--text);
+    }
+    .stat-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .tabs-header {
+      display: flex;
+      gap: 8px;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .tab-btn:hover {
+      color: var(--primary);
+    }
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-panel {
+      display: none;
+      animation: fadeIn 0.2s ease-out;
+    }
+    .tab-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--shadow);
+    }
+    .panel-header {
+      margin-bottom: 24px;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 16px;
+    }
+    .panel-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .panel-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    .form-full {
+      grid-column: span 2;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .form-label .required {
+      color: var(--danger);
+    }
+    .form-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: normal;
+    }
+    .form-control {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--text);
+      background: #ffffff;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+    textarea.form-control {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .form-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #1e40af, #2563eb);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+    }
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+    .btn-secondary {
+      padding: 12px 20px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      color: #475569;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-secondary:hover {
+      background: #f8fafc;
+    }
+
+    .btn-danger {
+      padding: 10px 18px;
+      background: var(--danger);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .search-wrapper {
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .search-input {
+      width: 100%;
+      padding: 14px 18px 14px 44px;
+      font-size: 15px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #ffffff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    }
+    .search-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+      color: #94a3b8;
+    }
+
+    .scheme-items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 520px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .scheme-row-item {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      transition: all 0.2s;
+    }
+    .scheme-row-item:hover {
+      border-color: #cbd5e1;
+      box-shadow: var(--shadow);
+    }
+    .scheme-item-info {
+      flex: 1;
+    }
+    .scheme-item-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .scheme-item-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .meta-pill {
+      background: #f1f5f9;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+      color: #334155;
+    }
+    .meta-pill.grant { background: #dcfce7; color: #166534; }
+    .meta-pill.loan { background: #e0e7ff; color: #3730a3; }
+    .meta-pill.equity { background: #fef3c7; color: #92400e; }
+    .meta-pill.pro { background: #fae8ff; color: #86198f; }
+
+    .alert-banner {
+      padding: 14px 18px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      display: none;
+    }
+    .alert-banner.success {
+      background: #dcfce7;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+    }
+    .alert-banner.error {
+      background: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+
+    .admin-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .admin-modal-backdrop.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .admin-modal {
+      background: #ffffff;
+      border-radius: 14px;
+      max-width: 480px;
+      width: 100%;
+      padding: 28px;
+      box-shadow: var(--shadow-lg);
+      transform: scale(0.95);
+      transition: transform 0.2s;
+    }
+    .admin-modal-backdrop.is-open .admin-modal {
+      transform: scale(1);
+    }
+    .modal-icon-danger {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: #fee2e2;
+      color: var(--danger);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      margin-bottom: 16px;
+    }
+
+    #loginGate {
+      position: fixed;
+      inset: 0;
+      background: #f8fafc;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .login-box {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      max-width: 440px;
+      width: 100%;
+      padding: 36px 32px;
+      box-shadow: var(--shadow-lg);
+      text-align: center;
+    }
+
+    @media (max-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      .form-full {
+        grid-column: span 1;
+      }
+      .admin-header-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .header-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ADMIN AUTH GATE -->
+  <div id="loginGate" style="display: none;">
+    <div class="login-box">
+      <div style="font-size: 44px; margin-bottom: 12px;">🛡️</div>
+      <h2 style="font-size: 22px; font-weight: 800; color: var(--primary); margin-bottom: 6px;">Admin Access Required</h2>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px;">Please sign in with your CorporateMart administrator credentials to manage schemes.</p>
+      
+      <div id="loginGateError" class="alert-banner error" style="margin-bottom: 16px;"></div>
+
+      <form id="loginGateForm">
+        <div class="form-group" style="text-align: left; margin-bottom: 14px;">
+          <label class="form-label" for="adminLoginEmail">Admin Email</label>
+          <input type="email" id="adminLoginEmail" class="form-control" placeholder="admin@corporatemart.in" required value="admin@corporatemart.in">
+        </div>
+        <div class="form-group" style="text-align: left; margin-bottom: 20px;">
+          <label class="form-label" for="adminLoginPassword">Password</label>
+          <input type="password" id="adminLoginPassword" class="form-control" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; padding: 12px;">
+          Sign In as Admin &rarr;
+        </button>
+      </form>
+
+      <div style="margin-top: 20px; font-size: 12px; color: var(--text-muted);">
+        <a href="fundraising.html" style="color: var(--accent); text-decoration: none; font-weight: 600;">&larr; Return to Public Portal</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN ADMIN APP -->
+  <header class="admin-header">
+    <div class="admin-header-inner">
+      <a href="fundraising.html" class="header-brand">
+        <img src="icons/Your_paragraph_text__8_-removebg-preview.png" alt="CorporateMart Logo" class="header-logo" onerror="this.style.display='none'">
+        <div class="brand-text">
+          <span class="brand-title">CorporateMart</span>
+          <span class="brand-badge">🛡️ Scheme Manager</span>
+        </div>
+      </a>
+
+      <div class="header-actions">
+        <div class="user-badge-pill">
+          <span>👤</span>
+          <span id="currentAdminName">Loading admin...</span>
+        </div>
+        <a href="fundraising.html" class="btn-portal-link">
+          <span>&larr;</span> Public Portal
+        </a>
+        <button type="button" class="btn-signout" id="adminSignOutBtn">
+          Sign Out
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="admin-container">
+    <!-- Top Stats Banner -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #eff6ff; color: #2563eb;">📑</div>
+        <div>
+          <div class="stat-val" id="statTotalSchemes">0</div>
+          <div class="stat-label">Total Schemes</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #ecfdf5; color: #10b981;">🎁</div>
+        <div>
+          <div class="stat-val" id="statGrantsCount">0</div>
+          <div class="stat-label">Grant Programs</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #eef2ff; color: #4f46e5;">🏦</div>
+        <div>
+          <div class="stat-val" id="statLoansCount">0</div>
+          <div class="stat-label">Loans &amp; Debt</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #faf5ff; color: #9333ea;">👑</div>
+        <div>
+          <div class="stat-val" id="statProCount">0</div>
+          <div class="stat-label">Pro Memberships</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alert / Toast Banner -->
+    <div id="globalAlert" class="alert-banner"></div>
+
+    <!-- 3 Action Tabs -->
+    <div class="tabs-header">
+      <button type="button" class="tab-btn active" data-tab="add">
+        <span>➕</span> Add New Scheme
+      </button>
+      <button type="button" class="tab-btn" data-tab="update">
+        <span>✏️</span> Update Scheme
+      </button>
+      <button type="button" class="tab-btn" data-tab="delete">
+        <span>🗑️</span> Delete Scheme
+      </button>
+    </div>
+
+    <!-- TAB 1: ADD NEW SCHEME (All 11 Excel Columns) -->
+    <section id="tab-add" class="tab-panel active">
+      <div class="panel-box">
+        <div class="panel-header">
+          <h2 class="panel-title"><span>➕</span> Add New Fundraising Scheme</h2>
+          <p class="panel-subtitle">Create a new scheme entry supporting all 11 parameter columns from the master Excel specification.</p>
+        </div>
+
+        <form id="addSchemeForm">
+          <div class="form-grid">
+            <!-- Col 1: Scheme Name -->
+            <div class="form-group form-full">
+              <label class="form-label" for="add_name">
+                Scheme Name <span class="required">*</span>
+                <span class="form-hint">(Excel: Scheme name)</span>
+              </label>
+              <input type="text" id="add_name" class="form-control" placeholder="e.g. Startup India Seed Fund Scheme (SISFS)" required>
+            </div>
+
+            <!-- Col 2: Stage -->
+            <div class="form-group">
+              <label class="form-label" for="add_stage">
+                Startup Stage <span class="required">*</span>
+                <span class="form-hint">(Excel: Stage)</span>
+              </label>
+              <select id="add_stage" class="form-control">
+                <option value="Idea" selected>Idea</option>
+                <option value="Prototype">Prototype</option>
+                <option value="Validation">Validation</option>
+                <option value="Early Traction">Early Traction</option>
+                <option value="Scaling">Scaling</option>
+                <option value="Revenue">Revenue</option>
+              </select>
+            </div>
+
+            <!-- Col 3: Funding Type -->
+            <div class="form-group">
+              <label class="form-label" for="add_fundingType">
+                Funding Type <span class="required">*</span>
+                <span class="form-hint">(Excel: Funding Type)</span>
+              </label>
+              <select id="add_fundingType" class="form-control">
+                <option value="Grant" selected>Grant</option>
+                <option value="Debt fund">Debt fund</option>
+                <option value="Loan">Loan</option>
+                <option value="Equity">Equity</option>
+                <option value="Challenge">Challenge</option>
+                <option value="Accelerator">Accelerator</option>
+                <option value="Subsidy">Subsidy</option>
+              </select>
+            </div>
+
+            <!-- Col 4: Amount -->
+            <div class="form-group">
+              <label class="form-label" for="add_amount">
+                Funding Amount <span class="required">*</span>
+                <span class="form-hint">(Excel: Amount)</span>
+              </label>
+              <input type="text" id="add_amount" class="form-control" placeholder="e.g. up to 20 lakh, ₹ 5 Crore" required>
+            </div>
+
+            <!-- Col 5: Deadline -->
+            <div class="form-group">
+              <label class="form-label" for="add_deadline">
+                Application Deadline <span class="required">*</span>
+                <span class="form-hint">(Excel: Deadline)</span>
+              </label>
+              <input type="text" id="add_deadline" class="form-control" placeholder="e.g. Rolling / Ongoing or 31 October 2026" value="Rolling / Ongoing" required>
+            </div>
+
+            <!-- Col 6: Industry -->
+            <div class="form-group">
+              <label class="form-label" for="add_industry">
+                Industry / Sector
+                <span class="form-hint">(Excel: Industry)</span>
+              </label>
+              <input type="text" id="add_industry" class="form-control" placeholder="e.g. All sectors, FinTech, Agriculture, AI" value="All sectors">
+            </div>
+
+            <!-- Col 7: State -->
+            <div class="form-group">
+              <label class="form-label" for="add_state">
+                State / Territorial Scope
+                <span class="form-hint">(Excel: State)</span>
+              </label>
+              <input type="text" id="add_state" class="form-control" placeholder="e.g. All India, Gujarat, Karnataka" value="All India">
+            </div>
+
+            <!-- Col 8: Founder Type -->
+            <div class="form-group">
+              <label class="form-label" for="add_founderType">
+                Target Founder Type
+                <span class="form-hint">(Excel: Founder Type)</span>
+              </label>
+              <input type="text" id="add_founderType" class="form-control" placeholder="e.g. All Founder Eligible, Women Founders" value="All Founder Eligible">
+            </div>
+
+            <!-- Col 9: Entity Type -->
+            <div class="form-group">
+              <label class="form-label" for="add_entityType">
+                Eligible Entity Type
+                <span class="form-hint">(Excel: Entity Type)</span>
+              </label>
+              <input type="text" id="add_entityType" class="form-control" placeholder="e.g. Pvt Ltd , LLP , Proprietor" value="Pvt Ltd , LLP , Proprietor">
+            </div>
+
+            <!-- Col 10: Program Type -->
+            <div class="form-group">
+              <label class="form-label" for="add_programType">
+                Program / Agency Type
+                <span class="form-hint">(Excel: Program Type)</span>
+              </label>
+              <input type="text" id="add_programType" class="form-control" placeholder="e.g. Incubation, Grand Challenge, Subsidy">
+            </div>
+
+            <!-- Col 11: Registrations -->
+            <div class="form-group">
+              <label class="form-label" for="add_registrations">
+                Mandatory Registrations
+                <span class="form-hint">(Excel: Registrations)</span>
+              </label>
+              <input type="text" id="add_registrations" class="form-control" placeholder="e.g. DPIIT Registered, No Mandatory Registration" value="No Mandatory Registration">
+            </div>
+
+            <!-- Access Tier -->
+            <div class="form-group">
+              <label class="form-label" for="add_tier">
+                Access Tier
+                <span class="form-hint">(Pro Member Exclusive vs Public Free)</span>
+              </label>
+              <select id="add_tier" class="form-control">
+                <option value="pro" selected>Pro Member Exclusive (Locked for guests)</option>
+                <option value="free">Public Free Scheme (Open to all)</option>
+              </select>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group form-full">
+              <label class="form-label" for="add_description">
+                Detailed Scheme Description &amp; Assistance Guidance
+              </label>
+              <textarea id="add_description" class="form-control" rows="3" placeholder="Provide a detailed breakdown of benefits, eligibility requirements, and nodal agency context..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="reset" class="btn-secondary">Clear Form</button>
+            <button type="submit" class="btn-primary" id="btnAddSubmit">
+              <span>➕</span> Add Scheme to Database
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- TAB 2: UPDATE SCHEME (Search + Select + Edit) -->
+    <section id="tab-update" class="tab-panel">
+      <div class="panel-box">
+        <div class="panel-header">
+          <h2 class="panel-title"><span>✏️</span> Update Scheme</h2>
+          <p class="panel-subtitle">Search for an existing scheme by name or parameters, then edit any of its fields.</p>
+        </div>
+
+        <div class="search-wrapper">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="updateSearchInput" class="search-input" placeholder="Search scheme to edit by name, industry, or funding type...">
+        </div>
+
+        <div id="updateSearchResults" class="scheme-items-list" style="margin-bottom: 28px;">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <div id="editFormContainer" style="display: none; border-top: 2px dashed var(--border); padding-top: 24px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+            <div>
+              <h3 style="font-size: 18px; font-weight: 800; color: var(--accent);" id="editingSchemeTitle">Editing: Scheme</h3>
+              <p style="font-size: 12px; color: var(--text-muted);" id="editingSchemeIdBadge">ID: scheme-xyz</p>
+            </div>
+            <button type="button" class="btn-secondary" id="btnCancelEdit" style="padding: 6px 14px; font-size: 13px;">✕ Cancel</button>
+          </div>
+
+          <form id="editSchemeForm">
+            <input type="hidden" id="edit_id">
+            <div class="form-grid">
+              <div class="form-group form-full">
+                <label class="form-label" for="edit_name">Scheme Name <span class="required">*</span></label>
+                <input type="text" id="edit_name" class="form-control" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="edit_stage">Startup Stage</label>
+                <select id="edit_stage" class="form-control">
+                  <option value="Idea">Idea</option>
+                  <option value="Prototype">Prototype</option>
+                  <option value="Validation">Validation</option>
+                  <option value="Early Traction">Early Traction</option>
+                  <option value="Scaling">Scaling</option>
+                  <option value="Revenue">Revenue</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="edit_fundingType">Funding Type</label>
+                <select id="edit_fundingType" class="form-control">
+                  <option value="Grant">Grant</option>
+                  <option value="Debt fund">Debt fund</option>
+                  <option value="Loan">Loan</option>
+                  <option value="Equity">Equity</option>
+                  <option value="Challenge">Challenge</option>
+                  <option value="Accelerator">Accelerator</option>
+                  <option value="Subsidy">Subsidy</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="edit_amount">Funding Amount <span class="required">*</span></label>
+                <input type="text" id="edit_amount" class="form-control" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="edit_deadline">Application Deadline</label>
+                <input type="text" id="edit_deadline" class="form-control" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="edit_industry">Industry / Sector</label>
+                <input type="text" id="edit_industry" class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="edit_state">State / Territorial Scope</label>
+                <input type="text" id="edit_state" class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="edit_founderType">Target Founder Type</label>
+                <input type="text" id="edit_founderType" class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="edit_entityType">Eligible Entity Type</label>
+                <input type="text" id="edit_entityType" class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="edit_programType">Program / Agency Type</label>
+                <input type="text" id="edit_programType" class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="edit_registrations">Mandatory Registrations</label>
+                <input type="text" id="edit_registrations" class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="edit_tier">Access Tier</label>
+                <select id="edit_tier" class="form-control">
+                  <option value="pro">Pro Member Exclusive</option>
+                  <option value="free">Public Free Scheme</option>
+                </select>
+              </div>
+
+              <div class="form-group form-full">
+                <label class="form-label" for="edit_description">Detailed Scheme Description</label>
+                <textarea id="edit_description" class="form-control" rows="3"></textarea>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn-secondary" id="btnCancelEditBottom">Cancel</button>
+              <button type="submit" class="btn-primary" id="btnSaveEdit">
+                <span>💾</span> Save Changes
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: DELETE SCHEME (Search + Confirmation) -->
+    <section id="tab-delete" class="tab-panel">
+      <div class="panel-box">
+        <div class="panel-header">
+          <h2 class="panel-title"><span>🗑️</span> Delete Scheme</h2>
+          <p class="panel-subtitle">Search for a scheme to review its details and remove it from the system.</p>
+        </div>
+
+        <div class="search-wrapper">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="deleteSearchInput" class="search-input" placeholder="Search scheme to delete by name, funding type, or sector...">
+        </div>
+
+        <div id="deleteSearchResults" class="scheme-items-list">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- CONFIRM DELETE DIALOG MODAL -->
+  <div class="admin-modal-backdrop" id="deleteConfirmModal">
+    <div class="admin-modal">
+      <div class="modal-icon-danger">⚠️</div>
+      <h3 style="font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 8px;">Confirm Deletion</h3>
+      <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px;">
+        Are you sure you want to permanently delete <strong id="deleteTargetSchemeName" style="color: var(--text);">this scheme</strong>?
+      </p>
+      <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 24px; font-size: 13px; color: var(--text-muted);" id="deleteTargetMeta">
+      </div>
+      <div style="display: flex; gap: 12px; justify-content: flex-end;">
+        <button type="button" class="btn-secondary" id="btnCancelDelete">Cancel</button>
+        <button type="button" class="btn-danger" id="btnConfirmDelete">Delete Scheme</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      let allSchemes = [];
+      let currentAdmin = null;
+      let token = localStorage.getItem('cm_auth_token') || null;
+      let targetDeleteId = null;
+
+      const loginGate = document.getElementById('loginGate');
+      const loginGateForm = document.getElementById('loginGateForm');
+      const loginGateError = document.getElementById('loginGateError');
+      const currentAdminName = document.getElementById('currentAdminName');
+      const adminSignOutBtn = document.getElementById('adminSignOutBtn');
+      const globalAlert = document.getElementById('globalAlert');
+
+      const statTotalSchemes = document.getElementById('statTotalSchemes');
+      const statGrantsCount = document.getElementById('statGrantsCount');
+      const statLoansCount = document.getElementById('statLoansCount');
+      const statProCount = document.getElementById('statProCount');
+
+      const tabBtns = document.querySelectorAll('.tab-btn');
+      const tabPanels = document.querySelectorAll('.tab-panel');
+
+      const addSchemeForm = document.getElementById('addSchemeForm');
+      const updateSearchInput = document.getElementById('updateSearchInput');
+      const updateSearchResults = document.getElementById('updateSearchResults');
+      const editFormContainer = document.getElementById('editFormContainer');
+      const editSchemeForm = document.getElementById('editSchemeForm');
+      const editingSchemeTitle = document.getElementById('editingSchemeTitle');
+      const editingSchemeIdBadge = document.getElementById('editingSchemeIdBadge');
+      const btnCancelEdit = document.getElementById('btnCancelEdit');
+      const btnCancelEditBottom = document.getElementById('btnCancelEditBottom');
+
+      const deleteSearchInput = document.getElementById('deleteSearchInput');
+      const deleteSearchResults = document.getElementById('deleteSearchResults');
+      const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+      const deleteTargetSchemeName = document.getElementById('deleteTargetSchemeName');
+      const deleteTargetMeta = document.getElementById('deleteTargetMeta');
+      const btnCancelDelete = document.getElementById('btnCancelDelete');
+      const btnConfirmDelete = document.getElementById('btnConfirmDelete');
+
+      function showAlert(message, type = 'success') {
+        globalAlert.className = 'alert-banner ' + type;
+        globalAlert.innerHTML = '<span>' + (type === 'success' ? '✔' : '⚠️') + '</span> <span>' + message + '</span>';
+        globalAlert.style.display = 'flex';
+        globalAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        setTimeout(() => {
+          globalAlert.style.display = 'none';
+        }, 5000);
+      }
+
+      async function verifyAdminAuth() {
+        if (!token) {
+          showLoginGate();
+          return;
+        }
+
+        try {
+          const res = await fetch('/api/auth/me', {
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          const data = await res.json();
+          if (res.ok && data.user && data.user.role === 'admin') {
+            currentAdmin = data.user;
+            currentAdminName.textContent = currentAdmin.name + ' (' + currentAdmin.email + ')';
+            hideLoginGate();
+            await loadAllSchemes();
+          } else {
+            showLoginGate(data.error || 'You must be an administrator to access this area.');
+          }
+        } catch (e) {
+          showLoginGate('Authentication error: Unable to verify server connection.');
+        }
+      }
+
+      function showLoginGate(msg = '') {
+        loginGate.style.display = 'flex';
+        if (msg) {
+          loginGateError.textContent = msg;
+          loginGateError.style.display = 'block';
+        } else {
+          loginGateError.style.display = 'none';
+        }
+      }
+
+      function hideLoginGate() {
+        loginGate.style.display = 'none';
+      }
+
+      loginGateForm.addEventListener('submit', async e => {
+        e.preventDefault();
+        const email = document.getElementById('adminLoginEmail').value.trim();
+        const password = document.getElementById('adminLoginPassword').value;
+
+        try {
+          const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Login failed');
+          if (data.user.role !== 'admin') {
+            throw new Error('This account does not have administrator privileges.');
+          }
+
+          token = data.token;
+          currentAdmin = data.user;
+          localStorage.setItem('cm_auth_token', token);
+          localStorage.setItem('cm_user', JSON.stringify(data.user));
+
+          currentAdminName.textContent = currentAdmin.name + ' (' + currentAdmin.email + ')';
+          hideLoginGate();
+          await loadAllSchemes();
+          showAlert('Welcome back, ' + currentAdmin.name + '! Admin dashboard ready.');
+        } catch (err) {
+          loginGateError.textContent = err.message;
+          loginGateError.style.display = 'block';
+        }
+      });
+
+      adminSignOutBtn.addEventListener('click', () => {
+        localStorage.removeItem('cm_auth_token');
+        localStorage.removeItem('cm_user');
+        token = null;
+        currentAdmin = null;
+        showLoginGate();
+      });
+
+      tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const target = btn.getAttribute('data-tab');
+          tabBtns.forEach(b => b.classList.remove('active'));
+          tabPanels.forEach(p => p.classList.remove('active'));
+
+          btn.classList.add('active');
+          const panel = document.getElementById('tab-' + target);
+          if (panel) panel.classList.add('active');
+
+          if (target === 'update') renderUpdateResults(updateSearchInput.value);
+          if (target === 'delete') renderDeleteResults(deleteSearchInput.value);
+        });
+      });
+
+      async function loadAllSchemes() {
+        try {
+          const res = await fetch('/api/admin/schemes', {
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          if (!res.ok) throw new Error('Failed to load schemes from server');
+          const data = await res.json();
+          allSchemes = data.schemes || [];
+          updateStats();
+          renderUpdateResults();
+          renderDeleteResults();
+        } catch (err) {
+          showAlert(err.message, 'error');
+        }
+      }
+
+      function updateStats() {
+        statTotalSchemes.textContent = allSchemes.length;
+        const grants = allSchemes.filter(s => (s.fundingType || '').toLowerCase().includes('grant')).length;
+        const loans = allSchemes.filter(s => {
+          const ft = (s.fundingType || '').toLowerCase();
+          return ft.includes('loan') || ft.includes('debt');
+        }).length;
+        const pros = allSchemes.filter(s => s.tier === 'pro').length;
+
+        statGrantsCount.textContent = grants;
+        statLoansCount.textContent = loans;
+        statProCount.textContent = pros;
+      }
+
+      addSchemeForm.addEventListener('submit', async e => {
+        e.preventDefault();
+        const payload = {
+          name: document.getElementById('add_name').value.trim(),
+          stage: document.getElementById('add_stage').value,
+          fundingType: document.getElementById('add_fundingType').value,
+          amount: document.getElementById('add_amount').value.trim(),
+          deadline: document.getElementById('add_deadline').value.trim(),
+          industry: document.getElementById('add_industry').value.trim(),
+          state: document.getElementById('add_state').value.trim(),
+          founderType: document.getElementById('add_founderType').value.trim(),
+          entityType: document.getElementById('add_entityType').value.trim(),
+          programType: document.getElementById('add_programType').value.trim(),
+          registrations: document.getElementById('add_registrations').value.trim(),
+          tier: document.getElementById('add_tier').value,
+          description: document.getElementById('add_description').value.trim()
+        };
+
+        const submitBtn = document.getElementById('btnAddSubmit');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Adding Scheme...';
+
+        try {
+          const res = await fetch('/api/admin/schemes', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Failed to create scheme');
+
+          allSchemes.unshift(data.scheme);
+          updateStats();
+          addSchemeForm.reset();
+          showAlert('🎉 Scheme "' + data.scheme.name + '" successfully created!');
+
+          tabBtns[1].click();
+          selectSchemeForEdit(data.scheme.id);
+        } catch (err) {
+          showAlert(err.message, 'error');
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<span>➕</span> Add Scheme to Database';
+        }
+      });
+
+      function renderUpdateResults(query = '') {
+        const q = String(query).toLowerCase().trim();
+        const filtered = allSchemes.filter(s => {
+          if (!q) return true;
+          return (s.name || '').toLowerCase().includes(q) ||
+                 (s.industry || '').toLowerCase().includes(q) ||
+                 (s.fundingType || '').toLowerCase().includes(q) ||
+                 (s.stage || '').toLowerCase().includes(q);
+        });
+
+        if (filtered.length === 0) {
+          updateSearchResults.innerHTML = '<div style="text-align: center; padding: 24px; color: var(--text-muted); background: #f8fafc; border-radius: 8px;">No schemes match your search query. Try typing another keyword.</div>';
+          return;
+        }
+
+        updateSearchResults.innerHTML = filtered.map(s => {
+          const ft = (s.fundingType || '').toLowerCase();
+          let badgeClass = ft.includes('grant') ? 'grant' : (ft.includes('loan') || ft.includes('debt') ? 'loan' : 'equity');
+          return '<div class="scheme-row-item">' +
+            '<div class="scheme-item-info">' +
+              '<div class="scheme-item-name">' + s.name + '</div>' +
+              '<div class="scheme-item-meta">' +
+                '<span class="meta-pill ' + badgeClass + '">● ' + s.fundingType + '</span>' +
+                '<span class="meta-pill">' + s.stage + ' Stage</span>' +
+                '<span class="meta-pill">' + (s.amount || 'Custom') + '</span>' +
+                '<span class="meta-pill">Scope: ' + (s.state || 'All India') + '</span>' +
+                '<span class="meta-pill ' + (s.tier === 'pro' ? 'pro' : '') + '">' + (s.tier === 'pro' ? '★ Pro Exclusive' : 'Public Free') + '</span>' +
+              '</div>' +
+            '</div>' +
+            '<button type="button" class="btn-primary btn-select-edit" data-id="' + s.id + '" style="padding: 8px 16px; font-size: 13px;">✏️ Edit</button>' +
+          '</div>';
+        }).join('');
+
+        updateSearchResults.querySelectorAll('.btn-select-edit').forEach(btn => {
+          btn.addEventListener('click', () => {
+            selectSchemeForEdit(btn.getAttribute('data-id'));
+          });
+        });
+      }
+
+      updateSearchInput.addEventListener('input', e => {
+        renderUpdateResults(e.target.value);
+      });
+
+      function selectSchemeForEdit(id) {
+        const s = allSchemes.find(item => item.id === id);
+        if (!s) return;
+
+        document.getElementById('edit_id').value = s.id;
+        document.getElementById('edit_name').value = s.name || '';
+        document.getElementById('edit_stage').value = s.stage || 'Idea';
+        document.getElementById('edit_fundingType').value = s.fundingType || 'Grant';
+        document.getElementById('edit_amount').value = s.amount || '';
+        document.getElementById('edit_deadline').value = s.deadline || 'Rolling / Ongoing';
+        document.getElementById('edit_industry').value = s.industry || 'All sectors';
+        document.getElementById('edit_state').value = s.state || 'All India';
+        document.getElementById('edit_founderType').value = s.founderType || 'All Founder Eligible';
+        document.getElementById('edit_entityType').value = s.entityType || 'Pvt Ltd , LLP , Proprietor';
+        document.getElementById('edit_programType').value = s.programType || '';
+        document.getElementById('edit_registrations').value = s.registrations || 'No Mandatory Registration';
+        document.getElementById('edit_tier').value = s.tier || 'pro';
+        document.getElementById('edit_description').value = s.description || '';
+
+        editingSchemeTitle.textContent = 'Editing: ' + s.name;
+        editingSchemeIdBadge.textContent = 'Scheme ID: ' + s.id;
+
+        editFormContainer.style.display = 'block';
+        editFormContainer.scrollIntoView({ behavior: 'smooth' });
+      }
+
+      function closeEditForm() {
+        editFormContainer.style.display = 'none';
+        editSchemeForm.reset();
+      }
+
+      btnCancelEdit.addEventListener('click', closeEditForm);
+      btnCancelEditBottom.addEventListener('click', closeEditForm);
+
+      editSchemeForm.addEventListener('submit', async e => {
+        e.preventDefault();
+        const id = document.getElementById('edit_id').value;
+        const payload = {
+          name: document.getElementById('edit_name').value.trim(),
+          stage: document.getElementById('edit_stage').value,
+          fundingType: document.getElementById('edit_fundingType').value,
+          amount: document.getElementById('edit_amount').value.trim(),
+          deadline: document.getElementById('edit_deadline').value.trim(),
+          industry: document.getElementById('edit_industry').value.trim(),
+          state: document.getElementById('edit_state').value.trim(),
+          founderType: document.getElementById('edit_founderType').value.trim(),
+          entityType: document.getElementById('edit_entityType').value.trim(),
+          programType: document.getElementById('edit_programType').value.trim(),
+          registrations: document.getElementById('edit_registrations').value.trim(),
+          tier: document.getElementById('edit_tier').value,
+          description: document.getElementById('edit_description').value.trim()
+        };
+
+        const saveBtn = document.getElementById('btnSaveEdit');
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = 'Saving Changes...';
+
+        try {
+          const res = await fetch('/api/admin/schemes/' + encodeURIComponent(id), {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Failed to update scheme');
+
+          const idx = allSchemes.findIndex(item => item.id === id);
+          if (idx !== -1) allSchemes[idx] = data.scheme;
+
+          updateStats();
+          renderUpdateResults(updateSearchInput.value);
+          renderDeleteResults(deleteSearchInput.value);
+          showAlert('✔ Scheme "' + data.scheme.name + '" updated successfully!');
+          closeEditForm();
+        } catch (err) {
+          showAlert(err.message, 'error');
+        } finally {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = '<span>💾</span> Save Changes';
+        }
+      });
+
+      function renderDeleteResults(query = '') {
+        const q = String(query).toLowerCase().trim();
+        const filtered = allSchemes.filter(s => {
+          if (!q) return true;
+          return (s.name || '').toLowerCase().includes(q) ||
+                 (s.industry || '').toLowerCase().includes(q) ||
+                 (s.fundingType || '').toLowerCase().includes(q) ||
+                 (s.state || '').toLowerCase().includes(q);
+        });
+
+        if (filtered.length === 0) {
+          deleteSearchResults.innerHTML = '<div style="text-align: center; padding: 24px; color: var(--text-muted); background: #f8fafc; border-radius: 8px;">No schemes match your delete query.</div>';
+          return;
+        }
+
+        deleteSearchResults.innerHTML = filtered.map(s => {
+          const ft = (s.fundingType || '').toLowerCase();
+          let badgeClass = ft.includes('grant') ? 'grant' : (ft.includes('loan') || ft.includes('debt') ? 'loan' : 'equity');
+          return '<div class="scheme-row-item">' +
+            '<div class="scheme-item-info">' +
+              '<div class="scheme-item-name">' + s.name + '</div>' +
+              '<div class="scheme-item-meta">' +
+                '<span class="meta-pill ' + badgeClass + '">● ' + s.fundingType + '</span>' +
+                '<span class="meta-pill">' + s.stage + ' Stage</span>' +
+                '<span class="meta-pill">' + (s.amount || 'Custom') + '</span>' +
+                '<span class="meta-pill">Deadline: ' + (s.deadline || 'Ongoing') + '</span>' +
+                '<span class="meta-pill">Territory: ' + (s.state || 'All India') + '</span>' +
+              '</div>' +
+            '</div>' +
+            '<button type="button" class="btn-danger btn-trigger-delete" data-id="' + s.id + '">🗑️ Delete</button>' +
+          '</div>';
+        }).join('');
+
+        deleteSearchResults.querySelectorAll('.btn-trigger-delete').forEach(btn => {
+          btn.addEventListener('click', () => {
+            openDeleteModal(btn.getAttribute('data-id'));
+          });
+        });
+      }
+
+      deleteSearchInput.addEventListener('input', e => {
+        renderDeleteResults(e.target.value);
+      });
+
+      function openDeleteModal(id) {
+        const s = allSchemes.find(item => item.id === id);
+        if (!s) return;
+        targetDeleteId = id;
+        deleteTargetSchemeName.textContent = '"' + s.name + '"';
+        deleteTargetMeta.innerHTML = '<div><strong>Funding Type:</strong> ' + s.fundingType + ' (' + s.stage + ' stage)</div>' +
+          '<div><strong>Amount:</strong> ' + (s.amount || 'Custom') + '</div>' +
+          '<div><strong>Territory:</strong> ' + (s.state || 'All India') + '</div>';
+        deleteConfirmModal.classList.add('is-open');
+      }
+
+      function closeDeleteModal() {
+        deleteConfirmModal.classList.remove('is-open');
+        targetDeleteId = null;
+      }
+
+      btnCancelDelete.addEventListener('click', closeDeleteModal);
+
+      btnConfirmDelete.addEventListener('click', async () => {
+        if (!targetDeleteId) return;
+        btnConfirmDelete.disabled = true;
+        btnConfirmDelete.textContent = 'Deleting...';
+
+        try {
+          const res = await fetch('/api/admin/schemes/' + encodeURIComponent(targetDeleteId), {
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Failed to delete scheme');
+
+          allSchemes = allSchemes.filter(s => s.id !== targetDeleteId);
+          updateStats();
+          renderUpdateResults(updateSearchInput.value);
+          renderDeleteResults(deleteSearchInput.value);
+          showAlert('🗑️ Scheme "' + (data.message || 'Deleted') + '" successfully removed!');
+          closeDeleteModal();
+        } catch (err) {
+          showAlert(err.message, 'error');
+        } finally {
+          btnConfirmDelete.disabled = false;
+          btnConfirmDelete.textContent = 'Delete Scheme';
+        }
+      });
+
+      document.addEventListener('DOMContentLoaded', () => {
+        verifyAdminAuth();
+      });
+    })();
+  </script>
+</body>
+</html>

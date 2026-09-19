@@ -42,9 +42,11 @@ async function handleWeb3FormsSubmit(event, form, successElement) {
         if (result.success) {
             form.reset();
             if (successElement) {
+                successElement.style.display = "block";
                 successElement.classList.add("show");
                 setTimeout(() => {
                     successElement.classList.remove("show");
+                    successElement.style.display = "none";
                 }, 6000);
             } else {
                 alert("Thank you! Your request has been submitted successfully.");
@@ -53,9 +55,11 @@ async function handleWeb3FormsSubmit(event, form, successElement) {
             console.error("Web3Forms error:", result);
             alert(result.message || "Failed to submit. Please check your Web3Forms Access Key.");
         }
+        return result;
     } catch (error) {
         console.error("Submission failed:", error);
         alert("Failed to submit form. Please check your internet connection.");
+        return { success: false, error: error };
     } finally {
         if (button) {
             button.disabled = false;
@@ -1329,6 +1333,13 @@ window.addEventListener("resize", () => {
   function openModal(planName, price) {
     var label = planName + (price ? " - " + price : "");
     planInput.value = label;
+
+    var successMsg = modal.querySelector(".cr-form-success");
+    if (successMsg) {
+      successMsg.classList.remove("show");
+      successMsg.style.display = "none";
+    }
+
     modal.classList.add("is-open");
     modal.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
@@ -1340,24 +1351,56 @@ window.addEventListener("resize", () => {
     modal.classList.remove("is-open");
     modal.setAttribute("aria-hidden", "true");
     document.body.style.overflow = "";
+
+    var successMsg = modal.querySelector(".cr-form-success");
+    if (successMsg) {
+      successMsg.classList.remove("show");
+      successMsg.style.display = "none";
+    }
   }
 
-  document.querySelectorAll(".plan-card").forEach(function (card) {
-    card.addEventListener("click", function (e) {
+  // Delegated click handler for plan cards, CTAs, and toggle-more dropdowns
+  document.addEventListener("click", function (e) {
+    // 1. Toggle extra features dropdown
+    var toggleBtn = e.target.closest(".plan-toggle-more");
+    if (toggleBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      var card = toggleBtn.closest(".plan-card");
+      if (!card) return;
+      var isExpanded = card.classList.toggle("is-expanded");
+      toggleBtn.setAttribute("aria-expanded", isExpanded ? "true" : "false");
+      var count = toggleBtn.getAttribute("data-more-count") || "";
+      var textEl = toggleBtn.querySelector(".plan-toggle-text");
+      var iconEl = toggleBtn.querySelector(".plan-toggle-icon");
+      if (textEl) {
+        textEl.textContent = isExpanded ? "Show less" : ("+ " + count + " more features");
+      }
+      if (iconEl) {
+        iconEl.textContent = isExpanded ? "▲" : "▼";
+      }
+      return;
+    }
+
+    // 2. Click on Select Plan CTA
+    var cta = e.target.closest("[data-open-plan]");
+    if (cta) {
+      e.preventDefault();
+      e.stopPropagation();
+      var card = cta.closest(".plan-card");
+      var plan = cta.getAttribute("data-open-plan") || (card ? card.getAttribute("data-plan") : "");
+      var price = card ? card.getAttribute("data-price") : "";
+      openModal(plan, price);
+      return;
+    }
+
+    // 3. Click anywhere on card (excluding toggle button handled above)
+    var card = e.target.closest(".plan-card");
+    if (card && card.closest("#plans")) {
       var plan = card.getAttribute("data-plan") || "";
       var price = card.getAttribute("data-price") || "";
       openModal(plan, price);
-    });
-  });
-
-  document.querySelectorAll("[data-open-plan]").forEach(function (btn) {
-    btn.addEventListener("click", function (e) {
-      e.stopPropagation();
-      var card = btn.closest(".plan-card");
-      var plan = btn.getAttribute("data-open-plan") || (card ? card.getAttribute("data-plan") : "");
-      var price = card ? card.getAttribute("data-price") : "";
-      openModal(plan, price);
-    });
+    }
   });
 
   modal.querySelectorAll("[data-close-plan]").forEach(function (el) {
@@ -1369,13 +1412,46 @@ window.addEventListener("resize", () => {
   });
 
   if (form) {
-    form.addEventListener("submit", function (e) {
+    form.addEventListener("submit", async function (e) {
+      var successEl = form.querySelector(".cr-form-success") || document.getElementById("planFormSuccess");
       if (typeof handleWeb3FormsSubmit === "function") {
-        handleWeb3FormsSubmit(e, form, null);
+        var res = await handleWeb3FormsSubmit(e, form, successEl);
+        if (res && res.success) {
+          setTimeout(function () {
+            closeModal();
+          }, 3500);
+        }
       }
-      closeModal();
     });
   }
+})();
+
+/* =====================================================
+   PLAN CATEGORY TABS SWITCHER
+===================================================== */
+(function () {
+  var planCats = document.querySelectorAll(".plans-cat, [data-plan-cat]");
+  var planPanels = document.querySelectorAll(".plans-panel, [data-plan-panel]");
+  if (!planCats.length || !planPanels.length) return;
+
+  function showPlanCat(catName) {
+    planCats.forEach(function (btn) {
+      var on = btn.getAttribute("data-plan-cat") === catName;
+      btn.classList.toggle("is-on", on);
+      btn.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    planPanels.forEach(function (panel) {
+      var on = panel.getAttribute("data-plan-panel") === catName;
+      panel.classList.toggle("is-on", on);
+      panel.hidden = !on;
+    });
+  }
+
+  planCats.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      showPlanCat(btn.getAttribute("data-plan-cat"));
+    });
+  });
 })();
 
 (function () {
@@ -1510,6 +1586,13 @@ window.addEventListener("resize", () => {
       if (desc) desc.textContent = "Share your details and we will get back during business hours.";
     }
 
+    // Ensure any previous success message is hidden on fresh open
+    var successMsg = modal.querySelector(".cr-form-success");
+    if (successMsg) {
+      successMsg.classList.remove("show");
+      successMsg.style.display = "none";
+    }
+
     modal.classList.add("is-open");
     modal.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
@@ -1525,6 +1608,12 @@ window.addEventListener("resize", () => {
     document.body.style.overflow = "";
     if (eyebrow) eyebrow.textContent = "FREE CONSULTATION";
     if (desc) desc.textContent = "Share your details and we will get back during business hours.";
+
+    var successMsg = modal.querySelector(".cr-form-success");
+    if (successMsg) {
+      successMsg.classList.remove("show");
+      successMsg.style.display = "none";
+    }
   }
 
   window.openLeadModal = openLeadModal;
@@ -1560,7 +1649,7 @@ window.addEventListener("resize", () => {
   });
 
   if (form) {
-    form.addEventListener("submit", function (e) {
+    form.addEventListener("submit", async function (e) {
       if (!form.checkValidity()) {
         form.reportValidity();
         return;
@@ -1586,24 +1675,26 @@ window.addEventListener("resize", () => {
         console.warn("Storage error:", err);
       }
 
-      var successEl = document.getElementById("crFormSuccess");
-      if (typeof handleWeb3FormsSubmit === "function") {
-        handleWeb3FormsSubmit(e, form, successEl);
-      }
-
+      var successEl = form.querySelector(".cr-form-success") || document.getElementById("leadFormSuccess");
       var wasPending = (modal.getAttribute("data-for-quotation") === "true") && (window.pendingQuotationAfterLead === true);
 
-      closeLeadModal();
-
-      if (wasPending && typeof window.openQuotationModal === "function") {
-        setTimeout(function () {
-          if (typeof window.openQuotationModal === "function") {
-            window.openQuotationModal({
-              customerName: submittedName,
-              serviceName: submittedService
-            });
-          }
-        }, 150);
+      if (typeof handleWeb3FormsSubmit === "function") {
+        var res = await handleWeb3FormsSubmit(e, form, successEl);
+        if (wasPending && typeof window.openQuotationModal === "function") {
+          closeLeadModal();
+          setTimeout(function () {
+            if (typeof window.openQuotationModal === "function") {
+              window.openQuotationModal({
+                customerName: submittedName,
+                serviceName: submittedService
+              });
+            }
+          }, 150);
+        } else if (res && res.success) {
+          setTimeout(function () {
+            closeLeadModal();
+          }, 3500);
+        }
       }
     });
   }
@@ -3025,9 +3116,75 @@ window.addEventListener("resize", () => {
     }
 
     /* =====================================================
+       EXTRACT TEMPLATE METADATA DIRECTLY FROM QUOTATION.XLSX
+       Dynamically reads company info, bank info, signatory & footer banner
+       so ANY changes made in QUOTATION.xlsx reflect in preview & PDF.
+    ===================================================== */
+    function extractTemplateMeta(workbook) {
+        if (!workbook) return null;
+        const sheet = workbook.getWorksheet("Sheet1");
+        if (!sheet) return null;
+
+        function getCellText(cell) {
+            if (!cell || cell.value === null || cell.value === undefined) return "";
+            const v = cell.value;
+            if (typeof v === "string" || typeof v === "number") return String(v).trim();
+            if (v.richText && Array.isArray(v.richText)) {
+                return v.richText.map(r => r.text || "").join("").trim();
+            }
+            if (v.text) return String(v.text).trim();
+            return String(v).trim();
+        }
+
+        let companyName = getCellText(sheet.getCell("A25")) || "CORPORATEMART PRIVATE LIMITED";
+        let office = getCellText(sheet.getCell("A26")) || "Office: 403, Emerald Complex, Nr. Swastik Cross Road, Navrangpura, Ahmedabad - 380009";
+        let gst = getCellText(sheet.getCell("A28")) || "GST : 24AANCC2934R1Z3";
+        let accountNo = getCellText(sheet.getCell("A29")) || "Account No :50200119641366";
+        let ifsc = getCellText(sheet.getCell("A30")) || "IFSC CODE : HDFC0001678";
+        let branch = getCellText(sheet.getCell("A31")) || "Branch Name : Navrangpura Branch";
+        let bank = getCellText(sheet.getCell("A32")) || "Bank name : HDFC BANK LTD";
+        let upi = getCellText(sheet.getCell("A33")) || "UPI - corporatemartprivate.82229585@hdfcbank";
+        let forCompany = getCellText(sheet.getCell("A36")) || "For,    CORPORATEMART PRIVATE LIMITED";
+        let signatory = getCellText(sheet.getCell("A37")); // Will be empty if removed in Excel
+        let footerBanner = getCellText(sheet.getCell("A38")) || "This is a system-generated quotation and does not require a signature.";
+
+        // Also scan rows below row 20 in case rows were shifted or modified in Excel
+        sheet.eachRow((row, rNum) => {
+            if (rNum >= 20) {
+                const text = getCellText(row.getCell(1));
+                if (/^GST\s*:/i.test(text) && text.length > 10) gst = text;
+                else if (/^Account\s*No/i.test(text)) accountNo = text;
+                else if (/^IFSC/i.test(text)) ifsc = text;
+                else if (/^Branch\s*Name/i.test(text)) branch = text;
+                else if (/^Bank\s*name/i.test(text)) bank = text;
+                else if (/^UPI/i.test(text)) upi = text;
+                else if (/^For,/i.test(text)) forCompany = text;
+                else if (/Authorised\s*Signatory/i.test(text)) signatory = text;
+                else if (/system-generated|appreciate your business/i.test(text) || rNum === 38) {
+                    if (text) footerBanner = text;
+                }
+            }
+        });
+
+        return {
+            companyName,
+            office,
+            gst,
+            accountNo,
+            ifsc,
+            branch,
+            bank,
+            upi,
+            forCompany,
+            signatory,
+            footerBanner
+        };
+    }
+
+    /* =====================================================
        RENDER REAL DOCUMENT PREVIEW
     ===================================================== */
-    function renderPreview(data) {
+    function renderPreview(data, templateMeta) {
         if (!previewModal) return;
         const preview = previewModal.querySelector("#quotationPreviewContent");
         if (!preview) return;
@@ -3036,6 +3193,20 @@ window.addEventListener("resize", () => {
         const logoSrc = isDark
             ? "icons/Your_paragraph_text__9_-removebg-preview.png"
             : "icons/Your_paragraph_text__8_-removebg-preview.png";
+
+        const meta = templateMeta || (data && data.templateMeta) || {
+            companyName: "CORPORATEMART PRIVATE LIMITED",
+            office: "Office: 403, Emerald Complex, Nr. Swastik Cross Road, Navrangpura, Ahmedabad - 380009",
+            gst: "GST : 24AANCC2934R1Z3",
+            accountNo: "Account No :50200119641366",
+            ifsc: "IFSC CODE : HDFC0001678",
+            branch: "Branch Name : Navrangpura Branch",
+            bank: "Bank name : HDFC BANK LTD",
+            upi: "UPI - corporatemartprivate.82229585@hdfcbank",
+            forCompany: "For,    CORPORATEMART PRIVATE LIMITED",
+            signatory: "",
+            footerBanner: "This is a system-generated quotation and does not require a signature."
+        };
 
         let itemsRowsHtml = "";
         data.items.forEach(item => {
@@ -3115,17 +3286,17 @@ window.addEventListener("resize", () => {
                     </tbody>
                 </table>
 
-                <!-- Rows 25-33: Company & Bank Details -->
+                <!-- Rows 25-33: Company & Bank Details (Dynamically from QUOTATION.xlsx) -->
                 <div class="excel-company-section">
-                    <div class="excel-comp-name">CORPORATEMART PRIVATE LIMITED</div>
-                    <div class="excel-comp-line">Office: 403, Emerald Complex, Nr. Swastik Cross Road, Navrangpura, Ahmedabad - 380009</div>
+                    <div class="excel-comp-name">${escapeHtml(meta.companyName)}</div>
+                    <div class="excel-comp-line">${escapeHtml(meta.office)}</div>
                     <div class="excel-comp-spacer"></div>
-                    <div class="excel-comp-line">GST : 24AANCC2934R1Z3</div>
-                    <div class="excel-comp-line">Account No : 50200119641366</div>
-                    <div class="excel-comp-line">IFSC CODE : HDFC0001678</div>
-                    <div class="excel-comp-line">Branch Name : Navrangpura Branch</div>
-                    <div class="excel-comp-line">Bank name : HDFC BANK LTD</div>
-                    <div class="excel-comp-line excel-upi-line">UPI - corporatemartprivate.82229585@hdfcbank</div>
+                    <div class="excel-comp-line">${escapeHtml(meta.gst)}</div>
+                    <div class="excel-comp-line">${escapeHtml(meta.accountNo)}</div>
+                    <div class="excel-comp-line">${escapeHtml(meta.ifsc)}</div>
+                    <div class="excel-comp-line">${escapeHtml(meta.branch)}</div>
+                    <div class="excel-comp-line">${escapeHtml(meta.bank)}</div>
+                    <div class="excel-comp-line excel-upi-line">${escapeHtml(meta.upi)}</div>
                 </div>
 
                 <!-- Rows 34-37: QR Code on left, Signatory on right -->
@@ -3134,15 +3305,14 @@ window.addEventListener("resize", () => {
                         <img src="icons/quotation_qr.png" alt="UPI QR Code" class="excel-qr-img">
                     </div>
                     <div class="excel-signatory-box">
-                        <div class="excel-for-comp">For, &nbsp;&nbsp;<strong>CORPORATEMART PRIVATE LIMITED</strong></div>
-                        <div class="excel-sign-space"></div>
-                        <div class="excel-auth-sign">Authorised Signatory</div>
+                        <div class="excel-for-comp">${escapeHtml(meta.forCompany.trim())}</div>
+                        ${meta.signatory ? `<div class="excel-sign-space"></div><div class="excel-auth-sign">${escapeHtml(meta.signatory)}</div>` : ''}
                     </div>
                 </div>
 
-                <!-- Row 38: Footer Appreciation Banner -->
+                <!-- Row 38: Footer Banner (Dynamically from QUOTATION.xlsx) -->
                 <div class="excel-teal-banner excel-footer-banner">
-                    We appreciate your business and look forward to work with you.
+                    ${escapeHtml(meta.footerBanner)}
                 </div>
             </div>
         `;
@@ -3163,6 +3333,20 @@ window.addEventListener("resize", () => {
                 </tr>
             `;
         });
+
+        const meta = (data && data.templateMeta) || {
+            companyName: "CORPORATEMART PRIVATE LIMITED",
+            office: "Office: 403, Emerald Complex, Nr. Swastik Cross Road, Navrangpura, Ahmedabad - 380009",
+            gst: "GST : 24AANCC2934R1Z3",
+            accountNo: "Account No :50200119641366",
+            ifsc: "IFSC CODE : HDFC0001678",
+            branch: "Branch Name : Navrangpura Branch",
+            bank: "Bank name : HDFC BANK LTD",
+            upi: "UPI - corporatemartprivate.82229585@hdfcbank",
+            forCompany: "For,    CORPORATEMART PRIVATE LIMITED",
+            signatory: "",
+            footerBanner: "This is a system-generated quotation and does not require a signature."
+        };
 
         const exportWrap = document.createElement("div");
         exportWrap.className = "pdf-export-container";
@@ -3233,17 +3417,17 @@ window.addEventListener("resize", () => {
                     </tbody>
                 </table>
 
-                <!-- Rows 25-33: Company & Bank Details -->
+                <!-- Rows 25-33: Company & Bank Details (Dynamically from QUOTATION.xlsx) -->
                 <div class="excel-company-section">
-                    <div class="excel-comp-name">CORPORATEMART PRIVATE LIMITED</div>
-                    <div class="excel-comp-line">Office: 403, Emerald Complex, Nr. Swastik Cross Road, Navrangpura, Ahmedabad - 380009</div>
+                    <div class="excel-comp-name">${escapeHtml(meta.companyName)}</div>
+                    <div class="excel-comp-line">${escapeHtml(meta.office)}</div>
                     <div class="excel-comp-spacer"></div>
-                    <div class="excel-comp-line">GST : 24AANCC2934R1Z3</div>
-                    <div class="excel-comp-line">Account No : 50200119641366</div>
-                    <div class="excel-comp-line">IFSC CODE : HDFC0001678</div>
-                    <div class="excel-comp-line">Branch Name : Navrangpura Branch</div>
-                    <div class="excel-comp-line">Bank name : HDFC BANK LTD</div>
-                    <div class="excel-comp-line excel-upi-line">UPI - corporatemartprivate.82229585@hdfcbank</div>
+                    <div class="excel-comp-line">${escapeHtml(meta.gst)}</div>
+                    <div class="excel-comp-line">${escapeHtml(meta.accountNo)}</div>
+                    <div class="excel-comp-line">${escapeHtml(meta.ifsc)}</div>
+                    <div class="excel-comp-line">${escapeHtml(meta.branch)}</div>
+                    <div class="excel-comp-line">${escapeHtml(meta.bank)}</div>
+                    <div class="excel-comp-line excel-upi-line">${escapeHtml(meta.upi)}</div>
                 </div>
 
                 <!-- Rows 34-37: QR Code on left, Signatory on right -->
@@ -3252,15 +3436,14 @@ window.addEventListener("resize", () => {
                         <img src="icons/quotation_qr.png" alt="UPI QR Code" class="excel-qr-img">
                     </div>
                     <div class="excel-signatory-box">
-                        <div class="excel-for-comp">For, &nbsp;&nbsp;<strong>CORPORATEMART PRIVATE LIMITED</strong></div>
-                        <div class="excel-sign-space"></div>
-                        <div class="excel-auth-sign">Authorised Signatory</div>
+                        <div class="excel-for-comp">${escapeHtml(meta.forCompany.trim())}</div>
+                        ${meta.signatory ? `<div class="excel-sign-space"></div><div class="excel-auth-sign">${escapeHtml(meta.signatory)}</div>` : ''}
                     </div>
                 </div>
 
-                <!-- Row 38: Footer Appreciation Banner -->
+                <!-- Row 38: Footer Banner (Dynamically from QUOTATION.xlsx) -->
                 <div class="excel-teal-banner excel-footer-banner">
-                    We appreciate your business and look forward to work with you.
+                    ${escapeHtml(meta.footerBanner)}
                 </div>
             </div>
         `;
@@ -3297,6 +3480,10 @@ window.addEventListener("resize", () => {
             /* Load ORIGINAL template */
             const workbook = await loadTemplate();
 
+            /* Extract metadata dynamically from the loaded template */
+            const templateMeta = extractTemplateMeta(workbook);
+            data.templateMeta = templateMeta;
+
             /* Fill data & handle dynamic row expansion */
             fillTemplate(workbook, data);
 
@@ -3307,8 +3494,8 @@ window.addEventListener("resize", () => {
             modal.classList.remove("is-open");
             modal.setAttribute("aria-hidden", "true");
 
-            /* Render realistic visual preview */
-            renderPreview(data);
+            /* Render realistic visual preview using template metadata */
+            renderPreview(data, templateMeta);
 
             /* Open preview modal */
             if (previewModal) {
@@ -3371,15 +3558,15 @@ window.addEventListener("resize", () => {
 
             // 3. Render high-resolution canvas with clean light background
             const canvas = await html2canvas(previewEl, {
-                scale: 2,
+                scale: 2.5,
                 useCORS: true,
                 allowTaint: true,
                 backgroundColor: "#ffffff",
                 logging: false
             });
 
-            // 4. Generate high-quality compressed JPEG (fast, crisp, ~280KB)
-            const imgData = canvas.toDataURL("image/jpeg", 0.95);
+            // 4. Generate high-quality lossless PNG (perfect contrast for QR code and crisp typography)
+            const imgData = canvas.toDataURL("image/png");
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF({
                 orientation: "portrait",
@@ -3407,7 +3594,7 @@ window.addEventListener("resize", () => {
                 finalX = (pdfWidth - finalWidth) / 2; // Center horizontally
             }
 
-            pdf.addImage(imgData, "JPEG", finalX, finalY, finalWidth, finalHeight, undefined, "FAST");
+            pdf.addImage(imgData, "PNG", finalX, finalY, finalWidth, finalHeight, undefined, "FAST");
 
             const safeName = (quotationData.customerName || "Quotation").replace(/[^a-zA-Z0-9_-]/g, "_");
             const safeDate = (quotationData.date || "").replace(/[^0-9-]/g, "");
@@ -3490,4 +3677,126 @@ window.addEventListener("resize", () => {
             }
         });
     });
+})();
+
+/* =========================================================
+   WHY CORPORATE MART — scroll-linked horizontal slide
+   Matches "Our Journey" section from about_us.html
+========================================================= */
+(function () {
+    "use strict";
+
+    const wrap = document.getElementById("whyPinWrap");
+    const track = document.getElementById("whyTrack");
+    const progressBar = document.getElementById("whyProgressBar");
+    const counter = document.getElementById("whyCounter");
+
+    if (!wrap || !track) return;
+
+    const cards = Array.from(track.querySelectorAll(".why-card"));
+    const totalCards = cards.length;
+    if (totalCards === 0) return;
+
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let ticking = false;
+
+    // Dynamically set wrap height based on horizontal track width
+    function adjustWrapHeight() {
+        if (reduced || window.innerWidth <= 900) {
+            wrap.style.height = "auto";
+            return;
+        }
+        const sticky = wrap.querySelector(".why-sticky");
+        if (!sticky) return;
+
+        const scrollableWidth = Math.max(0, track.scrollWidth - sticky.clientWidth);
+        const scrollMultiplier = 2.6;
+        // Total height needed = viewport sticky height + scroll distance
+        wrap.style.height = (sticky.offsetHeight + Math.max(scrollableWidth * scrollMultiplier, 1300)) + "px";
+    }
+
+    function updatePosition() {
+        ticking = false;
+
+        if (reduced || window.innerWidth <= 900) {
+            track.style.transform = "";
+            return;
+        }
+
+        const sticky = wrap.querySelector(".why-sticky");
+        if (!sticky) return;
+
+        const wrapRect = wrap.getBoundingClientRect();
+        const scrollableDistance = wrap.offsetHeight - sticky.offsetHeight;
+
+        let progress = 0;
+        if (scrollableDistance > 0) {
+            progress = -wrapRect.top / scrollableDistance;
+            progress = Math.max(0, Math.min(1, progress));
+        }
+
+        const maxTranslate = Math.max(
+            0,
+            track.scrollWidth - sticky.clientWidth + 600
+        );
+
+        const translateX = progress * maxTranslate;
+        track.style.transform = "translateX(-" + translateX + "px)";
+
+        if (progressBar) {
+            progressBar.style.width = (progress * 100) + "%";
+        }
+
+        // Calculate active card index based on current scroll progress
+        const activeIndex = Math.min(
+            Math.floor(progress * totalCards),
+            totalCards - 1
+        );
+        const activeCard = cards[activeIndex] || cards[0];
+
+        cards.forEach((card, idx) => {
+            const isActive = (card === activeCard);
+            const isNear = Math.abs(idx - activeIndex) === 1;
+            card.classList.toggle("is-active", isActive);
+            card.classList.toggle("is-near", isNear);
+        });
+
+        if (counter && activeCard) {
+            counter.textContent =
+                String(activeIndex + 1).padStart(2, "0") + " / " +
+                String(totalCards).padStart(2, "0");
+        }
+    }
+
+    function onScrollOrResize(e) {
+        if (e && e.type === "resize") {
+            adjustWrapHeight();
+        }
+
+        if (!ticking) {
+            ticking = true;
+            window.requestAnimationFrame(updatePosition);
+        }
+    }
+
+    // Allow clicking card to smoothly scroll into focus on desktop
+    cards.forEach((card, idx) => {
+        card.addEventListener("click", function () {
+            if (window.innerWidth <= 900) return;
+            const sticky = wrap.querySelector(".why-sticky");
+            if (!sticky) return;
+            const scrollableDistance = wrap.offsetHeight - sticky.offsetHeight;
+            if (scrollableDistance <= 0) return;
+            const targetProgress = idx / (totalCards - 1);
+            const targetY = window.pageYOffset + wrap.getBoundingClientRect().top + targetProgress * scrollableDistance;
+            window.scrollTo({ top: targetY, behavior: "smooth" });
+        });
+    });
+
+    // Initialize sizing and Listeners
+    adjustWrapHeight();
+    window.addEventListener("scroll", onScrollOrResize, { passive: true });
+    window.addEventListener("resize", onScrollOrResize);
+
+    updatePosition();
 })();
