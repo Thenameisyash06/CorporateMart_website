@@ -1427,6 +1427,447 @@ window.addEventListener("resize", () => {
 })();
 
 /* =====================================================
+   CUSTOMIZED PLAN MODAL & SERVICE BUILDER
+===================================================== */
+(function () {
+  var modal = document.getElementById("customPlanModal");
+  var openBtn = document.getElementById("openCustomPlanBtn");
+  var form = document.getElementById("customPlanLeadForm");
+  var searchInput = document.getElementById("customServiceSearch");
+  var searchClearBtn = document.getElementById("customSearchClearBtn");
+  var searchResults = document.getElementById("customSearchResults");
+  var selectedChipsContainer = document.getElementById("customSelectedChips");
+  var emptyHint = document.getElementById("customEmptyHint");
+  var countBadge = document.getElementById("customServicesCount");
+  var servicesError = document.getElementById("customServicesError");
+  var hiddenServicesInput = document.getElementById("customSelectedServicesInput");
+  var quickTags = document.getElementById("customQuickTags");
+
+  if (!modal || !form) return;
+
+  var selectedServices = [];
+
+  var SERVICES_DATA = [
+    // Company Registration
+    { name: "Private Limited Company Registration", cat: "Company Registration", keywords: "pvt ltd corporate incorporate company startup mca spice" },
+    { name: "Limited Liability Partnership (LLP) Registration", cat: "Company Registration", keywords: "llp partnership incorporation agreement mca" },
+    { name: "One Person Company (OPC) Registration", cat: "Company Registration", keywords: "opc single founder sole director incorporation" },
+    { name: "Sole Proprietorship Registration", cat: "Company Registration", keywords: "proprietor proprietorship sole business udyam" },
+    { name: "Partnership Firm Registration", cat: "Company Registration", keywords: "partnership deed registrar of firms rof" },
+    { name: "Startup India (DPIIT) Registration", cat: "Company Registration", keywords: "dpiit startup tax holiday 80iac angel tax seed fund" },
+    { name: "Public Limited Company Registration", cat: "Company Registration", keywords: "public ltd listed ipo share capital" },
+    { name: "Section 8 Company (NGO) Registration", cat: "NGO Registration", keywords: "section 8 non profit ngo social charity" },
+    { name: "Trust Registration", cat: "NGO Registration", keywords: "trust deed public charitable trust sub registrar" },
+    { name: "Society Registration", cat: "NGO Registration", keywords: "society registration act ngo association" },
+    { name: "FCRA Registration", cat: "NGO Registration", keywords: "foreign contribution regulation act ngo fcra" },
+
+    // Goods & Services Tax (GST)
+    { name: "GST Registration", cat: "Goods & Services Tax", keywords: "gst gstin tax registration new application" },
+    { name: "GST Return Filing (Monthly / Quarterly)", cat: "Goods & Services Tax", keywords: "gstr 1 3b return filing reconciliation input tax credit itc" },
+    { name: "GST Amendment & Modification", cat: "Goods & Services Tax", keywords: "gst core non-core amendment address change" },
+    { name: "GSTR-9 Annual Return Filing", cat: "Goods & Services Tax", keywords: "gstr9 annual return 9c reconciliation audit" },
+    { name: "GSTR-10 Final Return Filing", cat: "Goods & Services Tax", keywords: "gstr10 surrender cancellation final return" },
+    { name: "GST LUT (Letter of Undertaking) Filing", cat: "Goods & Services Tax", keywords: "lut export without tax bond" },
+    { name: "GST Notice Resolution & Assessment", cat: "Goods & Services Tax", keywords: "gst notice scrutiny asmt drc01 demand" },
+    { name: "GST Revocation of Cancellation", cat: "Goods & Services Tax", keywords: "gst revocation restore cancelled gstin" },
+
+    // Income Tax & TDS
+    { name: "Income Tax E-Filing (Individual / Salaried)", cat: "Income Tax", keywords: "itr itr1 itr2 tax filing income tax return refund" },
+    { name: "Business Tax Filing (ITR-3, ITR-4, ITR-5, ITR-6)", cat: "Income Tax", keywords: "corporate tax business itr balance sheet presumptive 44ad" },
+    { name: "TAN Registration", cat: "Income Tax", keywords: "tan tax deduction account number tds" },
+    { name: "TDS Return Filing (24Q, 26Q, 27Q)", cat: "Income Tax", keywords: "tds return quarterly trace 16a certificate" },
+    { name: "Income Tax Notice Assessment & Appeal", cat: "Income Tax", keywords: "tax notice 143 148 139 defect scrutiny" },
+    { name: "Section 80-IAC Startup Tax Exemption Advisory", cat: "Income Tax", keywords: "80iac 3 year tax holiday startup india imb" },
+    { name: "12A & 80G Registration for NGOs", cat: "Income Tax", keywords: "12a 80g tax exemption donation receipt donor" },
+    { name: "Advance Tax Calculation & Advisory", cat: "Income Tax", keywords: "advance tax installment 234b 234c planning" },
+
+    // Corporate Compliances & ROC
+    { name: "Private Limited Annual ROC Compliance", cat: "Corporate Compliance", keywords: "aoc4 mgt7 annual filing balance sheet pvt ltd" },
+    { name: "LLP Annual Compliance (Form 8 & Form 11)", cat: "Corporate Compliance", keywords: "form 8 form 11 llp annual statement of accounts" },
+    { name: "OPC Annual ROC Compliance", cat: "Corporate Compliance", keywords: "opc filing mgt7a aoc4 one person company" },
+    { name: "Section 8 Annual Compliance", cat: "Corporate Compliance", keywords: "section 8 annual return ngo filing" },
+    { name: "DIR-3 KYC / Web KYC Filing", cat: "Corporate Compliance", keywords: "dir3 kyc director din reactivation kyc web" },
+    { name: "ADT-1 Statutory Auditor Appointment", cat: "Corporate Compliance", keywords: "adt1 auditor appointment 30 days" },
+    { name: "DPT-3 Return of Deposits Filing", cat: "Corporate Compliance", keywords: "dpt3 loans advances deposits annual" },
+    { name: "Statutory Financial Audit Coordination", cat: "Corporate Compliance", keywords: "ca audit balance sheet profit loss report" },
+
+    // Event-Based ROC Filing
+    { name: "Add / Appoint Director in Company", cat: "Event-Based ROC", keywords: "dir12 add director board resolution" },
+    { name: "Remove / Resign Director from Company", cat: "Event-Based ROC", keywords: "resignation director dir11 dir12" },
+    { name: "Add / Remove Partner in LLP", cat: "Event-Based ROC", keywords: "form 4 llp partner change admission retirement" },
+    { name: "Change / Amend LLP Agreement", cat: "Event-Based ROC", keywords: "form 3 llp agreement amendment supplementary deed" },
+    { name: "Increase Authorized Share Capital", cat: "Event-Based ROC", keywords: "sh7 authorized capital stamp duty rooc" },
+    { name: "Change Registered Office Address", cat: "Event-Based ROC", keywords: "inc22 registered office change local state rd" },
+    { name: "Change Company Name", cat: "Event-Based ROC", keywords: "inc24 name change run reservation" },
+    { name: "Change Business Activity / MOA Object Clause", cat: "Event-Based ROC", keywords: "moa amendment object clause alteration" },
+    { name: "Issue / Allotment of New Shares (PAS-3)", cat: "Event-Based ROC", keywords: "pas3 share allotment rights issue private placement" },
+    { name: "Change Statutory Auditor", cat: "Event-Based ROC", keywords: "adt2 adt3 casual vacancy auditor resignation" },
+    { name: "Creation / Satisfaction of Charge (CHG-1 / CHG-4)", cat: "Event-Based ROC", keywords: "charge mortgage bank loan chg1 chg4 noc" },
+
+    // Accounting & Financial Services
+    { name: "Bookkeeping & Monthly Accounting", cat: "Accounting & Finance", keywords: "tally quickbooks ledger vouchers journal entries" },
+    { name: "Financial Statements & Balance Sheet Preparation", cat: "Accounting & Finance", keywords: "p&l balance sheet cash flow statement schedule iii" },
+    { name: "Financial Audit Support", cat: "Accounting & Finance", keywords: "internal audit statutory audit support ca" },
+    { name: "Tax Audit Assistance (Section 44AB)", cat: "Accounting & Finance", keywords: "tax audit 3ca 3cb 3cd 1 crore 10 crore" },
+    { name: "Business Due Diligence", cat: "Accounting & Finance", keywords: "financial due diligence legal merger acquisition investment" },
+    { name: "Payroll & Compensation Processing", cat: "Accounting & Finance", keywords: "payslip salary pf esi tds calculation" },
+
+    // Trademark & IP
+    { name: "Trademark Registration & Filing", cat: "Trademark & IP", keywords: "trademark tm brand name logo mark class search" },
+    { name: "Trademark Objection Reply & Legal Drafting", cat: "Trademark & IP", keywords: "tm objection examination report section 9 section 11" },
+    { name: "Trademark Hearing Representation", cat: "Trademark & IP", keywords: "show cause hearing attorney trademark registry" },
+    { name: "Trademark Opposition Notice & Defense", cat: "Trademark & IP", keywords: "tm5 notice counter statement opposition" },
+    { name: "Trademark Renewal (10-Year)", cat: "Trademark & IP", keywords: "tm-r renewal 10 years maintain brand" },
+    { name: "Trademark Transfer / Assignment", cat: "Trademark & IP", keywords: "assignment transfer sale ownership licensing" },
+    { name: "Copyright Registration", cat: "Trademark & IP", keywords: "copyright software literary artistic music video code" },
+    { name: "Patent Search & Registration", cat: "Trademark & IP", keywords: "patent provisional complete specification invention" },
+    { name: "Trademark Infringement Legal Notice", cat: "Trademark & IP", keywords: "cease desist infringement passing off legal notice" },
+
+    // Business & Municipal Licenses
+    { name: "MSME / Udyam Registration Certificate", cat: "Licenses", keywords: "udyam msme small business priority lending subsidy" },
+    { name: "Shop & Establishment Act License", cat: "Licenses", keywords: "gumasta shop act municipal commercial license" },
+    { name: "Trade License Registration", cat: "Licenses", keywords: "trade license municipal corporation nagar nigam" },
+    { name: "Professional Tax Registration (PTEC / PTRC)", cat: "Licenses", keywords: "pt pt registration employer employee state" },
+    { name: "Factory License Registration", cat: "Licenses", keywords: "factories act boiler machinery inspector" },
+    { name: "Labour Welfare Fund Registration", cat: "Licenses", keywords: "lwf labour welfare compliance" },
+
+    // Food & Healthcare
+    { name: "FSSAI Basic Registration", cat: "Food & Health", keywords: "fssai petty food business foostats turnover under 12 lakh" },
+    { name: "FSSAI State / Central Food License", cat: "Food & Health", keywords: "fssai state license central manufacturer restaurant kitchen" },
+    { name: "Drug & Cosmetic License", cat: "Food & Health", keywords: "pharmacy wholesale retail drug cosmetic license" },
+    { name: "Food Import Clearance (FSSAI)", cat: "Food & Health", keywords: "fics food import customs consignment" },
+    { name: "BIS / ISI Certification", cat: "Food & Health", keywords: "bis mark isi quality certification testing" },
+    { name: "Ayush License Registration", cat: "Food & Health", keywords: "ayurvedic unani siddha homeopathy manufacturing" },
+
+    // Import & Export
+    { name: "Import Export Code (IEC) Registration", cat: "Import & Export", keywords: "iec code dgft foreign trade import export" },
+    { name: "ICEGATE Registration", cat: "Import & Export", keywords: "icegate customs edl port clearance" },
+    { name: "RCMC (Export Promotion Council) Registration", cat: "Import & Export", keywords: "rcmc epc fieo export council apeda eepc" },
+    { name: "APEDA Registration", cat: "Import & Export", keywords: "apeda agri food export certification" },
+    { name: "Customs Clearance & Freight Advisory", cat: "Import & Export", keywords: "cha customs clearance shipping port forwarding" },
+    { name: "DGFT Digital Signature (Class 3)", cat: "Import & Export", keywords: "dgft dsc foreign trade signing token" },
+
+    // Workforce & Labour
+    { name: "PF (Provident Fund) Employer Registration", cat: "Workforce & Labour", keywords: "epfo provident fund employer code uan" },
+    { name: "ESI (Employee State Insurance) Registration", cat: "Workforce & Labour", keywords: "esic employee state insurance medical coverage" },
+    { name: "Contract Labour License (CLRA)", cat: "Workforce & Labour", keywords: "contract labour registration staffing agency 50+ workers" },
+    { name: "PSARA License (Security Agency)", cat: "Workforce & Labour", keywords: "private security agency regulation act guard" },
+    { name: "Digital Signature Certificate (Class 3 DSC)", cat: "Workforce & Labour", keywords: "class 3 dsc usb token e-mudhra signing" },
+    { name: "NGO DARPAN NITI Aayog Registration", cat: "Workforce & Labour", keywords: "darpan portal niti aayog government grants" },
+    { name: "ISO 9001:2015 Certification", cat: "Workforce & Labour", keywords: "iso 9001 quality management system qms audit" },
+    { name: "ISO 27001 Information Security Certification", cat: "Workforce & Labour", keywords: "iso 27001 isms data security cyber audit" },
+
+    // Environmental & Pollution
+    { name: "EPR Registration (Plastic / E-Waste / Battery)", cat: "Environmental & Pollution", keywords: "epr cpcb extended producer responsibility recycling" },
+    { name: "Plastic Waste Management Authorization", cat: "Environmental & Pollution", keywords: "spcb cpcb plastic packaging brand owner" },
+    { name: "Consent to Establish (CTE) - SPCB", cat: "Environmental & Pollution", keywords: "cte pollution consent state pollution board factory" },
+    { name: "Consent to Operate (CTO) - SPCB", cat: "Environmental & Pollution", keywords: "cto pollution operation consent renewal" },
+    { name: "Environmental Audit & EIA Clearance", cat: "Environmental & Pollution", keywords: "environmental impact assessment eia green clearance" },
+
+    // Business Closure & Conversion
+    { name: "Private Limited Company Closure (STK-2)", cat: "Business Closure", keywords: "strike off pvt ltd fast track closure dissolution stk2" },
+    { name: "LLP Closure / Strike Off (Form 24)", cat: "Business Closure", keywords: "form 24 llp closure winding up" },
+    { name: "Sole Proprietorship / Partnership Dissolution", cat: "Business Closure", keywords: "firm dissolution partnership winding up closure" },
+    { name: "Sole Proprietorship to Private Limited Conversion", cat: "Business Conversion", keywords: "convert proprietorship to pvt ltd slumpsale spice" },
+    { name: "Partnership Firm to LLP Conversion", cat: "Business Conversion", keywords: "convert partnership to llp form 17 asset takeover" },
+    { name: "LLP to Private Limited Company Conversion", cat: "Business Conversion", keywords: "convert llp to pvt ltd part i companies act" },
+    { name: "One Person Company (OPC) to Private Limited Conversion", cat: "Business Conversion", keywords: "convert opc to pvt ltd voluntary mandatory" },
+
+    // Web Solutions & Digital
+    { name: "Dynamic Corporate Website Development", cat: "Web Solutions", keywords: "website design wordpress custom web development responsive" },
+    { name: "E-Commerce Web Portal & Payment Gateway", cat: "Web Solutions", keywords: "ecommerce shopify woocommerce custom payment store" },
+    { name: "Custom Web Application & SaaS Development", cat: "Web Solutions", keywords: "saas web app portal database cloud react node" },
+    { name: "Search Engine Optimization (SEO) Package", cat: "Digital Marketing", keywords: "seo ranking google search organic traffic backlinks" },
+    { name: "Social Media Marketing (SMM)", cat: "Digital Marketing", keywords: "social media instagram linkedin facebook campaigns" },
+    { name: "Google Ads & B2B Lead Generation", cat: "Digital Marketing", keywords: "ppc google ads lead gen performance marketing" },
+    { name: "Corporate Logo & Brand Identity Design", cat: "Branding & Design", keywords: "logo design brand guidelines typography identity" },
+    { name: "Company Profile & Pitch Deck Designing", cat: "Branding & Design", keywords: "corporate brochure profile pdf investor deck" },
+
+    // Fundraising & Startup Capital
+    { name: "Fundraising & Government Scheme Application", cat: "Fundraising", keywords: "fundraising funding scheme grant sisfs investor pitch capital loans seed" },
+    // { name: "Startup India Seed Fund Scheme (SISFS)", cat: "Fundraising", keywords: "sisfs seed fund grant dpiit startup capital incubator funding" },
+    // { name: "Investor Pitch Deck & Financial Modeling", cat: "Fundraising", keywords: "pitch deck presentation investor valuation model projection fundraising" },
+    // { name: "MUDRA & MSME Credit Loan Facilitation", cat: "Fundraising", keywords: "mudra loan cgtmse credit collateral free bank debt funding" },
+    // { name: "Angel & VC Funding Advisory", cat: "Fundraising", keywords: "angel investment vc venture capital due diligence term sheet equity fundraising" },
+    // { name: "Stand-Up India & CGTMSE Scheme Application", cat: "Fundraising", keywords: "stand up india cgtmse credit guarantee collateral free funding grant" }
+  ];
+
+  window.SERVICES_CATALOG = SERVICES_DATA;
+
+  function openModal() {
+    var successMsg = modal.querySelector(".cr-form-success") || document.getElementById("customPlanFormSuccess");
+    if (successMsg) {
+      successMsg.classList.remove("show");
+      successMsg.style.display = "none";
+    }
+    if (servicesError) servicesError.style.display = "none";
+
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+
+    var nameField = document.getElementById("customPlanName");
+    if (nameField) {
+      setTimeout(function () { nameField.focus(); }, 200);
+    }
+  }
+
+  function closeModal() {
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+
+    if (searchResults) searchResults.style.display = "none";
+    if (searchClearBtn) searchClearBtn.style.display = "none";
+    if (searchInput) searchInput.value = "";
+  }
+
+  function renderChips() {
+    if (!selectedChipsContainer) return;
+    selectedChipsContainer.innerHTML = "";
+
+    if (selectedServices.length === 0) {
+      if (emptyHint) emptyHint.style.display = "block";
+      if (countBadge) countBadge.textContent = "(0 selected)";
+      if (hiddenServicesInput) hiddenServicesInput.value = "";
+    } else {
+      if (emptyHint) emptyHint.style.display = "none";
+      if (countBadge) countBadge.textContent = "(" + selectedServices.length + " selected)";
+      if (hiddenServicesInput) hiddenServicesInput.value = selectedServices.join("; ");
+
+      selectedServices.forEach(function (serviceName) {
+        var chip = document.createElement("div");
+        chip.className = "custom-service-chip";
+        chip.setAttribute("data-name", serviceName);
+
+        var span = document.createElement("span");
+        span.textContent = serviceName;
+
+        var removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.className = "custom-chip-remove";
+        removeBtn.setAttribute("aria-label", "Remove " + serviceName);
+        removeBtn.innerHTML = "&times;";
+        removeBtn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          removeService(serviceName);
+        });
+
+        chip.appendChild(span);
+        chip.appendChild(removeBtn);
+        selectedChipsContainer.appendChild(chip);
+      });
+    }
+
+    // Update quick tags visual state
+    if (quickTags) {
+      var buttons = quickTags.querySelectorAll(".custom-quick-btn");
+      buttons.forEach(function (btn) {
+        var sName = btn.getAttribute("data-add-service");
+        var isAdded = selectedServices.indexOf(sName) !== -1;
+        btn.classList.toggle("is-added", isAdded);
+      });
+    }
+  }
+
+  function addService(name) {
+    if (!name) return;
+    var trimmed = name.trim();
+    if (selectedServices.indexOf(trimmed) !== -1) {
+      // Already selected
+      return;
+    }
+    selectedServices.push(trimmed);
+    renderChips();
+
+    if (servicesError) servicesError.style.display = "none";
+
+    if (searchInput) searchInput.value = "";
+    if (searchClearBtn) searchClearBtn.style.display = "none";
+    if (searchResults) searchResults.style.display = "none";
+  }
+
+  function removeService(name) {
+    selectedServices = selectedServices.filter(function (s) {
+      return s !== name;
+    });
+    renderChips();
+  }
+
+  function filterServices(query) {
+    if (!query) return [];
+    var q = query.toLowerCase().trim();
+    var terms = q.split(/\s+/).filter(Boolean);
+
+    return SERVICES_DATA.filter(function (item) {
+      var hay = (item.name + " " + item.cat + " " + (item.keywords || "")).toLowerCase();
+      return terms.every(function (t) {
+        return hay.indexOf(t) !== -1;
+      });
+    });
+  }
+
+  function renderSearchResults(results, query) {
+    if (!searchResults) return;
+
+    if (results.length === 0) {
+      searchResults.innerHTML = '<div style="padding: 12px 14px; text-align: center; color: var(--muted, #64748b); font-size: 12.5px;">No matching services found. You can note special requirements in the message box below!</div>';
+      searchResults.style.display = "block";
+      return;
+    }
+
+    var html = "";
+    var displayList = results.slice(0, 10);
+
+    displayList.forEach(function (item) {
+      var isAlreadySelected = selectedServices.indexOf(item.name) !== -1;
+      html += '<div class="custom-search-result-item ' + (isAlreadySelected ? 'is-selected' : '') + '" data-service-name="' + item.name.replace(/"/g, '&quot;') + '">';
+      html += '  <span class="custom-result-title">' + item.name + '</span>';
+      html += '  <span class="custom-result-cat">' + item.cat + '</span>';
+      html += '</div>';
+    });
+
+    searchResults.innerHTML = html;
+    searchResults.style.display = "block";
+  }
+
+  // Event Listeners
+  if (openBtn) {
+    openBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      openModal();
+    });
+  }
+
+  document.addEventListener("click", function (e) {
+    var trigger = e.target.closest("[data-open-custom-plan]");
+    if (trigger && trigger !== openBtn) {
+      e.preventDefault();
+      openModal();
+    }
+  });
+
+  modal.querySelectorAll("[data-close-custom-plan]").forEach(function (btn) {
+    btn.addEventListener("click", closeModal);
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && modal.classList.contains("is-open")) {
+      closeModal();
+    }
+  });
+
+  if (searchInput) {
+    searchInput.addEventListener("input", function () {
+      var val = searchInput.value.trim();
+      if (searchClearBtn) {
+        searchClearBtn.style.display = val ? "block" : "none";
+      }
+
+      if (!val) {
+        if (searchResults) searchResults.style.display = "none";
+        return;
+      }
+
+      var matches = filterServices(val);
+      renderSearchResults(matches, val);
+    });
+
+    searchInput.addEventListener("focus", function () {
+      var val = searchInput.value.trim();
+      if (val) {
+        var matches = filterServices(val);
+        renderSearchResults(matches, val);
+      }
+    });
+  }
+
+  if (searchClearBtn) {
+    searchClearBtn.addEventListener("click", function () {
+      if (searchInput) {
+        searchInput.value = "";
+        searchInput.focus();
+      }
+      searchClearBtn.style.display = "none";
+      if (searchResults) searchResults.style.display = "none";
+    });
+  }
+
+  // Delegated click on search results
+  if (searchResults) {
+    searchResults.addEventListener("click", function (e) {
+      var item = e.target.closest(".custom-search-result-item");
+      if (!item) return;
+      var serviceName = item.getAttribute("data-service-name");
+      if (serviceName) {
+        addService(serviceName);
+      }
+    });
+  }
+
+  // Click outside search container to close results
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest(".custom-search-container") && searchResults) {
+      searchResults.style.display = "none";
+    }
+  });
+
+  // Quick Tags
+  if (quickTags) {
+    quickTags.addEventListener("click", function (e) {
+      var btn = e.target.closest(".custom-quick-btn");
+      if (!btn) return;
+      e.preventDefault();
+      var sName = btn.getAttribute("data-add-service");
+      if (sName) {
+        addService(sName);
+      }
+    });
+  }
+
+  // Form Submission
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    if (selectedServices.length === 0) {
+      if (servicesError) {
+        servicesError.style.display = "block";
+        servicesError.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+      if (searchInput) searchInput.focus();
+      return;
+    }
+
+    if (servicesError) servicesError.style.display = "none";
+
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    // Ensure hidden services input is populated
+    if (hiddenServicesInput) {
+      hiddenServicesInput.value = selectedServices.join("; ");
+    }
+
+    var successEl = form.querySelector(".cr-form-success") || document.getElementById("customPlanFormSuccess");
+    if (typeof handleWeb3FormsSubmit === "function") {
+      var res = await handleWeb3FormsSubmit(e, form, successEl);
+      if (res && res.success) {
+        selectedServices = [];
+        renderChips();
+        setTimeout(function () {
+          closeModal();
+        }, 3500);
+      }
+    }
+  });
+
+  // Initial render
+  renderChips();
+})();
+
+/* =====================================================
    PLAN CATEGORY TABS SWITCHER
 ===================================================== */
 (function () {
@@ -1605,7 +2046,10 @@ window.addEventListener("resize", () => {
     modal.setAttribute("aria-hidden", "true");
     modal.setAttribute("data-for-quotation", "false");
     window.pendingQuotationAfterLead = false;
-    document.body.style.overflow = "";
+    var otherOpen = document.querySelector(".plan-modal.is-open, .funding-poster-modal.is-open, .quotation-modal.is-open, .custom-plan-modal.is-open");
+    if (!otherOpen) {
+      document.body.style.overflow = "";
+    }
     if (eyebrow) eyebrow.textContent = "FREE CONSULTATION";
     if (desc) desc.textContent = "Share your details and we will get back during business hours.";
 
@@ -1644,6 +2088,10 @@ window.addEventListener("resize", () => {
 
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape" && modal.classList.contains("is-open")) {
+      var posterOpen = document.getElementById("fundingPosterModal");
+      if (posterOpen && posterOpen.classList.contains("is-open")) {
+        return; // Let posterModal close first
+      }
       closeLeadModal();
     }
   });
@@ -1698,6 +2146,75 @@ window.addEventListener("resize", () => {
       }
     });
   }
+
+  // Floating Lead Button Handler
+  var floatBtn = document.getElementById("floatingLeadBtn");
+  if (floatBtn) {
+    floatBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      openLeadModal(false);
+    });
+  }
+
+  // Funding Poster Modal Controller
+  var posterModal = document.getElementById("fundingPosterModal");
+  function openFundingPosterModal() {
+    if (!posterModal) return;
+    posterModal.classList.add("is-open");
+    posterModal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeFundingPosterModal() {
+    if (!posterModal) return;
+    posterModal.classList.remove("is-open");
+    posterModal.setAttribute("aria-hidden", "true");
+    var otherOpen = document.querySelector(".lead-modal.is-open:not(#fundingPosterModal), .plan-modal.is-open, .quotation-modal.is-open, .custom-plan-modal.is-open");
+    if (!otherOpen) {
+      document.body.style.overflow = "";
+    } else {
+      var leadNameInput = document.getElementById("leadName");
+      if (leadNameInput && document.getElementById("leadModal") && document.getElementById("leadModal").classList.contains("is-open")) {
+        setTimeout(function () { leadNameInput.focus(); }, 100);
+      }
+    }
+  }
+
+  if (posterModal) {
+    posterModal.querySelectorAll("[data-close-funding-poster]").forEach(function (el) {
+      el.addEventListener("click", closeFundingPosterModal);
+    });
+
+    var switchBtn = document.getElementById("switchToLeadModalBtn");
+    if (switchBtn) {
+      switchBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        closeFundingPosterModal();
+        openLeadModal(false);
+      });
+    }
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && posterModal.classList.contains("is-open")) {
+        closeFundingPosterModal();
+      }
+    });
+  }
+
+  window.openFundingPosterModal = openFundingPosterModal;
+  window.closeFundingPosterModal = closeFundingPosterModal;
+
+  // 5-Second Automatic Popup Timer on Index Page
+  setTimeout(function () {
+    var otherModalOpen = document.querySelector(".plan-modal.is-open, .quotation-modal.is-open, .custom-plan-modal.is-open");
+    if (!otherModalOpen) {
+      // Both lead modal and funding poster modal appear on index page
+      openLeadModal(false);
+      if (posterModal) {
+        openFundingPosterModal();
+      }
+    }
+  }, 5000);
 })();
 
 (function () {
@@ -3873,4 +4390,4 @@ window.addEventListener("resize", () => {
   } else {
     initVisitorCounter();
   }
-})();
+})();

@@ -1488,5 +1488,245 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 })();
 
+/* =====================================================
+   GLOBAL LEAD MODAL, FLOATING BUTTON & 5-SECOND POPUP ENGINE
+   (Automatically serves all 152 service pages)
+===================================================== */
+(function () {
+  'use strict';
+
+  function getRootPrefix() {
+    var brandLink = document.querySelector(".header-row-2 .brand, a.brand");
+    if (brandLink && brandLink.getAttribute("href")) {
+      var href = brandLink.getAttribute("href");
+      var idx = href.lastIndexOf("index.html");
+      if (idx !== -1) return href.substring(0, idx);
+    }
+    var script = document.querySelector('script[src*="company_registration.js"]');
+    if (script) {
+      var src = script.getAttribute("src") || "";
+      var idx = src.indexOf("company_registration.js");
+      if (idx !== -1) return src.substring(0, idx);
+    }
+    return "";
+  }
+
+  function ensureFloatingLeadButton() {
+    if (document.getElementById("floatingLeadBtn")) return;
+
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "floating-lead-btn";
+    btn.id = "floatingLeadBtn";
+    btn.setAttribute("aria-label", "Get Free Consultation");
+    btn.setAttribute("title", "Get Free Consultation");
+    btn.innerHTML =
+      '<span class="floating-lead-pulse"></span>' +
+      '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>' +
+      '</svg>' +
+      '<span class="floating-lead-tooltip">Get Consultation</span>';
+
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      openLeadModal();
+    });
+
+    document.body.appendChild(btn);
+  }
+
+  function ensureLeadModal() {
+    var modal = document.getElementById("leadModal");
+    if (modal) return modal;
+
+    var modalHtml =
+      '<div class="lead-modal-backdrop" data-close-lead></div>' +
+      '<div class="lead-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="leadModalTitle">' +
+      '  <button type="button" class="lead-modal-close" data-close-lead aria-label="Close">&times;</button>' +
+      '  <div class="lead-modal-header">' +
+      '    <span class="lead-eyebrow">FREE CONSULTATION</span>' +
+      '    <h2 id="leadModalTitle">Tell us what you need</h2>' +
+      '    <p>Share your details and our expert will contact you shortly.</p>' +
+      '  </div>' +
+      '  <form id="leadModalForm" class="lead-modal-form" novalidate method="POST" action="https://api.web3forms.com/submit">' +
+      '    <input type="hidden" name="access_key" value="f9e8e977-8a5c-4979-8cf0-e303edbcac00">' +
+      '    <input type="hidden" name="subject" value="New Consultation Lead: Service Page">' +
+      '    <input type="hidden" name="from_name" value="Corporate Mart Website">' +
+      '    <input type="checkbox" name="botcheck" class="hidden" style="display:none">' +
+      '    <div class="lead-field">' +
+      '      <label for="leadName">Full name</label>' +
+      '      <input id="leadName" name="name" type="text" placeholder="Your name" required autocomplete="name">' +
+      '    </div>' +
+      '    <div class="lead-field">' +
+      '      <label for="leadPhone">Mobile number</label>' +
+      '      <input id="leadPhone" name="phone" type="tel" placeholder="10-digit mobile" pattern="[0-9]{10}" maxlength="10" required autocomplete="tel">' +
+      '    </div>' +
+      '    <div class="lead-field">' +
+      '      <label for="leadEmail">Email</label>' +
+      '      <input id="leadEmail" name="email" type="email" placeholder="you@example.com" required autocomplete="email">' +
+      '    </div>' +
+      '    <div class="lead-field">' +
+      '      <label for="leadService">Service you want</label>' +
+      '      <select id="leadService" name="service" required>' +
+      '        <option value="" disabled>Select a service</option>' +
+      '        <option value="Private Limited Company">Private Limited Company</option>' +
+      '        <option value="LLP Registration">Limited Liability Partnership (LLP)</option>' +
+      '        <option value="One Person Company (OPC)">One Person Company (OPC)</option>' +
+      '        <option value="Sole Proprietorship">Sole Proprietorship</option>' +
+      '        <option value="Partnership Firm">Partnership Firm</option>' +
+      '        <option value="Startup India Registration">Startup India Registration</option>' +
+      '        <option value="GST Registration">GST Registration</option>' +
+      '        <option value="GST Return Filing">GST Return Filing</option>' +
+      '        <option value="Income Tax Filing">Income Tax Filing</option>' +
+      '        <option value="Corporate Compliance & ROC">Corporate Compliance & ROC</option>' +
+      '        <option value="Trademark Registration">Trademark Registration</option>' +
+      '        <option value="FSSAI License">FSSAI Food License</option>' +
+      '        <option value="MSME / Udyam Registration">MSME / Udyam Registration</option>' +
+      '        <option value="IEC Registration">Import Export Code (IEC)</option>' +
+      '        <option value="ISO Certification">ISO Certification</option>' +
+      '        <option value="Environmental & Pollution NOC">Environmental & Pollution NOC</option>' +
+      '        <option value="Business Closure / Strike Off">Business Closure / Strike Off</option>' +
+      '        <option value="Web Solutions & Digital Marketing">Web Solutions & Digital Marketing</option>' +
+      '        <option value="Fundraising & Government Grants">Fundraising & Government Grants</option>' +
+      '        <option value="Other">Other Services</option>' +
+      '      </select>' +
+      '    </div>' +
+      '    <button type="submit" class="lead-submit">Submit request <span>&rsaquo;</span></button>' +
+      '    <p class="lead-note">100% confidential &middot; Mon to Sat, 9:30 AM to 6:30 PM</p>' +
+      '    <div class="cr-form-success" id="leadFormSuccess" style="display:none;">Thanks! Your consultation request has been received. Our expert will contact you shortly.</div>' +
+      '  </form>' +
+      '</div>';
+
+    var container = document.createElement("div");
+    container.className = "lead-modal";
+    container.id = "leadModal";
+    container.setAttribute("aria-hidden", "true");
+    container.innerHTML = modalHtml;
+    document.body.appendChild(container);
+
+    // Bind close events
+    container.querySelectorAll("[data-close-lead]").forEach(function (el) {
+      el.addEventListener("click", closeLeadModal);
+    });
+
+    // Bind form submission
+    var form = container.querySelector("#leadModalForm");
+    if (form) {
+      form.addEventListener("submit", async function (e) {
+        if (!form.checkValidity()) {
+          form.reportValidity();
+          return;
+        }
+        var successEl = form.querySelector(".cr-form-success") || document.getElementById("leadFormSuccess");
+        if (typeof handleWeb3FormsSubmit === "function") {
+          var res = await handleWeb3FormsSubmit(e, form, successEl);
+          if (res && res.success) {
+            setTimeout(function () {
+              closeLeadModal();
+            }, 3500);
+          }
+        }
+      });
+    }
+
+    return container;
+  }
+
+  function detectCurrentService() {
+    var select = document.getElementById("leadService");
+    if (!select) return;
+
+    var h1 = document.querySelector("h1");
+    var titleText = (h1 ? h1.textContent : document.title) || "";
+    var tLower = titleText.toLowerCase();
+
+    if (tLower.indexOf("gst") !== -1) select.value = "GST Registration";
+    else if (tLower.indexOf("trademark") !== -1 || tLower.indexOf("tm") !== -1) select.value = "Trademark Registration";
+    else if (tLower.indexOf("llp") !== -1) select.value = "LLP Registration";
+    else if (tLower.indexOf("private limited") !== -1 || tLower.indexOf("pvt ltd") !== -1) select.value = "Private Limited Company";
+    else if (tLower.indexOf("opc") !== -1) select.value = "One Person Company (OPC)";
+    else if (tLower.indexOf("proprietorship") !== -1) select.value = "Sole Proprietorship";
+    else if (tLower.indexOf("partnership") !== -1) select.value = "Partnership Firm";
+    else if (tLower.indexOf("startup india") !== -1) select.value = "Startup India Registration";
+    else if (tLower.indexOf("fssai") !== -1 || tLower.indexOf("food") !== -1) select.value = "FSSAI License";
+    else if (tLower.indexOf("msme") !== -1 || tLower.indexOf("udyam") !== -1) select.value = "MSME / Udyam Registration";
+    else if (tLower.indexOf("iso") !== -1) select.value = "ISO Certification";
+    else if (tLower.indexOf("iec") !== -1 || tLower.indexOf("export") !== -1) select.value = "IEC Registration";
+    else if (tLower.indexOf("tax") !== -1 || tLower.indexOf("itr") !== -1) select.value = "Income Tax Filing";
+    else if (tLower.indexOf("roc") !== -1 || tLower.indexOf("compliance") !== -1) select.value = "Corporate Compliance & ROC";
+    else if (tLower.indexOf("fund") !== -1 || tLower.indexOf("scheme") !== -1) select.value = "Fundraising & Government Grants";
+    else if (tLower.indexOf("closure") !== -1 || tLower.indexOf("dissolution") !== -1) select.value = "Business Closure / Strike Off";
+    else if (tLower.indexOf("website") !== -1 || tLower.indexOf("digital") !== -1 || tLower.indexOf("marketing") !== -1) select.value = "Web Solutions & Digital Marketing";
+    else select.selectedIndex = 1;
+  }
+
+  function openLeadModal() {
+    var modal = ensureLeadModal();
+    detectCurrentService();
+
+    var successMsg = modal.querySelector(".cr-form-success");
+    if (successMsg) {
+      successMsg.classList.remove("show");
+      successMsg.style.display = "none";
+    }
+
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+
+    var nameField = modal.querySelector("#leadName");
+    if (nameField) {
+      setTimeout(function () { nameField.focus(); }, 200);
+    }
+  }
+
+  function closeLeadModal() {
+    var modal = document.getElementById("leadModal");
+    if (!modal) return;
+
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+
+    var successMsg = modal.querySelector(".cr-form-success");
+    if (successMsg) {
+      successMsg.classList.remove("show");
+      successMsg.style.display = "none";
+    }
+  }
+
+  window.openLeadModal = openLeadModal;
+  window.closeLeadModal = closeLeadModal;
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      var modal = document.getElementById("leadModal");
+      if (modal && modal.classList.contains("is-open")) {
+        closeLeadModal();
+      }
+    }
+  });
+
+  function initLeadSystem() {
+    ensureLeadModal();
+    ensureFloatingLeadButton();
+
+    // 5-Second Automatic Popup Timer on Service Pages
+    setTimeout(function () {
+      var anyOpen = document.querySelector(".lead-modal.is-open, .plan-modal.is-open, .si-cert-lightbox.is-open");
+      if (!anyOpen) {
+        openLeadModal();
+      }
+    }, 5000);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initLeadSystem);
+  } else {
+    initLeadSystem();
+  }
+})();
+
+
 
 
