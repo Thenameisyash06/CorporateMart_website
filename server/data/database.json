@@ -106,18 +106,6 @@
       "createdAt": "2026-09-15T06:20:11.182Z"
     },
     {
-      "id": "usr_eb4cfbc77b0aef10",
-      "name": "Yash Dubey",
-      "email": "yashd9405@gmail.com",
-      "phone": "+919516449229",
-      "salt": "f015ef32953edf250fd961d3c534daca",
-      "passwordHash": "86de82dcffa6de56a1c40f649e2c196567582a138d89c3e6b62d34aacb023daff22a0f298f950bd437fb2f6562e229d37b793ff58ed778f0bea51e8253d5c9cd",
-      "plan": "pro",
-      "subscriptionExpiresAt": "2026-10-15T08:28:25.297Z",
-      "createdAt": "2026-09-15T08:24:15.550Z",
-      "role": "admin"
-    },
-    {
       "id": "usr_4d00e2ea415f3d37",
       "name": "Rohan Sharma",
       "email": "test_1789463738033@corporatemart.in",
@@ -219,6 +207,30 @@
       "plan": "pro",
       "subscriptionExpiresAt": "2026-10-19T12:04:32.837Z",
       "createdAt": "2026-09-19T12:04:32.730Z"
+    },
+    {
+      "id": "usr_8c7b2ffdb009b032",
+      "name": "Rohan Sharma",
+      "email": "test_1789965896989@corporatemart.in",
+      "phone": "+91 98765 43210",
+      "salt": "58a5101a56ab4569c5494bc7ccf86ea9",
+      "passwordHash": "77116ecf39faf5900f48ffd1c8cde6a17876e85f47a557aa27280ae41f8b1f083d8b2353b0c1ba80255bf35db4e7624b273077e2221ec622c0926548ec04a250",
+      "role": "user",
+      "plan": "pro",
+      "subscriptionExpiresAt": "2026-10-21T04:44:57.138Z",
+      "createdAt": "2026-09-21T04:44:57.040Z"
+    },
+    {
+      "id": "usr_658e4f5fe3f6b5b7",
+      "name": "Regular User",
+      "email": "regular_1789965903792@example.com",
+      "phone": "9999999999",
+      "salt": "25413ec4f03b76be4844aaaf9d67afe9",
+      "passwordHash": "6819481f4c4417f8a4c84c32aea420ea6a050116bab69263641e351dff5afc5979fc1458e94133afb739be2a8c0ab81b05171766a2221e8f72030699552d07b3",
+      "role": "user",
+      "plan": "free",
+      "subscriptionExpiresAt": null,
+      "createdAt": "2026-09-21T04:45:03.860Z"
     }
   ],
   "transactions": [
@@ -361,6 +373,16 @@
       "planId": "pro_99",
       "status": "success",
       "createdAt": "2026-09-19T12:04:32.859Z"
+    },
+    {
+      "id": "tx_b36441505f96d0b8",
+      "userId": "usr_8c7b2ffdb009b032",
+      "orderId": "order_test_123",
+      "paymentId": "pay_test_456",
+      "amount": 99,
+      "planId": "pro_99",
+      "status": "success",
+      "createdAt": "2026-09-21T04:44:57.160Z"
     }
   ]
 }

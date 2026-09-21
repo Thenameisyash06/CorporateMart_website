@@ -6,12 +6,17 @@ const mongoose = require('mongoose');
 
 const User = require('./models/User');
 const Transaction = require('./models/Transaction');
+const { VisitorRecord, VisitorStats } = require('./models/Visitor');
 
 const IS_SERVERLESS = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 const DB_FILE = IS_SERVERLESS
   ? path.join('/tmp', 'database.json')
   : path.join(__dirname, 'data', 'database.json');
+const VISITORS_FILE = IS_SERVERLESS
+  ? path.join('/tmp', 'visitors.json')
+  : path.join(__dirname, 'data', 'visitors.json');
 const JWT_SECRET = process.env.JWT_SECRET || 'corporate_mart_secret_key_2026_x89a!secure';
+const INITIAL_VISITOR_COUNT = parseInt(process.env.INITIAL_VISITOR_COUNT, 10) || 29;
 
 let isMongoConnected = false;
 let mongoPromise = null;
@@ -68,11 +73,11 @@ function seedDefaultAdmin(data) {
   if (!Array.isArray(data.users)) data.users = [];
 
   // Ensure yashd9405@gmail.com is admin
-  const yash = data.users.find(u => u.email && u.email.toLowerCase() === 'yashd9405@gmail.com');
-  if (yash && yash.role !== 'admin') {
-    yash.role = 'admin';
-    modified = true;
-  }
+  // const yash = data.users.find(u => u.email && u.email.toLowerCase() === 'yashd9405@gmail.com');
+  // if (yash && yash.role !== 'admin') {
+  //   yash.role = 'admin';
+  //   modified = true;
+  // }
 
   // Ensure admin@corporatemart.in exists as an admin
   const adminExists = data.users.find(u => u.email && u.email.toLowerCase() === 'admin@corporatemart.in');
@@ -264,7 +269,7 @@ async function findUserById(id) {
 async function createUser({ name, email, phone = '', password, role = 'user' }) {
   const cleanEmail = String(email).trim().toLowerCase();
   const cleanPhone = String(phone || '').trim();
-  const userRole = (role === 'admin' || cleanEmail === 'admin@corporatemart.in' || cleanEmail === 'yashd9405@gmail.com') ? 'admin' : 'user';
+  const userRole = (role === 'admin' || cleanEmail === 'admin@corporatemart.in') ? 'admin' : 'user';
   await ensureMongoConnected();
   const existing = await findUserByEmail(cleanEmail);
   if (existing) {
@@ -457,7 +462,135 @@ async function resetUserPassword({ email, phone, newPassword }) {
 }
 
 function isConnectedToMongo() {
-  return Boolean(isMongoConnected || (mongoose.connection && mongoose.connection.readyState >= 1));
+  return Boolean(isMongoConnected && mongoose.connection && mongoose.connection.readyState === 1);
+}
+
+// ==========================================
+// UNIQUE VISITOR TRACKING ENGINE
+// ==========================================
+
+function readVisitorsDB() {
+  if (!fs.existsSync(VISITORS_FILE)) {
+    const initialData = {
+      count: INITIAL_VISITOR_COUNT,
+      uniqueKeys: {}
+    };
+    try {
+      fs.writeFileSync(VISITORS_FILE, JSON.stringify(initialData, null, 2), 'utf8');
+    } catch (e) {}
+    return initialData;
+  }
+  try {
+    const raw = fs.readFileSync(VISITORS_FILE, 'utf8');
+    const data = JSON.parse(raw);
+    if (typeof data.count !== 'number') data.count = INITIAL_VISITOR_COUNT;
+    if (!data.uniqueKeys || typeof data.uniqueKeys !== 'object') data.uniqueKeys = {};
+    return data;
+  } catch (e) {
+    return { count: INITIAL_VISITOR_COUNT, uniqueKeys: {} };
+  }
+}
+
+function writeVisitorsDB(data) {
+  try {
+    fs.writeFileSync(VISITORS_FILE, JSON.stringify(data, null, 2), 'utf8');
+  } catch (e) {
+    console.error('Error writing visitors database:', e.message);
+  }
+}
+
+async function recordVisitorHit(visitorId, clientIp, userAgent) {
+  const cleanVisitorId = (visitorId || '').trim();
+  const cleanIp = (clientIp || '').trim();
+  const cleanUa = (userAgent || '').trim();
+
+  // Create deterministic hash for IP+UA to handle visitors without client-side storage
+  const ipHash = crypto.createHash('sha256').update(cleanIp + '_' + cleanUa).digest('hex').slice(0, 32);
+  const primaryKey = cleanVisitorId || ipHash;
+
+  if (isConnectedToMongo()) {
+    try {
+      // Initialize stats document if missing
+      let stats = await VisitorStats.findOne({ key: 'global_visitor_stats' });
+      if (!stats) {
+        stats = await VisitorStats.create({
+          key: 'global_visitor_stats',
+          uniqueCount: INITIAL_VISITOR_COUNT,
+          lastUpdated: new Date()
+        });
+      }
+
+      // Check if visitor is already recorded
+      let record = await VisitorRecord.findOne({ visitorKey: primaryKey });
+      if (record) {
+        record.lastSeen = new Date();
+        await record.save();
+        return {
+          count: stats.uniqueCount,
+          isNew: false
+        };
+      }
+
+      // New unique visitor!
+      await VisitorRecord.create({
+        visitorKey: primaryKey,
+        ipHash,
+        userAgent: cleanUa.slice(0, 200),
+        firstSeen: new Date(),
+        lastSeen: new Date()
+      });
+
+      stats.uniqueCount += 1;
+      stats.lastUpdated = new Date();
+      await stats.save();
+
+      // Mirror to local file
+      const local = readVisitorsDB();
+      local.count = stats.uniqueCount;
+      local.uniqueKeys[primaryKey] = { firstSeen: new Date().toISOString(), ipHash };
+      writeVisitorsDB(local);
+
+      return {
+        count: stats.uniqueCount,
+        isNew: true
+      };
+    } catch (err) {
+      console.warn('Mongo visitor tracking error, falling back to local file:', err.message);
+    }
+  }
+
+  // Local file storage engine
+  const local = readVisitorsDB();
+  if (local.uniqueKeys && local.uniqueKeys[primaryKey]) {
+    return {
+      count: local.count,
+      isNew: false
+    };
+  }
+
+  // Record new unique visitor
+  local.uniqueKeys[primaryKey] = {
+    firstSeen: new Date().toISOString(),
+    ipHash
+  };
+  local.count = (local.count || 0) + 1;
+  writeVisitorsDB(local);
+
+  return {
+    count: local.count,
+    isNew: true
+  };
+}
+
+async function getVisitorCount() {
+  if (isConnectedToMongo()) {
+    try {
+      const stats = await VisitorStats.findOne({ key: 'global_visitor_stats' });
+      if (stats) return stats.uniqueCount;
+    } catch (e) {}
+  }
+  const local = readVisitorsDB();
+  return typeof local.count === 'number' ? local.count : INITIAL_VISITOR_COUNT;
 }
 
 module.exports = {
@@ -473,5 +606,7 @@ module.exports = {
   recordTransaction,
   createToken,
   verifyToken,
-  sanitizeUser
+  sanitizeUser,
+  recordVisitorHit,
+  getVisitorCount
 };

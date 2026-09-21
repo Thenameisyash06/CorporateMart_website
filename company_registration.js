@@ -1414,4 +1414,79 @@ document.addEventListener("DOMContentLoaded", () => {
   reveals.forEach(function (el) { observer.observe(el); });
 })();
 
+// ==========================================
+// UNIQUE VISITOR COUNTER CLIENT ENGINE
+// ==========================================
+(function () {
+  if (window.__cmVisitorCounterInitialized) return;
+  window.__cmVisitorCounterInitialized = true;
+
+  function initVisitorCounter() {
+    var container = document.querySelector('.visitor-counter-display') || document.getElementById('visitorCounterDisplay');
+    if (!container) return;
+
+    function renderDigits(count) {
+      var num = Math.max(0, parseInt(count, 10) || 0);
+      var str = String(num).padStart(6, '0');
+      var html = '<div class="visitor-digit-grid" aria-label="Unique Visitors: ' + num + '">';
+      for (var i = 0; i < str.length; i++) {
+        html += '<span class="visitor-digit">' + str[i] + '</span>';
+      }
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    var STORAGE_KEY = 'cm_visitor_id';
+    var CACHE_KEY = 'cm_cached_visitor_count';
+    var visitorId = '';
+    try {
+      visitorId = localStorage.getItem(STORAGE_KEY);
+      if (!visitorId) {
+        visitorId = 'cm_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 9);
+        localStorage.setItem(STORAGE_KEY, visitorId);
+      }
+    } catch (e) {
+      visitorId = 'cm_' + Date.now().toString(36);
+    }
+
+    var cached = 29;
+    try {
+      var stored = localStorage.getItem(CACHE_KEY);
+      if (stored) cached = parseInt(stored, 10) || 29;
+    } catch (e) {}
+    renderDigits(cached);
+
+    var apiUrl = '/api/visitors/hit';
+    if (window.location.protocol === 'file:') {
+      apiUrl = 'http://localhost:3000/api/visitors/hit';
+    }
+
+    fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ visitorId: visitorId })
+    })
+      .then(function (res) {
+        if (!res.ok) throw new Error('Status ' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        if (data && typeof data.count === 'number') {
+          renderDigits(data.count);
+          try {
+            localStorage.setItem(CACHE_KEY, data.count);
+          } catch (e) {}
+        }
+      })
+      .catch(function () {});
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initVisitorCounter);
+  } else {
+    initVisitorCounter();
+  }
+})();
+
+
 

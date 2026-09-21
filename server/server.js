@@ -80,6 +80,43 @@ app.get('/api', (req, res) => {
   });
 });
 
+// ==========================================
+// UNIQUE VISITOR TRACKING API
+// ==========================================
+
+// Track a unique visitor hit
+app.post('/api/visitors/hit', async (req, res) => {
+  try {
+    const visitorId = req.body && req.body.visitorId ? String(req.body.visitorId).trim() : '';
+    const clientIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress || req.ip || '';
+    const userAgent = req.headers['user-agent'] || '';
+
+    const result = await db.recordVisitorHit(visitorId, clientIp, userAgent);
+    return res.json({
+      success: true,
+      count: result.count,
+      isNew: result.isNew
+    });
+  } catch (err) {
+    console.error('Error tracking visitor hit:', err);
+    res.status(500).json({ error: 'Failed to record visitor' });
+  }
+});
+
+// Get current unique visitor count (read-only)
+app.get('/api/visitors/count', async (req, res) => {
+  try {
+    const count = await db.getVisitorCount();
+    return res.json({
+      success: true,
+      count
+    });
+  } catch (err) {
+    console.error('Error retrieving visitor count:', err);
+    res.status(500).json({ error: 'Failed to retrieve visitor count' });
+  }
+});
+
 // Amount value parsing helper for scheme sorting & filtering
 function parseAmountValue(amountStr) {
   if (!amountStr) return 0;

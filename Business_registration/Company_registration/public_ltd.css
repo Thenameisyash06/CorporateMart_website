@@ -4,9 +4,9 @@
 ========================================================= */
 
 .plc-page {
-    --si-accent: #f4862a;
-    --si-accent-dark: #d46b15;
-    --si-accent-soft: #fff3e8;
+    --si-accent: #9fcaff;
+    --si-accent-dark: #9fcaff;
+    --si-accent-soft: #202134;
     --si-glow: rgba(244, 134, 42, 0.18);
 }
 
@@ -481,7 +481,7 @@ body.dark-mode .si-consult-card {
     display: inline-block;
     padding: 3px 8px;
     border-radius: 6px;
-    background: var(--si-accent-soft);
+    /* background: var(--si-accent-soft); */
     color: var(--si-accent-dark);
     font-size: 11px;
     font-weight: 700;
