@@ -4,7 +4,9 @@ const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
 const crypto = require('crypto');
+const multer = require('multer');
 const db = require('./db');
+const notifications = require('./notifications');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,15 +15,41 @@ const SCHEMES_FILE = path.join(__dirname, 'data', 'schemes.json');
 // Initialize Database
 db.initDB();
 
+// Setup Uploads Directory for Client & Operations Documents
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+const docsDir = path.join(uploadsDir, 'documents');
+if (!fs.existsSync(docsDir)) fs.mkdirSync(docsDir, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, docsDir);
+  },
+  filename: function (req, file, cb) {
+    const safeName = Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+    cb(null, safeName);
+  }
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: 25 * 1024 * 1024 } // 25MB max
+});
+
 // Middleware
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
 // Serve static frontend files from parent directory with HTML extension support
 app.use(express.static(path.join(__dirname, '..'), { extensions: ['html'] }));
+app.use('/uploads', express.static(uploadsDir));
 
 // Page shortcuts so URLs without .html work seamlessly
+app.get('/operations', (req, res) => res.sendFile(path.join(__dirname, '..', 'operations.html')));
+app.get('/portal/operations', (req, res) => res.sendFile(path.join(__dirname, '..', 'operations.html')));
+app.get('/client', (req, res) => res.sendFile(path.join(__dirname, '..', 'client.html')));
+app.get('/portal/client', (req, res) => res.sendFile(path.join(__dirname, '..', 'client.html')));
+app.get('/portal', (req, res) => res.sendFile(path.join(__dirname, '..', 'client.html')));
 app.get('/fundraising', (req, res) => res.sendFile(path.join(__dirname, '..', 'fundraising.html')));
 app.get('/schemes', (req, res) => res.sendFile(path.join(__dirname, '..', 'fundraising.html')));
 app.get('/admin/schemes', (req, res) => res.sendFile(path.join(__dirname, '..', 'fundraising_admin.html')));
@@ -62,6 +90,24 @@ async function requireAdmin(req, res, next) {
     }
     if (user.role !== 'admin') {
       return res.status(403).json({ error: 'Access denied: Administrator privileges required' });
+    }
+    req.user = user;
+    req.userId = user.id;
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: 'Unauthorized: Authentication failed' });
+  }
+}
+
+// Require Staff (Operations or Admin) Middleware
+async function requireStaff(req, res, next) {
+  try {
+    const user = await extractUser(req);
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized: Please log in to continue' });
+    }
+    if (user.role !== 'admin' && user.role !== 'operations') {
+      return res.status(403).json({ error: 'Access denied: Staff privileges required' });
     }
     req.user = user;
     req.userId = user.id;
@@ -624,6 +670,681 @@ app.post('/api/payment/verify', requireAuth, async (req, res) => {
   } catch (err) {
     console.error('Error verifying payment:', err);
     res.status(500).json({ error: err.message || 'Payment verification failed' });
+  }
+});
+
+// ==========================================
+// PORTAL AUTHENTICATION API
+// ==========================================
+
+// Portal / Operations Login
+app.post('/api/portal/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body || {};
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+    const cleanEmail = String(email).trim().toLowerCase();
+    const user = await db.findUserByEmail(cleanEmail);
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials: User not found' });
+    }
+    const valid = db.verifyPassword(password, user.salt, user.passwordHash);
+    if (!valid) {
+      return res.status(401).json({ error: 'Invalid credentials: Password incorrect' });
+    }
+
+    const token = db.createToken({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      name: user.name,
+      companyName: user.companyName || user.name
+    });
+
+    return res.json({
+      success: true,
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        companyName: user.companyName || user.name,
+        email: user.email,
+        phone: user.phone || '',
+        role: user.role
+      }
+    });
+  } catch (err) {
+    console.error('Portal login error:', err);
+    return res.status(500).json({ error: 'Internal server error during login' });
+  }
+});
+
+// Current User Profile
+app.get('/api/portal/auth/me', requireAuth, (req, res) => {
+  return res.json({
+    success: true,
+    user: {
+      id: req.user.id,
+      name: req.user.name,
+      companyName: req.user.companyName || req.user.name,
+      email: req.user.email,
+      phone: req.user.phone || '',
+      role: req.user.role
+    }
+  });
+});
+
+// Request Password Reset OTP
+app.post('/api/portal/auth/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body || {};
+    if (!email) return res.status(400).json({ error: 'Email address is required' });
+    const cleanEmail = String(email).trim().toLowerCase();
+
+    // Generate secure 6-digit numeric code
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 15 * 60 * 1000; // 15 mins
+
+    const user = await db.setUserResetOtp(cleanEmail, otp, expiresAt);
+    console.log(`🔐 [RESET-OTP] Code for ${cleanEmail}: ${otp}`);
+
+    // Send email asynchronously
+    notifications.sendPasswordResetOtpEmail({
+      email: cleanEmail,
+      name: user.name,
+      otp
+    }).catch(e => console.warn('Reset OTP email error:', e.message));
+
+    return res.json({
+      success: true,
+      message: 'A 6-digit verification code has been sent to your email.',
+      devOtp: otp
+    });
+  } catch (err) {
+    console.error('Forgot password error:', err.message);
+    return res.status(400).json({ error: err.message || 'Failed to process password reset' });
+  }
+});
+
+// Verify OTP & Reset Password
+app.post('/api/portal/auth/verify-reset-otp', async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body || {};
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ error: 'Email, verification code, and new password are required' });
+    }
+    if (String(newPassword).length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters long' });
+    }
+
+    const user = await db.verifyAndResetPassword(email, otp, newPassword);
+
+    notifications.sendPasswordChangedConfirmationEmail({
+      email: user.email,
+      name: user.name
+    }).catch(e => console.warn('Password confirmation email error:', e.message));
+
+    return res.json({
+      success: true,
+      message: 'Password reset successfully! You can now log in with your new password.'
+    });
+  } catch (err) {
+    console.error('Verify reset OTP error:', err.message);
+    return res.status(400).json({ error: err.message || 'Failed to reset password' });
+  }
+});
+
+// Update Profile Details (Protected)
+app.patch('/api/portal/auth/profile', requireAuth, async (req, res) => {
+  try {
+    const { name, phone, companyName } = req.body || {};
+    if (!name || !String(name).trim()) {
+      return res.status(400).json({ error: 'Name cannot be empty' });
+    }
+    const updated = await db.updateUserProfile(req.user.id, {
+      name,
+      phone,
+      companyName
+    });
+
+    return res.json({
+      success: true,
+      message: 'Profile details updated successfully',
+      user: {
+        id: updated.id,
+        name: updated.name,
+        companyName: updated.companyName || updated.name,
+        email: updated.email,
+        phone: updated.phone || '',
+        role: updated.role
+      }
+    });
+  } catch (err) {
+    console.error('Update profile error:', err.message);
+    return res.status(500).json({ error: err.message || 'Failed to update profile' });
+  }
+});
+
+// Change Password (Protected)
+app.post('/api/portal/auth/change-password', requireAuth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body || {};
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current password and new password are required' });
+    }
+    if (String(newPassword).length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters long' });
+    }
+
+    await db.updateUserPassword(req.user.id, currentPassword, newPassword);
+
+    notifications.sendPasswordChangedConfirmationEmail({
+      email: req.user.email,
+      name: req.user.name
+    }).catch(e => console.warn('Password change email error:', e.message));
+
+    return res.json({
+      success: true,
+      message: 'Password changed successfully!'
+    });
+  } catch (err) {
+    console.error('Change password error:', err.message);
+    return res.status(400).json({ error: err.message || 'Failed to change password' });
+  }
+});
+
+// ==========================================
+// OPERATIONS PORTAL API (STAFF ONLY)
+// ==========================================
+
+// Get Operations KPI stats
+app.get('/api/portal/ops/stats', requireStaff, async (req, res) => {
+  try {
+    const stats = await db.getPortalStats();
+    return res.json({ success: true, stats });
+  } catch (err) {
+    console.error('Error fetching portal stats:', err);
+    return res.status(500).json({ error: err.message || 'Failed to fetch portal stats' });
+  }
+});
+
+// Get Clients Directory
+app.get('/api/portal/ops/clients', requireStaff, async (req, res) => {
+  try {
+    const clients = await db.getPortalClients();
+    return res.json({ success: true, clients });
+  } catch (err) {
+    console.error('Error fetching clients:', err);
+    return res.status(500).json({ error: err.message || 'Failed to fetch clients' });
+  }
+});
+
+// Onboard New Client (Operations Only)
+app.post('/api/portal/ops/clients', requireStaff, async (req, res) => {
+  try {
+    const { name, companyName, email, phone, password, initialService } = req.body || {};
+    if (!name || !companyName || !email) {
+      return res.status(400).json({ error: 'Director Name, Company Name, and Email are required' });
+    }
+
+    const client = await db.createPortalClient({
+      name,
+      companyName,
+      email,
+      phone: phone || '',
+      password: password || 'Client@123'
+    });
+
+    // If an initial service is chosen, create the first case automatically
+    let createdCase = null;
+    if (initialService) {
+      createdCase = await db.createPortalCase({
+        clientId: client.id,
+        clientName: client.name,
+        companyName: client.companyName,
+        serviceName: initialService,
+        status: 'in_review',
+        statusNote: 'Client onboarded. Case opened for initial document processing.'
+      });
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: 'Client onboarded successfully',
+      client,
+      initialCase: createdCase
+    });
+  } catch (err) {
+    console.error('Error onboarding client:', err);
+    return res.status(400).json({ error: err.message || 'Failed to onboard client' });
+  }
+});
+
+// Update Client Status & Profile (Operations Only)
+app.put('/api/portal/ops/clients/:id', requireStaff, async (req, res) => {
+  try {
+    const clientId = req.params.id;
+    const { name, companyName, email, phone, status } = req.body || {};
+    const updated = await db.updatePortalClient(clientId, { name, companyName, email, phone, status });
+    return res.json({ success: true, message: 'Client updated successfully', client: updated });
+  } catch (err) {
+    console.error('Error updating client:', err);
+    return res.status(400).json({ error: err.message || 'Failed to update client' });
+  }
+});
+
+// Delete Client Account (Operations Only)
+app.delete('/api/portal/ops/clients/:id', requireStaff, async (req, res) => {
+  try {
+    const clientId = req.params.id;
+    await db.deletePortalClient(clientId);
+    return res.json({ success: true, message: 'Client and associated records deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting client:', err);
+    return res.status(500).json({ error: err.message || 'Failed to delete client' });
+  }
+});
+
+// Get Specific Client's Documents (Operations Only)
+app.get('/api/portal/ops/clients/:id/documents', requireStaff, async (req, res) => {
+  try {
+    const clientId = req.params.id;
+    const documents = await db.getPortalDocuments({ clientId });
+    return res.json({ success: true, documents });
+  } catch (err) {
+    console.error('Error fetching client documents:', err);
+    return res.status(500).json({ error: err.message || 'Failed to fetch client documents' });
+  }
+});
+
+// Get Cases (Services)
+app.get('/api/portal/ops/cases', requireStaff, async (req, res) => {
+  try {
+    const cases = await db.getPortalCases(req.query);
+    return res.json({ success: true, cases });
+  } catch (err) {
+    console.error('Error fetching cases:', err);
+    return res.status(500).json({ error: err.message || 'Failed to fetch cases' });
+  }
+});
+
+// Create Case
+app.post('/api/portal/ops/cases', requireStaff, async (req, res) => {
+  try {
+    const { clientId, clientName, companyName, serviceName, status, statusNote } = req.body || {};
+    if (!clientId || !serviceName) {
+      return res.status(400).json({ error: 'Client and Service Name are required' });
+    }
+    const newCase = await db.createPortalCase({
+      clientId,
+      clientName: clientName || '',
+      companyName: companyName || '',
+      serviceName,
+      status: status || 'in_review',
+      statusNote: statusNote || 'Case created by operations.'
+    });
+    return res.status(201).json({ success: true, case: newCase });
+  } catch (err) {
+    console.error('Error creating case:', err);
+    return res.status(500).json({ error: err.message || 'Failed to create case' });
+  }
+});
+
+// Update Case Status & Note
+app.patch('/api/portal/ops/cases/:id/status', requireStaff, async (req, res) => {
+  try {
+    const { status, note } = req.body || {};
+    if (!status) {
+      return res.status(400).json({ error: 'New status is required' });
+    }
+    const updated = await db.updatePortalCaseStatus(req.params.id, status, note);
+
+    if (updated && (status === 'rejected' || status === 'pending_documents')) {
+      (async () => {
+        try {
+          const clientUser = await db.findUserById(updated.clientId);
+          if (clientUser) {
+            await notifications.notifyClient({
+              client: clientUser,
+              eventType: 'case_rejected',
+              data: {
+                serviceName: updated.serviceName,
+                statusNote: note || updated.statusNote,
+                caseId: updated.caseId
+              }
+            });
+          }
+        } catch (nErr) {
+          console.warn('Status notification error:', nErr.message);
+        }
+      })();
+    }
+
+    return res.json({ success: true, case: updated });
+  } catch (err) {
+    console.error('Error updating case status:', err);
+    return res.status(500).json({ error: err.message || 'Failed to update case status' });
+  }
+});
+
+// Get Documents
+app.get('/api/portal/ops/documents', requireStaff, async (req, res) => {
+  try {
+    const documents = await db.getPortalDocuments(req.query);
+    return res.json({ success: true, documents });
+  } catch (err) {
+    console.error('Error fetching documents:', err);
+    return res.status(500).json({ error: err.message || 'Failed to fetch documents' });
+  }
+});
+
+// Upload Document for Client/Case (Auto-Approves Service)
+app.post('/api/portal/ops/documents/upload', requireStaff, upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No document file uploaded' });
+    }
+    const { clientId, companyName, caseId, title, category, autoApprove } = req.body || {};
+    const fileUrl = '/uploads/documents/' + req.file.filename;
+    const sizeInKb = (req.file.size / 1024).toFixed(1);
+    const fileSize = req.file.size > 1024 * 1024 ? (req.file.size / (1024 * 1024)).toFixed(1) + ' MB' : sizeInKb + ' KB';
+    const shouldAutoApprove = autoApprove !== 'false';
+
+    const document = await db.createPortalDocument({
+      clientId: clientId || '',
+      companyName: companyName || '',
+      caseId: caseId || '',
+      title: title || req.file.originalname,
+      fileName: req.file.originalname,
+      fileUrl,
+      fileSize,
+      fileType: req.file.mimetype,
+      category: category || 'certificate',
+      uploadedBy: 'operations',
+      status: 'approved',
+      autoApprove: shouldAutoApprove
+    });
+
+    let updatedCase = null;
+    if (caseId && shouldAutoApprove) {
+      try {
+        updatedCase = await db.updatePortalCaseStatus(
+          caseId,
+          'approved',
+          `Approved: ${title || req.file.originalname} has been uploaded and is ready for download.`
+        );
+      } catch (err) {
+        console.warn('Auto-approval status update error:', err.message);
+      }
+    }
+
+    // Trigger in-phone push alert and email notification for client
+    if (clientId) {
+      (async () => {
+        try {
+          const clientUser = await db.findUserById(clientId);
+          if (clientUser) {
+            await notifications.notifyClient({
+              client: clientUser,
+              eventType: 'document_uploaded',
+              data: {
+                title: document.title,
+                fileName: document.fileName,
+                caseId: document.caseId,
+                fileUrl: document.fileUrl
+              }
+            });
+          }
+        } catch (nErr) {
+          console.warn('Document upload notification error:', nErr.message);
+        }
+      })();
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: 'Document uploaded successfully' + (caseId && shouldAutoApprove ? ' and service marked Approved!' : ''),
+      document,
+      case: updatedCase
+    });
+  } catch (err) {
+    console.error('Error uploading document:', err);
+    return res.status(500).json({ error: err.message || 'Failed to upload document' });
+  }
+});
+
+// Revoke Document Separately (Operations Only)
+app.patch('/api/portal/ops/documents/:id/revoke', requireStaff, async (req, res) => {
+  try {
+    const docId = req.params.id;
+    const { reason } = req.body || {};
+    const revoked = await db.revokePortalDocument(docId, reason || 'Revoked by Operations');
+    return res.json({ success: true, message: 'Document revoked successfully', document: revoked });
+  } catch (err) {
+    console.error('Error revoking document:', err);
+    return res.status(400).json({ error: err.message || 'Failed to revoke document' });
+  }
+});
+
+// Delete Document Permanently (Operations Only)
+app.delete('/api/portal/ops/documents/:id', requireStaff, async (req, res) => {
+  try {
+    const docId = req.params.id;
+    await db.deletePortalDocument(docId);
+    return res.json({ success: true, message: 'Document permanently deleted' });
+  } catch (err) {
+    console.error('Error deleting document:', err);
+    return res.status(500).json({ error: err.message || 'Failed to delete document' });
+  }
+});
+
+// Get Applications / Orders (from Buy section)
+app.get('/api/portal/ops/orders', requireStaff, async (req, res) => {
+  try {
+    const orders = await db.getPortalOrders(req.query);
+    return res.json({ success: true, orders });
+  } catch (err) {
+    console.error('Error fetching orders:', err);
+    return res.status(500).json({ error: err.message || 'Failed to fetch orders' });
+  }
+});
+
+// 1-Click Activate Order -> Converts order into active client services
+app.post('/api/portal/ops/orders/:id/activate', requireStaff, async (req, res) => {
+  try {
+    const activated = await db.activatePortalOrder(req.params.id);
+    return res.json({
+      success: true,
+      message: 'Order activated successfully and service cases opened!',
+      order: activated
+    });
+  } catch (err) {
+    console.error('Error activating order:', err);
+    return res.status(500).json({ error: err.message || 'Failed to activate order' });
+  }
+});
+
+// Get Support Tickets
+app.get('/api/portal/ops/tickets', requireStaff, async (req, res) => {
+  try {
+    const tickets = await db.getPortalTickets(req.query);
+    return res.json({ success: true, tickets });
+  } catch (err) {
+    console.error('Error fetching tickets:', err);
+    return res.status(500).json({ error: err.message || 'Failed to fetch tickets' });
+  }
+});
+
+// Reply to Ticket
+app.post('/api/portal/ops/tickets/:id/reply', requireStaff, async (req, res) => {
+  try {
+    const { message, status } = req.body || {};
+    if (!message) {
+      return res.status(400).json({ error: 'Message text is required' });
+    }
+    const updated = await db.replyPortalTicket(req.params.id, message, status, req.user.name);
+
+    if (updated) {
+      (async () => {
+        try {
+          const clientUser = await db.findUserById(updated.clientId);
+          if (clientUser) {
+            await notifications.notifyClient({
+              client: clientUser,
+              eventType: 'ticket_reply',
+              data: {
+                subject: updated.subject,
+                message,
+                staffName: req.user.name,
+                ticketId: updated.ticketId,
+                category: updated.category
+              }
+            });
+          }
+        } catch (nErr) {
+          console.warn('Ticket reply notification error:', nErr.message);
+        }
+      })();
+    }
+
+    return res.json({
+      success: true,
+      message: 'Reply sent successfully',
+      ticket: updated
+    });
+  } catch (err) {
+    console.error('Error replying to ticket:', err);
+    return res.status(500).json({ error: err.message || 'Failed to reply to ticket' });
+  }
+});
+
+// ==========================================
+// CLIENT PORTAL API (FOR LOGGED-IN CLIENTS)
+// ==========================================
+
+// Client Dashboard Data
+app.get('/api/portal/client/dashboard', requireAuth, async (req, res) => {
+  try {
+    const data = await db.getClientPortalData(req.user.id, req.user.email, req.user.companyName);
+    return res.json({
+      success: true,
+      client: {
+        id: req.user.id,
+        name: req.user.name,
+        companyName: req.user.companyName || req.user.name,
+        email: req.user.email,
+        phone: req.user.phone || '',
+        plan: req.user.plan || 'free',
+        isSubscriber: Boolean(
+          (req.user.plan === 'pro' || req.user.plan === 'growth' || req.user.plan === 'corporate') &&
+          req.user.subscriptionExpiresAt &&
+          new Date(req.user.subscriptionExpiresAt).getTime() > Date.now()
+        )
+      },
+      ...data
+    });
+  } catch (err) {
+    console.error('Error fetching client dashboard:', err);
+    return res.status(500).json({ error: err.message || 'Failed to fetch client data' });
+  }
+});
+
+// Client Services List
+app.get('/api/portal/client/services', requireAuth, async (req, res) => {
+  try {
+    const data = await db.getClientPortalData(req.user.id, req.user.email, req.user.companyName);
+    return res.json({ success: true, services: data.cases || [] });
+  } catch (err) {
+    return res.status(500).json({ error: err.message || 'Failed to fetch services' });
+  }
+});
+
+// Client Documents List
+app.get('/api/portal/client/documents', requireAuth, async (req, res) => {
+  try {
+    const data = await db.getClientPortalData(req.user.id, req.user.email, req.user.companyName);
+    return res.json({ success: true, documents: data.documents || [] });
+  } catch (err) {
+    return res.status(500).json({ error: err.message || 'Failed to fetch documents' });
+  }
+});
+
+// Client Support Messages / Tickets
+app.get('/api/portal/client/tickets', requireAuth, async (req, res) => {
+  try {
+    const data = await db.getClientPortalData(req.user.id, req.user.email, req.user.companyName);
+    return res.json({ success: true, tickets: data.tickets || [] });
+  } catch (err) {
+    return res.status(500).json({ error: err.message || 'Failed to fetch messages' });
+  }
+});
+
+// Client Send New Support Message / Ticket
+app.post('/api/portal/client/tickets', requireAuth, async (req, res) => {
+  try {
+    const { subject, message, category, priority } = req.body || {};
+    if (!message) {
+      return res.status(400).json({ error: 'Message content is required' });
+    }
+    const ticket = await db.createClientTicket({
+      clientId: req.user.id,
+      clientName: req.user.name,
+      companyName: req.user.companyName || req.user.name,
+      subject: subject || 'Support Question',
+      message,
+      category: category || 'general',
+      priority: priority || 'medium'
+    });
+    return res.status(201).json({ success: true, message: 'Message sent to Corporate Mart team!', ticket });
+  } catch (err) {
+    console.error('Error creating client ticket:', err);
+    return res.status(500).json({ error: err.message || 'Failed to send message' });
+  }
+});
+
+// Client Reply to Existing Ticket
+app.post('/api/portal/client/tickets/:id/reply', requireAuth, async (req, res) => {
+  try {
+    const { message } = req.body || {};
+    if (!message) {
+      return res.status(400).json({ error: 'Reply text is required' });
+    }
+    const updated = await db.replyClientTicket(req.params.id, req.user.id, message, req.user.name);
+    return res.json({ success: true, message: 'Reply sent successfully', ticket: updated });
+  } catch (err) {
+    console.error('Error replying as client:', err);
+    return res.status(500).json({ error: err.message || 'Failed to send reply' });
+  }
+});
+
+// ==========================================
+// NOTIFICATIONS API (WEB PUSH & ALERTS)
+// ==========================================
+
+// Get VAPID Public Key for client browser subscription
+app.get('/api/portal/notifications/vapid-public-key', (req, res) => {
+  return res.json({
+    success: true,
+    publicKey: notifications.VAPID_PUBLIC_KEY
+  });
+});
+
+// Save Client Web Push Subscription (In-Phone Notifications)
+app.post('/api/portal/client/notifications/subscribe', requireAuth, async (req, res) => {
+  try {
+    const { subscription } = req.body || {};
+    if (!subscription || !subscription.endpoint) {
+      return res.status(400).json({ error: 'Valid push subscription object required' });
+    }
+    await db.savePushSubscription(req.user.id, subscription);
+    return res.json({
+      success: true,
+      message: 'In-phone notifications enabled successfully!'
+    });
+  } catch (err) {
+    console.error('Error saving push subscription:', err);
+    return res.status(500).json({ error: 'Failed to save push subscription' });
   }
 });
 

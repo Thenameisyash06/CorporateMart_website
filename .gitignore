@@ -1,5 +1,27 @@
-/server/.env
-/server/.env.example
+# Dependencies
 /node_modules
+/.pnp
+.pnp.js
+
+# Environment variables (secret credentials)
+/server/.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Database local storage (runtime data)
 /server/data/database.json
 /server/data/visitors.json
+
+# Uploaded client documents (preserve seed sample_coi.pdf)
+/server/uploads/documents/*
+!/server/uploads/documents/sample_coi.pdf
+
+# Automation scratch scripts and test captures
+/scratch/
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db

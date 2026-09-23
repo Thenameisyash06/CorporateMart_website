@@ -1,0 +1,24 @@
+{
+  "name": "Corporate Mart Client Portal",
+  "short_name": "CorporateMart",
+  "description": "Corporate Mart Client Portal - Status tracking, company certificates, filings, and support.",
+  "start_url": "/client",
+  "display": "standalone",
+  "background_color": "#0b1120",
+  "theme_color": "#1e3a8a",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='36' fill='%230f172a'/><path d='M96 32L32 68l64 36 64-36-64-36zM32 140l64 36 64-36M32 104l64 36 64-36' fill='none' stroke='%2338bdf8' stroke-width='12' stroke-linecap='round' stroke-linejoin='round'/></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='96' fill='%230f172a'/><path d='M256 80L80 178l176 98 176-98-176-98zM80 374l176 98 176-98M80 276l176 98 176-98' fill='none' stroke='%2338bdf8' stroke-width='32' stroke-linecap='round' stroke-linejoin='round'/></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

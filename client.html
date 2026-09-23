@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Corporate Mart - Client Portal</title>
+  <meta name="description" content="Corporate Mart Client Portal for real-time compliance tracking, certificate downloads, and direct operations support.">
+  
+  <!-- PWA & Mobile Web App Meta -->
+  <meta name="theme-color" content="#1e3a8a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CorporateMart">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='36' fill='%230f172a'/><path d='M96 32L32 68l64 36 64-36-64-36zM32 140l64 36 64-36M32 104l64 36 64-36' fill='none' stroke='%2338bdf8' stroke-width='12' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>">
+
+  <!-- Fonts & Styles -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="client.css">
+</head>
+<body class="cp-body">
+
+  <!-- ========================================== -->
+  <!-- CLIENT LOGIN OVERLAY                       -->
+  <!-- ========================================== -->
+  <div id="authOverlay" class="cp-auth-overlay">
+    <div class="cp-auth-card">
+      <div class="cp-auth-header">
+        <div class="cp-logo-badge">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <h2>Client Portal</h2>
+        <p>Corporate Mart Client Access & Compliance Desk</p>
+      </div>
+
+      <form id="clientLoginForm" class="cp-form" novalidate>
+        <div class="cp-form-group">
+          <label for="clientEmail">Registered Email</label>
+          <input type="email" id="clientEmail" class="cp-input" placeholder="director@company.com" required>
+        </div>
+        <div class="cp-form-group">
+          <label for="clientPassword">Password</label>
+          <input type="password" id="clientPassword" class="cp-input" placeholder="••••••••" required>
+        </div>
+        <div style="display:flex; justify-content:flex-end; margin-top:-6px; margin-bottom:14px;">
+          <a href="#" id="linkClientForgotPass" style="font-size:13px; color:var(--cp-primary); text-decoration:none; font-weight:600;">Forgot Password?</a>
+        </div>
+        <div id="clientLoginError" class="cp-alert-error" style="display:none;"></div>
+        <button type="submit" id="clientLoginBtn" class="cp-btn cp-btn-primary cp-btn-block">
+          <span>Sign In to Client Portal</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </form>
+      <div class="cp-auth-hint">
+        <span>Account provided by Corporate Mart Operations. Need credentials? Contact <code>support@corporatemart.in</code></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Client Forgot Password -->
+  <div id="clientForgotOverlay" class="cp-auth-overlay hidden">
+    <div class="cp-auth-card">
+      <div class="cp-auth-header">
+        <div class="cp-logo-badge">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        </div>
+        <h2>Reset Password</h2>
+        <p>Recover access to your Corporate Mart account</p>
+      </div>
+
+      <!-- Step 1: Request OTP -->
+      <form id="formClientForgotStep1" class="cp-form">
+        <div class="cp-form-group">
+          <label for="clientForgotEmail">Registered Email Address</label>
+          <input type="email" id="clientForgotEmail" class="cp-input" placeholder="director@company.com" required>
+        </div>
+        <div id="clientForgotError1" class="cp-alert-error" style="display:none;"></div>
+        <button type="submit" id="btnSendResetOtp" class="cp-btn cp-btn-primary cp-btn-block">
+          <span>Send Verification Code</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+        <div style="text-align:center; margin-top:16px;">
+          <a href="#" id="linkBackToLogin" style="font-size:13px; color:var(--cp-text-muted); text-decoration:none;">← Back to Sign In</a>
+        </div>
+      </form>
+
+      <!-- Step 2: Verify OTP & Set New Password -->
+      <form id="formClientForgotStep2" class="cp-form" style="display:none;">
+        <div style="background:rgba(37,99,235,0.08); border:1px solid rgba(37,99,235,0.2); border-radius:8px; padding:12px; margin-bottom:16px; font-size:13px; color:var(--cp-text-main);">
+          We sent a 6-digit code to <strong id="displayForgotEmail"></strong>
+        </div>
+        <div class="cp-form-group">
+          <label for="clientForgotOtp">6-Digit Verification Code</label>
+          <input type="text" id="clientForgotOtp" class="cp-input" placeholder="123456" maxlength="6" pattern="[0-9]{6}" style="letter-spacing:6px; font-weight:800; font-size:20px; text-align:center;" required>
+        </div>
+        <div class="cp-form-group">
+          <label for="clientForgotNewPass">New Password</label>
+          <input type="password" id="clientForgotNewPass" class="cp-input" placeholder="At least 6 characters" minlength="6" required>
+        </div>
+        <div class="cp-form-group">
+          <label for="clientForgotConfirmPass">Confirm New Password</label>
+          <input type="password" id="clientForgotConfirmPass" class="cp-input" placeholder="Repeat new password" minlength="6" required>
+        </div>
+        <div id="clientForgotError2" class="cp-alert-error" style="display:none;"></div>
+        <button type="submit" id="btnVerifyResetOtp" class="cp-btn cp-btn-primary cp-btn-block">
+          <span>Reset Password & Log In</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </button>
+        <div style="display:flex; justify-content:space-between; margin-top:16px; font-size:13px;">
+          <a href="#" id="linkResendOtp" style="color:var(--cp-primary); text-decoration:none; font-weight:600;">Resend Code</a>
+          <a href="#" id="linkBackToLogin2" style="color:var(--cp-text-muted); text-decoration:none;">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- APP SHELL                                  -->
+  <!-- ========================================== -->
+  <div class="cp-app-layout">
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="cp-sidebar" id="cpSidebar">
+      <div class="cp-sidebar-brand">
+        <div class="cp-brand-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="cp-brand-text">
+          <span class="cp-brand-name">CORPORATE MART</span>
+          <span class="cp-brand-sub">CLIENT DESK</span>
+        </div>
+      </div>
+
+      <nav class="cp-nav">
+        <a href="#dashboard" class="cp-nav-link active" data-nav="dashboard">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span>Dashboard</span>
+        </a>
+
+        <a href="#services" class="cp-nav-link" data-nav="services">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+          </svg>
+          <span>My Services</span>
+          <span class="cp-nav-badge" id="navServicesBadge">0</span>
+        </a>
+
+        <a href="#buy" class="cp-nav-link" data-nav="buy">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <path d="M16 10a4 4 0 0 1-8 0"></path>
+          </svg>
+          <span>Buy & Explore</span>
+          <span class="cp-nav-badge cp-badge-hot" style="background:#2563eb; color:#ffffff;">New</span>
+        </a>
+
+        <a href="#documents" class="cp-nav-link" data-nav="documents">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span>My Documents</span>
+          <span class="cp-nav-badge" id="navDocsBadge">0</span>
+        </a>
+
+        <a href="#support" class="cp-nav-link" data-nav="support">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <span>Help & Support</span>
+          <span class="cp-nav-badge" id="navTicketsBadge">0</span>
+        </a>
+      </nav>
+
+      <!-- User Profile Pill in Sidebar -->
+      <div class="cp-sidebar-footer">
+        <div class="cp-user-pill">
+          <div class="cp-avatar" id="clientAvatar">CM</div>
+          <div class="cp-user-meta">
+            <span class="cp-user-name" id="clientCompanyName">Company Name</span>
+            <span class="cp-user-role" id="clientDirectorName">Director</span>
+          </div>
+          <button type="button" class="cp-logout-btn" id="clientSettingsBtn" title="Profile & Password Settings" style="margin-right:2px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </button>
+          <button type="button" class="cp-logout-btn" id="clientLogoutBtn" title="Sign Out">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN WRAPPER -->
+    <div class="cp-main-wrapper">
+      
+      <!-- TOP BAR -->
+      <header class="cp-topbar">
+        <div class="cp-topbar-left">
+          <button type="button" class="cp-menu-toggle" id="cpMenuToggle" aria-label="Toggle Navigation">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+          <div class="cp-page-heading">
+            <h1 id="cpPageTitle">Dashboard</h1>
+            <p id="cpPageSubtitle">Track company services, status & certificates</p>
+          </div>
+        </div>
+
+        <div class="cp-topbar-right">
+          <!-- Profile / Settings Button -->
+          <button type="button" class="cp-theme-toggle" id="clientTopSettingsBtn" title="Profile & Password Settings">
+            ⚙️
+          </button>
+
+          <!-- In-Phone Push Notifications Bell Button -->
+          <button type="button" class="cp-theme-toggle" id="btnEnableNotifications" title="In-Phone Notifications" style="position:relative;">
+            <span id="notifBellIcon">🔔</span>
+            <span id="notifBadgeDot" style="display:none; position:absolute; top:6px; right:6px; width:8px; height:8px; background:#10b981; border-radius:50%;"></span>
+          </button>
+
+          <!-- Theme Toggle -->
+          <button type="button" class="cp-theme-toggle" id="cpThemeToggle" title="Toggle Light/Dark Theme">
+            <span class="theme-icon-dark">🌙</span>
+            <span class="theme-icon-light">☀️</span>
+          </button>
+
+          <!-- Request a Service Button -->
+          <button type="button" class="cp-btn cp-btn-primary" id="topRequestServiceBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Request a Service</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- CONTENT SECTIONS -->
+      <main class="cp-content">
+
+        <!-- ========================================== -->
+        <!-- 1. DASHBOARD SECTION                       -->
+        <!-- ========================================== -->
+        <section id="sec-dashboard" class="cp-view-section active">
+
+          <!-- In-Phone Notification Prompt Banner -->
+          <div id="notifPromptCard" class="cp-card cp-pwa-card" style="display:none; margin-bottom:20px; border-left:4px solid var(--cp-primary);">
+            <div class="cp-pwa-icon">🔔</div>
+            <div class="cp-pwa-text">
+              <h4>Enable In-Phone Status Alerts</h4>
+              <p>Get immediate lock-screen notifications on your phone when certificates are issued, filings updated, or queries answered.</p>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <button type="button" class="cp-btn cp-btn-primary cp-btn-sm" id="btnAllowNotifications">
+                Allow Alerts
+              </button>
+              <button type="button" class="cp-btn cp-btn-secondary cp-btn-sm" id="btnDismissNotifPrompt" style="padding:6px 12px;">
+                Later
+              </button>
+            </div>
+          </div>
+
+          <!-- Welcome Banner -->
+          <div class="cp-welcome-banner">
+            <div class="cp-welcome-text">
+              <h2 id="welcomeTitle">Welcome to your Portal!</h2>
+              <p id="welcomeSubtitle">Live compliance tracking and digital certificate delivery for your business.</p>
+            </div>
+            <div class="cp-welcome-badge" id="welcomeCompanyTag">Active Account</div>
+          </div>
+
+          <!-- 3 KPI Cards -->
+          <div class="cp-kpi-grid">
+            <div class="cp-kpi-card">
+              <div class="cp-kpi-header">
+                <span class="cp-kpi-title">In Progress</span>
+                <span class="cp-kpi-icon kpi-amber">⚡</span>
+              </div>
+              <div class="cp-kpi-value" id="kpiActiveServices">0</div>
+              <div class="cp-kpi-sub">Services undergoing processing</div>
+            </div>
+
+            <div class="cp-kpi-card">
+              <div class="cp-kpi-header">
+                <span class="cp-kpi-title">Completed Services</span>
+                <span class="cp-kpi-icon kpi-green">✅</span>
+              </div>
+              <div class="cp-kpi-value" id="kpiCompletedServices">0</div>
+              <div class="cp-kpi-sub">Approved & certificates issued</div>
+            </div>
+
+            <div class="cp-kpi-card">
+              <div class="cp-kpi-header">
+                <span class="cp-kpi-title">Available Documents</span>
+                <span class="cp-kpi-icon kpi-blue">📁</span>
+              </div>
+              <div class="cp-kpi-value" id="kpiTotalDocuments">0</div>
+              <div class="cp-kpi-sub">Certificates ready for download</div>
+            </div>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="cp-quick-actions">
+            <button type="button" class="cp-action-card" id="qaRequestServiceBtn">
+              <div class="cp-action-icon">🚀</div>
+              <div class="cp-action-text">
+                <strong>Request a Service</strong>
+                <span>Apply for company incorporation, GST, trademark, or filing</span>
+              </div>
+            </button>
+            <button type="button" class="cp-action-card" id="qaAskSupportBtn">
+              <div class="cp-action-icon">💬</div>
+              <div class="cp-action-text">
+                <strong>Ask a Question</strong>
+                <span>Send a message directly to your operations manager</span>
+              </div>
+            </button>
+            <button type="button" class="cp-action-card" id="qaViewDocsBtn">
+              <div class="cp-action-icon">📥</div>
+              <div class="cp-action-text">
+                <strong>Download Certificates</strong>
+                <span>Instant access to COI, GST certificate, and DSC files</span>
+              </div>
+            </button>
+          </div>
+
+          <!-- Dual Split Grid: Active Work & Downloadable Documents -->
+          <div class="cp-split-grid">
+            
+            <!-- Ongoing Services -->
+            <div class="cp-card">
+              <div class="cp-card-header">
+                <div class="cp-card-title">
+                  <h3>Ongoing Services & Filings</h3>
+                  <p>Current progress and status from operations</p>
+                </div>
+                <a href="#services" class="cp-link">View All Services →</a>
+              </div>
+              <div class="cp-table-responsive">
+                <table class="cp-table">
+                  <thead>
+                    <tr>
+                      <th>Service</th>
+                      <th>Status</th>
+                      <th>Latest Note</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashServicesBody">
+                    <tr><td colspan="4" class="cp-td-empty">Loading services...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Recent Documents -->
+            <div class="cp-card">
+              <div class="cp-card-header">
+                <div class="cp-card-title">
+                  <h3>Recent Certificates & Downloads</h3>
+                  <p>Official files issued for your company</p>
+                </div>
+                <a href="#documents" class="cp-link">View All Documents →</a>
+              </div>
+              <div class="cp-table-responsive">
+                <table class="cp-table">
+                  <thead>
+                    <tr>
+                      <th>Document</th>
+                      <th>Category</th>
+                      <th>Date</th>
+                      <th>Download</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashDocsBody">
+                    <tr><td colspan="4" class="cp-td-empty">Loading documents...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- 2. MY SERVICES SECTION                     -->
+        <!-- ========================================== -->
+        <section id="sec-services" class="cp-view-section">
+          <div class="cp-section-header">
+            <div>
+              <h2>My Services & Registrations</h2>
+              <p>Real-time status updates and progress for all your corporate services</p>
+            </div>
+            <button type="button" class="cp-btn cp-btn-primary" id="openRequestServiceModalBtn">
+              + Request New Service
+            </button>
+          </div>
+
+          <div class="cp-services-container" id="clientServicesContainer">
+            <div class="cp-loading-spinner">Loading your services...</div>
+          </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- 3. MY DOCUMENTS SECTION                    -->
+        <!-- ========================================== -->
+        <section id="sec-documents" class="cp-view-section">
+          <div class="cp-section-header">
+            <div>
+              <h2>My Documents & Certificates</h2>
+              <p>Official certificates of incorporation, GST certificates, challans, and DSC records</p>
+            </div>
+          </div>
+
+          <div class="cp-card">
+            <div class="cp-table-responsive">
+              <table class="cp-table">
+                <thead>
+                  <tr>
+                    <th>Doc ID</th>
+                    <th>Document Title</th>
+                    <th>Category</th>
+                    <th>File Name</th>
+                    <th>Size</th>
+                    <th>Date Issued</th>
+                    <th>Download</th>
+                  </tr>
+                </thead>
+                <tbody id="clientDocsTableBody">
+                  <tr><td colspan="7" class="cp-td-empty">Loading documents...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- 4. HELP & SUPPORT SECTION                  -->
+        <!-- ========================================== -->
+        <section id="sec-support" class="cp-view-section">
+          <div class="cp-section-header">
+            <div>
+              <h2>Help & Support Desk</h2>
+              <p>Ask a question, request assistance, or view replies from the Corporate Mart team</p>
+            </div>
+            <button type="button" class="cp-btn cp-btn-primary" id="openNewTicketModalBtn">
+              + Ask a Question
+            </button>
+          </div>
+
+          <div class="cp-support-layout">
+            <!-- Tickets List -->
+            <div class="cp-support-sidebar">
+              <div class="cp-support-sidebar-header">
+                <h3>Your Conversations</h3>
+              </div>
+              <div class="cp-tickets-list" id="clientTicketsList">
+                <div class="cp-td-empty">Loading conversations...</div>
+              </div>
+            </div>
+
+            <!-- Active Thread View -->
+            <div class="cp-support-chat-window" id="chatWindow">
+              <div class="cp-chat-header" id="chatHeader">
+                <div>
+                  <h3 id="chatTitle">Select a conversation</h3>
+                  <p id="chatSubtitle">Or start a new inquiry with the operations team</p>
+                </div>
+                <div id="chatStatusBadge"></div>
+              </div>
+              <div class="cp-chat-messages" id="chatMessages">
+                <div class="cp-empty-state">
+                  <span style="font-size:36px;">💬</span>
+                  <p>Select an inquiry on the left or click <strong>"+ Ask a Question"</strong> above.</p>
+                </div>
+              </div>
+              <form id="chatReplyForm" class="cp-chat-reply-bar" style="display:none;">
+                <input type="text" id="chatReplyInput" class="cp-input" placeholder="Type your reply to the operations team..." required>
+                <button type="submit" class="cp-btn cp-btn-primary">Send Reply</button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 5: BUY / EXPLORE SERVICES & PLANS -->
+        <section id="sec-buy" class="cp-view-section">
+          <div class="cp-buy-hero">
+            <div class="cp-buy-hero-content">
+              <span class="cp-buy-pill">Corporate Mart Marketplace</span>
+              <h2>Explore &amp; Buy Services, Packages &amp; Grants</h2>
+              <p>Choose from curated all-inclusive combo plans, order specialized business registrations, or apply for government funding grants with dedicated CA/CS assistance.</p>
+            </div>
+            <div class="cp-buy-stats">
+              <div class="cp-buy-stat">
+                <strong>9+</strong>
+                <span>Combo Plans</span>
+              </div>
+              <div class="cp-buy-stat">
+                <strong>100+</strong>
+                <span>Services</span>
+              </div>
+              <div class="cp-buy-stat">
+                <strong>&#8377;100+ Cr</strong>
+                <span>Grant Pool</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Marketplace Tabs -->
+          <div class="cp-buy-nav-tabs" role="tablist">
+            <button type="button" class="cp-buy-tab-btn active" data-buy-tab="combos">
+              <span>💼</span> Combo Plans &amp; Packages
+            </button>
+            <button type="button" class="cp-buy-tab-btn" data-buy-tab="services">
+              <span>📁</span> All Business Services (100+)
+            </button>
+            <button type="button" class="cp-buy-tab-btn" data-buy-tab="funding">
+              <span>💰</span> Government Funding Schemes
+            </button>
+          </div>
+
+          <!-- TAB 1: COMBO PLANS -->
+          <div class="cp-buy-tab-pane active" id="buyTabPaneCombos">
+            <!-- Plan Category Pills -->
+            <div class="cp-plan-cats">
+              <button type="button" class="cp-plan-cat active" data-plan-group="basic">Basic Business Packages</button>
+              <button type="button" class="cp-plan-cat" data-plan-group="growth">Corporate Growth Plans</button>
+              <button type="button" class="cp-plan-cat" data-plan-group="business">Corporate Business Plans</button>
+            </div>
+
+            <!-- Group 1: Basic Business Packages -->
+            <div class="cp-plan-grid" id="planGroupBasic">
+              <!-- Basic: Standard -->
+              <div class="cp-plan-card">
+                <div class="cp-plan-badge">Popular for new entities</div>
+                <h3 class="cp-plan-title">Standard</h3>
+                <div class="cp-plan-sub">Standard Business Setup Package</div>
+                <div class="cp-plan-price-wrap">
+                  <span class="cp-price-old">&#8377;24,999</span>
+                  <span class="cp-price-main">&#8377;19,999</span>
+                  <span class="cp-price-label">package price</span>
+                </div>
+                <p class="cp-plan-desc">Perfect for new businesses looking to establish their basic legal registrations and compliance foundation.</p>
+                <ul class="cp-plan-checklist">
+                  <li>MSME Udyam Registration</li>
+                  <li>GST Registration (Govt. Fee Excluding)</li>
+                  <li>Startup India Certificate (DPIIT)</li>
+                  <li>Organization Digital Signature (DSC)</li>
+                  <li>Funding Assistance – (1 Startup Scheme Application)</li>
+                  <li>Pitch Deck Report</li>
+                  <li>Financial Projection Report</li>
+                </ul>
+                <button type="button" class="cp-btn cp-btn-primary cp-btn-block btn-buy-trigger" data-item-name="Basic Business - Standard" data-item-type="Combo Plan" data-item-price="₹19,999">
+                  Buy Standard Plan &rarr;
+                </button>
+              </div>
+
+              <!-- Basic: Growth (Featured) -->
+              <div class="cp-plan-card cp-plan-card-featured">
+                <div class="cp-plan-badge cp-badge-hot">Most Chosen</div>
+                <h3 class="cp-plan-title">Growth</h3>
+                <div class="cp-plan-sub">Standard Growth &amp; Funding Package</div>
+                <div class="cp-plan-price-wrap">
+                  <span class="cp-price-old">&#8377;49,999</span>
+                  <span class="cp-price-main">&#8377;39,999</span>
+                  <span class="cp-price-label">package price</span>
+                </div>
+                <p class="cp-plan-desc">Designed for businesses that are ready to strengthen their brand identity, compliance, and explore funding.</p>
+                <ul class="cp-plan-checklist">
+                  <li>MSME Registration &amp; GST Registration</li>
+                  <li>Startup India Certificate &amp; Organization DSC</li>
+                  <li>Funding Assistance – (1+1 Eligible Schemes)</li>
+                  <li>Pitch Deck Report &amp; Financial Model</li>
+                  <li>ISO 9001 Certification Assistance</li>
+                  <li>Professional Brand Logo Design (3 revisions)</li>
+                  <li>Dedicated Operations Manager</li>
+                </ul>
+                <button type="button" class="cp-btn cp-btn-primary cp-btn-block btn-buy-trigger" data-item-name="Basic Business - Growth" data-item-type="Combo Plan" data-item-price="₹39,999" style="background:#2563eb; font-weight:800;">
+                  Buy Growth Plan &rarr;
+                </button>
+              </div>
+
+              <!-- Basic: Corporate Business -->
+              <div class="cp-plan-card">
+                <div class="cp-plan-badge">Full Stack Growth</div>
+                <h3 class="cp-plan-title">Corporate Business</h3>
+                <div class="cp-plan-sub">Complete Business Growth Package</div>
+                <div class="cp-plan-price-wrap">
+                  <span class="cp-price-old">&#8377;1,09,999</span>
+                  <span class="cp-price-main">&#8377;99,999</span>
+                  <span class="cp-price-label">package price</span>
+                </div>
+                <p class="cp-plan-desc">An all-in-one package for high-growth businesses looking for continuous compliance, branding, funding &amp; web presence.</p>
+                <ul class="cp-plan-checklist">
+                  <li>Company Compliance (Up to 5 Lakh Turnover)</li>
+                  <li>Book-Keeping (Up to 20 Txns) &amp; Company ITR</li>
+                  <li>MSME &amp; Startup India Recognition</li>
+                  <li>GST Registration (Govt Fee Included) &amp; Nil Filing</li>
+                  <li>Organization Digital Signature (DSC)</li>
+                  <li>Funding Assistance – (2+1 Scheme Applications)</li>
+                  <li>Pitch Deck Report &amp; Financial Model</li>
+                  <li>ISO Certification &amp; GeM Registration</li>
+                  <li>Trademark Registration (Govt Fee Included)</li>
+                  <li>Professional Logo Design (5 revisions)</li>
+                  <li>Business Website Development (Basic Setup)</li>
+                </ul>
+                <button type="button" class="cp-btn cp-btn-primary cp-btn-block btn-buy-trigger" data-item-name="Basic Business - Corporate Business" data-item-type="Combo Plan" data-item-price="₹99,999">
+                  Buy Corporate Business Plan &rarr;
+                </button>
+              </div>
+            </div>
+
+            <!-- Group 2: Corporate Growth Plans -->
+            <div class="cp-plan-grid" id="planGroupGrowth" style="display:none;">
+              <!-- Growth: Standard -->
+              <div class="cp-plan-card">
+                <div class="cp-plan-badge">Setup &amp; Compliance</div>
+                <h3 class="cp-plan-title">Standard</h3>
+                <div class="cp-plan-sub">Complete Business Setup &amp; Compliance</div>
+                <div class="cp-plan-price-wrap">
+                  <span class="cp-price-old">&#8377;54,999</span>
+                  <span class="cp-price-main">&#8377;49,999</span>
+                  <span class="cp-price-label">package price</span>
+                </div>
+                <p class="cp-plan-desc">Comprehensive legal setup, tax compliance, and funding preparation for scaling startups.</p>
+                <ul class="cp-plan-checklist">
+                  <li>First Month Compliance Package</li>
+                  <li>MSME &amp; GST Registration</li>
+                  <li>GST Return Filing Services</li>
+                  <li>Startup India Certificate &amp; Org DSC</li>
+                  <li>Funding Assistance (1 Scheme Application)</li>
+                  <li>Pitch Deck Report &amp; Financial Model</li>
+                  <li>Trademark Filing Assistance</li>
+                  <li>Professional Logo Design (3 revisions)</li>
+                </ul>
+                <button type="button" class="cp-btn cp-btn-primary cp-btn-block btn-buy-trigger" data-item-name="Corporate Growth - Standard" data-item-type="Combo Plan" data-item-price="₹49,999">
+                  Buy Standard Plan &rarr;
+                </button>
+              </div>
+
+              <!-- Growth: Growth (Featured) -->
+              <div class="cp-plan-card cp-plan-card-featured">
+                <div class="cp-plan-badge cp-badge-hot">High Demand</div>
+                <h3 class="cp-plan-title">Growth</h3>
+                <div class="cp-plan-sub">Business Compliance &amp; Funding Package</div>
+                <div class="cp-plan-price-wrap">
+                  <span class="cp-price-old">&#8377;99,999</span>
+                  <span class="cp-price-main">&#8377;89,999</span>
+                  <span class="cp-price-label">package price</span>
+                </div>
+                <p class="cp-plan-desc">Advanced corporate compliance with book-keeping and dedicated MUDRA loan facilitation.</p>
+                <ul class="cp-plan-checklist">
+                  <li>Company Incorporation (Pvt Ltd / LLP)</li>
+                  <li>Company Compliance (Up to 20 Lakh turnover)</li>
+                  <li>Book-Keeping (Up to 100 Transactions)</li>
+                  <li>Company ITR Filing &amp; GST Return Filing</li>
+                  <li>MSME &amp; GST Registration</li>
+                  <li>Startup India Certificate &amp; Org DSC</li>
+                  <li>Funding Assistance – (1+1 Schemes)</li>
+                  <li>Pitch Deck Report &amp; Financial Model</li>
+                  <li>Trademark Assistance &amp; MUDRA Loan Assistance</li>
+                  <li>Logo Design (Up to 5 Changes)</li>
+                </ul>
+                <button type="button" class="cp-btn cp-btn-primary cp-btn-block btn-buy-trigger" data-item-name="Corporate Growth - Growth" data-item-type="Combo Plan" data-item-price="₹89,999" style="background:#2563eb; font-weight:800;">
+                  Buy Growth Plan &rarr;
+                </button>
+              </div>
+
+              <!-- Growth: Business -->
+              <div class="cp-plan-card">
+                <div class="cp-plan-badge">Enterprise Ready</div>
+                <h3 class="cp-plan-title">Business</h3>
+                <div class="cp-plan-sub">Growth, Funding &amp; High-Turnover Compliance</div>
+                <div class="cp-plan-price-wrap">
+                  <span class="cp-price-old">&#8377;1,29,999</span>
+                  <span class="cp-price-main">&#8377;1,19,999</span>
+                  <span class="cp-price-label">package price</span>
+                </div>
+                <p class="cp-plan-desc">High-turnover compliance, financial audit preparation, and CGTMSE loan credit backing.</p>
+                <ul class="cp-plan-checklist">
+                  <li>Company Incorporation (Pvt Ltd / LLP)</li>
+                  <li>Company Compliance (Up to 3 Cr Turnover)</li>
+                  <li>Book-Keeping (Up to 300 Transactions)</li>
+                  <li>Company ITR, P&amp;L &amp; Balance Sheet Preparation</li>
+                  <li>Full Audit Support Report</li>
+                  <li>MSME &amp; GST Registration</li>
+                  <li>Startup India Certificate &amp; Org DSC</li>
+                  <li>Funding Assistance – (2+1 Schemes)</li>
+                  <li>CGTMSE Loan Scheme Assistance</li>
+                  <li>ISO Certification &amp; Trademark Registration</li>
+                  <li>Professional Logo Design (5 Revisions)</li>
+                </ul>
+                <button type="button" class="cp-btn cp-btn-primary cp-btn-block btn-buy-trigger" data-item-name="Corporate Growth - Business" data-item-type="Combo Plan" data-item-price="₹1,19,999">
+                  Buy Business Plan &rarr;
+                </button>
+              </div>
+            </div>
+
+            <!-- Group 3: Corporate Business Plans -->
+            <div class="cp-plan-grid" id="planGroupBusiness" style="display:none;">
+              <!-- Business: Standard -->
+              <div class="cp-plan-card">
+                <div class="cp-plan-badge">Startup Acceleration</div>
+                <h3 class="cp-plan-title">Standard</h3>
+                <div class="cp-plan-sub">Standard Corporate Acceleration Plan</div>
+                <div class="cp-plan-price-wrap">
+                  <span class="cp-price-old">&#8377;89,999</span>
+                  <span class="cp-price-main">&#8377;74,999</span>
+                  <span class="cp-price-label">package price</span>
+                </div>
+                <p class="cp-plan-desc">Multi-scheme government funding application support paired with custom website presence.</p>
+                <ul class="cp-plan-checklist">
+                  <li>Startup &amp; MSME Registration</li>
+                  <li>GST Registration &amp; GST Return Filing</li>
+                  <li>ISO Certification Assistance</li>
+                  <li>Funding Assistance – (4+1 Scheme Applications)</li>
+                  <li>Pitch Deck Report &amp; Financial Model</li>
+                  <li>Logo Design (Up to 5 Changes)</li>
+                  <li>Business Website Development (Standard)</li>
+                </ul>
+                <button type="button" class="cp-btn cp-btn-primary cp-btn-block btn-buy-trigger" data-item-name="Corporate Business - Standard" data-item-type="Combo Plan" data-item-price="₹74,999">
+                  Buy Standard Plan &rarr;
+                </button>
+              </div>
+
+              <!-- Business: Standard Plus (Featured) -->
+              <div class="cp-plan-card cp-plan-card-featured">
+                <div class="cp-plan-badge cp-badge-hot">Best Value</div>
+                <h3 class="cp-plan-title">Standard Plus</h3>
+                <div class="cp-plan-sub">Business Growth &amp; Funding Support</div>
+                <div class="cp-plan-price-wrap">
+                  <span class="cp-price-old">&#8377;1,24,999</span>
+                  <span class="cp-price-main">&#8377;1,14,999</span>
+                  <span class="cp-price-label">package price</span>
+                </div>
+                <p class="cp-plan-desc">Expanded scheme funding applications (up to 7 schemes) with advanced website development.</p>
+                <ul class="cp-plan-checklist">
+                  <li>Startup &amp; GST Registration</li>
+                  <li>ISO Certification Assistance</li>
+                  <li>Funding Assistance – (6+1 Scheme Applications)</li>
+                  <li>Pitch Deck Report &amp; Financial Model</li>
+                  <li>Professional Logo Design (5 revisions)</li>
+                  <li>Business Website Development (Advance)</li>
+                  <li>Priority Operations Desk Support</li>
+                </ul>
+                <button type="button" class="cp-btn cp-btn-primary cp-btn-block btn-buy-trigger" data-item-name="Corporate Business - Standard Plus" data-item-type="Combo Plan" data-item-price="₹1,14,999" style="background:#2563eb; font-weight:800;">
+                  Buy Standard Plus Plan &rarr;
+                </button>
+              </div>
+
+              <!-- Business: Funding Support -->
+              <div class="cp-plan-card">
+                <div class="cp-plan-badge">12-Month Support</div>
+                <h3 class="cp-plan-title">Funding Support</h3>
+                <div class="cp-plan-sub">Dedicated 1-Year Funding Advisory</div>
+                <div class="cp-plan-price-wrap">
+                  <span class="cp-price-old">&#8377;1,49,999</span>
+                  <span class="cp-price-main">&#8377;1,24,999</span>
+                  <span class="cp-price-label">package price</span>
+                </div>
+                <p class="cp-plan-desc">Year-round funding opportunity discovery, documentation, and premium digital solutions.</p>
+                <ul class="cp-plan-checklist">
+                  <li>Startup India Registration</li>
+                  <li>Funding Assistance – (11+1 Scheme Applications)</li>
+                  <li>Year-round Opportunity Identification</li>
+                  <li>Application &amp; Grant Documentation</li>
+                  <li>Funding Process Guidance &amp; Pitch Advisory</li>
+                  <li>Logo Design (Up to 5 Changes)</li>
+                  <li>Business Website Development (Premium)</li>
+                </ul>
+                <button type="button" class="cp-btn cp-btn-primary cp-btn-block btn-buy-trigger" data-item-name="Corporate Business - Funding Support" data-item-type="Combo Plan" data-item-price="₹1,24,999">
+                  Buy Funding Support Plan &rarr;
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 2: ALL BUSINESS SERVICES -->
+          <div class="cp-buy-tab-pane" id="buyTabPaneServices" style="display:none;">
+            <!-- Search & Category Filters -->
+            <div class="cp-services-toolbar">
+              <div class="cp-services-search-box">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="serviceSearchInput" class="cp-input" placeholder="Search 100+ services (e.g. GST, Trademark, Private Limited, IEC, FSSAI)...">
+              </div>
+
+              <div class="cp-service-filter-chips" id="serviceCategoryChips">
+                <button type="button" class="cp-chip active" data-filter="all">All Services (134)</button>
+                <button type="button" class="cp-chip" data-filter="incorporation">Incorporation</button>
+                <button type="button" class="cp-chip" data-filter="tax">Tax &amp; Compliance</button>
+                <button type="button" class="cp-chip" data-filter="ip">Trademark &amp; IP</button>
+                <button type="button" class="cp-chip" data-filter="licenses">Licenses</button>
+                <button type="button" class="cp-chip" data-filter="digital">Digital &amp; Web</button>
+                <button type="button" class="cp-chip" data-filter="conversion">Conversions &amp; Closures</button>
+              </div>
+            </div>
+
+            <!-- Streamlined Services List Directory -->
+            <div class="cp-services-meta-bar">
+              <span id="servicesCountDisplay" style="font-size:13px; font-weight:600; color:var(--cp-text-muted);">Showing all 134 services</span>
+            </div>
+            <div class="cp-services-list" id="servicesDirectoryList">
+              <!-- Rendered dynamically as streamlined rows with direct links and inquire buttons -->
+            </div>
+          </div>
+
+          <!-- TAB 3: GOVERNMENT FUNDING SCHEMES -->
+          <div class="cp-buy-tab-pane" id="buyTabPaneFunding" style="display:none;">
+            <div class="cp-funding-notice">
+              <div>
+                <strong>&#127963; Government Grants &amp; Concessional Schemes</strong>
+                <p>Corporate Mart provides end-to-end documentation, DPR / pitch deck preparation, eligibility evaluation, and filing support for central and state schemes.</p>
+              </div>
+              <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <a href="fundraising.html" class="cp-btn cp-btn-primary" id="btnFundingTopAction" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                  Get Eligibility Check &rarr;
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODALS                                     -->
+  <!-- ========================================== -->
+
+  <!-- Modal: Request a Service (Web3Forms) -->
+  <div class="cp-modal" id="modalRequestService" aria-hidden="true">
+    <div class="cp-modal-backdrop" data-close-modal></div>
+    <div class="cp-modal-dialog">
+      <div class="cp-modal-header">
+        <div>
+          <h3>Request a New Service</h3>
+          <p class="cp-modal-sub">Corporate Mart operations team will review and assign this to your portal</p>
+        </div>
+        <button type="button" class="cp-modal-close" data-close-modal>&times;</button>
+      </div>
+
+      <form id="formRequestService" class="cp-form">
+        <!-- Hidden Web3Forms Access Key & Metadata -->
+        <input type="hidden" name="access_key" value="f9e8e977-8a5c-4979-8cf0-e303edbcac00">
+        <input type="hidden" name="from_name" value="Corporate Mart Client Portal">
+        <input type="hidden" name="subject" id="reqEmailSubject" value="New Order / Request from Client Portal">
+        <input type="hidden" name="item_type" id="reqHiddenItemType" value="Service">
+        <input type="hidden" name="selected_item" id="reqHiddenItemName" value="">
+        <input type="hidden" name="price" id="reqHiddenItemPrice" value="">
+
+        <!-- Selected Item Highlight Card -->
+        <div class="cp-buy-summary-card" id="reqBuySummaryCard" style="display:none; margin-bottom:16px; padding:12px 14px; background:linear-gradient(135deg, rgba(37,99,235,0.08), rgba(79,70,229,0.08)); border:1px solid rgba(37,99,235,0.25); border-radius:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="cp-badge cp-badge-blue" id="reqItemTypeBadge">Combo Plan</span>
+            <span style="font-weight:800; color:var(--cp-primary); font-size:16px;" id="reqItemPrice">₹39,999</span>
+          </div>
+          <div style="font-weight:700; font-size:15px; margin-top:5px; color:var(--cp-text-main);" id="reqItemTitle">Basic Business - Growth</div>
+        </div>
+
+        <div class="cp-form-row">
+          <div class="cp-form-group">
+            <label for="reqCompanyName">Company Name *</label>
+            <input type="text" id="reqCompanyName" name="company_name" class="cp-input" required>
+          </div>
+          <div class="cp-form-group">
+            <label for="reqContactName">Director / Contact Person *</label>
+            <input type="text" id="reqContactName" name="contact_person" class="cp-input" required>
+          </div>
+        </div>
+
+        <div class="cp-form-row">
+          <div class="cp-form-group">
+            <label for="reqEmail">Email Address *</label>
+            <input type="email" id="reqEmail" name="email" class="cp-input" required>
+          </div>
+          <div class="cp-form-group">
+            <label for="reqPhone">Phone Number *</label>
+            <input type="tel" id="reqPhone" name="phone" class="cp-input" required>
+          </div>
+        </div>
+
+        <div class="cp-form-group" id="reqServiceSelectGroup">
+          <label for="reqServiceSelect">Service Desired *</label>
+          <select id="reqServiceSelect" name="service_name" class="cp-select">
+            <option value="Private Limited Company Registration">Private Limited Company Registration</option>
+            <option value="LLP Registration">Limited Liability Partnership (LLP)</option>
+            <option value="One Person Company (OPC)">One Person Company (OPC)</option>
+            <option value="GST Registration & Filing">GST Registration & Filing</option>
+            <option value="Trademark Registration">Trademark Registration</option>
+            <option value="MSME Udyam Registration">MSME Udyam Registration</option>
+            <option value="Startup India Recognition">Startup India Recognition (DPIIT)</option>
+            <option value="ROC Annual Compliance">ROC Annual Compliance</option>
+            <option value="Accounting & Bookkeeping">Accounting & Bookkeeping</option>
+            <option value="Digital Signature Certificate (DSC)">Digital Signature Certificate (DSC)</option>
+            <option value="Fundraising Advisory">Fundraising Advisory</option>
+            <option value="Other Custom Service">Other Custom Compliance Service</option>
+          </select>
+        </div>
+
+        <div class="cp-form-group">
+          <label for="reqNotes">Additional Requirements / Notes</label>
+          <textarea id="reqNotes" name="message" class="cp-textarea" rows="3" placeholder="Tell us specific details or questions..."></textarea>
+        </div>
+
+        <div class="cp-modal-footer">
+          <button type="button" class="cp-btn cp-btn-secondary" data-close-modal>Cancel</button>
+          <button type="submit" class="cp-btn cp-btn-primary" id="btnSubmitRequest">Submit Service Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Ask a Question / New Support Ticket -->
+  <div class="cp-modal" id="modalNewTicket" aria-hidden="true">
+    <div class="cp-modal-backdrop" data-close-modal></div>
+    <div class="cp-modal-dialog">
+      <div class="cp-modal-header">
+        <div>
+          <h3>Ask a Question to Operations</h3>
+          <p class="cp-modal-sub">Direct message to your dedicated compliance manager</p>
+        </div>
+        <button type="button" class="cp-modal-close" data-close-modal>&times;</button>
+      </div>
+
+      <form id="formNewTicket" class="cp-form">
+        <div class="cp-form-group">
+          <label for="ticketSubject">Subject *</label>
+          <input type="text" id="ticketSubject" class="cp-input" placeholder="e.g. Query regarding DSC authorization" required>
+        </div>
+
+        <div class="cp-form-row">
+          <div class="cp-form-group">
+            <label for="ticketCategory">Category</label>
+            <select id="ticketCategory" class="cp-select">
+              <option value="general" selected>General Inquiry</option>
+              <option value="certificate">Certificate / Document Delivery</option>
+              <option value="status_inquiry">Service Status Inquiry</option>
+              <option value="dsc">Digital Signature (DSC)</option>
+              <option value="billing">Billing / Invoice</option>
+            </select>
+          </div>
+          <div class="cp-form-group">
+            <label for="ticketPriority">Priority</label>
+            <select id="ticketPriority" class="cp-select">
+              <option value="medium" selected>Normal</option>
+              <option value="high">Urgent / High</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="cp-form-group">
+          <label for="ticketMessage">Your Message *</label>
+          <textarea id="ticketMessage" class="cp-textarea" rows="4" placeholder="Explain your question or request in detail..." required></textarea>
+        </div>
+
+        <div class="cp-modal-footer">
+          <button type="button" class="cp-btn cp-btn-secondary" data-close-modal>Cancel</button>
+          <button type="submit" class="cp-btn cp-btn-primary" id="btnSubmitTicket">Send Question</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Profile & Password Settings -->
+  <div class="cp-modal" id="modalClientProfile" aria-hidden="true">
+    <div class="cp-modal-backdrop" data-close-modal></div>
+    <div class="cp-modal-dialog" style="max-width:540px;">
+      <div class="cp-modal-header">
+        <div>
+          <h3 style="margin:0; font-size:18px;">Profile & Security</h3>
+          <p style="font-size:13px; color:var(--cp-text-muted); margin:4px 0 0 0;">Manage your personal details and password</p>
+        </div>
+        <button type="button" class="cp-modal-close" data-close-modal>&times;</button>
+      </div>
+
+      <!-- Settings Nav Tabs -->
+      <div style="display:flex; border-bottom:1px solid var(--cp-border); padding:0 24px; gap:20px; background:var(--cp-bg-surface);">
+        <button type="button" id="tabBtnClientProfile" class="cp-tab-btn" style="padding:12px 4px; border:none; background:none; font-weight:700; font-size:14px; color:var(--cp-primary); border-bottom:2px solid var(--cp-primary); cursor:pointer;">
+          Profile Details
+        </button>
+        <button type="button" id="tabBtnClientSecurity" class="cp-tab-btn" style="padding:12px 4px; border:none; background:none; font-weight:600; font-size:14px; color:var(--cp-text-muted); cursor:pointer;">
+          Change Password
+        </button>
+      </div>
+
+      <!-- Tab 1: Profile Form -->
+      <form id="formClientProfile" class="cp-modal-body" style="padding:24px;">
+        <div class="cp-form-group">
+          <label for="editClientName">Full Name / Director *</label>
+          <input type="text" id="editClientName" class="cp-input" placeholder="Your name" required>
+        </div>
+        <div class="cp-form-group">
+          <label for="editClientCompany">Company Name</label>
+          <input type="text" id="editClientCompany" class="cp-input" placeholder="Your registered company name">
+        </div>
+        <div class="cp-form-group">
+          <label for="editClientPhone">Contact Phone</label>
+          <input type="tel" id="editClientPhone" class="cp-input" placeholder="+91 98765 43210">
+        </div>
+        <div class="cp-form-group">
+          <label for="editClientEmail">Registered Email</label>
+          <input type="email" id="editClientEmail" class="cp-input" readonly disabled style="opacity:0.7; cursor:not-allowed;">
+          <small style="color:var(--cp-text-muted); font-size:11px;">Primary login email is verified and locked to your account.</small>
+        </div>
+        <div id="clientProfileMsg" style="display:none; padding:10px; border-radius:6px; font-size:13px; margin-bottom:12px;"></div>
+        <div class="cp-modal-footer" style="padding:16px 0 0 0;">
+          <button type="button" class="cp-btn cp-btn-secondary" data-close-modal>Close</button>
+          <button type="submit" id="btnSaveClientProfile" class="cp-btn cp-btn-primary">Save Profile</button>
+        </div>
+      </form>
+
+      <!-- Tab 2: Change Password Form -->
+      <form id="formClientChangePassword" class="cp-modal-body" style="padding:24px; display:none;">
+        <div class="cp-form-group">
+          <label for="currClientPassword">Current Password *</label>
+          <input type="password" id="currClientPassword" class="cp-input" placeholder="Enter current password" required>
+        </div>
+        <div class="cp-form-group">
+          <label for="newClientPassword">New Password *</label>
+          <input type="password" id="newClientPassword" class="cp-input" placeholder="At least 6 characters" minlength="6" required>
+        </div>
+        <div class="cp-form-group">
+          <label for="confirmClientPassword">Confirm New Password *</label>
+          <input type="password" id="confirmClientPassword" class="cp-input" placeholder="Repeat new password" minlength="6" required>
+        </div>
+        <div id="clientChangePassMsg" style="display:none; padding:10px; border-radius:6px; font-size:13px; margin-bottom:12px;"></div>
+        <div class="cp-modal-footer" style="padding:16px 0 0 0;">
+          <button type="button" class="cp-btn cp-btn-secondary" data-close-modal>Close</button>
+          <button type="submit" id="btnSaveClientPassword" class="cp-btn cp-btn-primary">Update Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Client Service Detailed View -->
+  <div class="cp-modal" id="modalServiceDetails" aria-hidden="true">
+    <div class="cp-modal-backdrop" data-close-modal></div>
+    <div class="cp-modal-dialog cp-modal-dialog-service-detail">
+      <div class="cp-modal-header cp-service-modal-header">
+        <div class="cp-service-modal-title-area">
+          <div class="cp-service-modal-badges">
+            <span class="cp-badge cp-badge-id" id="serviceDetailCaseId">CAS-1001</span>
+            <span id="serviceDetailStatusBadge">🟢 Completed</span>
+          </div>
+          <h3 id="serviceDetailName" class="cp-service-modal-heading">Service Name</h3>
+          <div class="cp-service-modal-company" id="serviceDetailCompany">ABC PRIVATE LIMITED</div>
+        </div>
+        <button type="button" class="cp-modal-close" data-close-modal title="Close">&times;</button>
+      </div>
+
+      <div class="cp-modal-body cp-service-modal-body">
+        <!-- Key Metadata Grid -->
+        <div class="cp-service-meta-grid">
+          <div class="cp-service-meta-card">
+            <span class="cp-meta-card-label">Service / Case ID</span>
+            <span class="cp-meta-card-value" id="serviceDetailMetaId">CAS-1001</span>
+          </div>
+          <div class="cp-service-meta-card">
+            <span class="cp-meta-card-label">Current Status</span>
+            <span class="cp-meta-card-value" id="serviceDetailMetaStatus">Completed</span>
+          </div>
+          <div class="cp-service-meta-card">
+            <span class="cp-meta-card-label">Last Updated Date</span>
+            <span class="cp-meta-card-value" id="serviceDetailUpdatedAt">23 Sep 2026, 04:30 PM</span>
+          </div>
+          <div class="cp-service-meta-card">
+            <span class="cp-meta-card-label">Case Created Date</span>
+            <span class="cp-meta-card-value" id="serviceDetailCreatedAt">10 Sep 2026</span>
+          </div>
+        </div>
+
+        <!-- Remarks / Status Note Box -->
+        <div class="cp-service-detail-remark-box">
+          <div class="cp-remark-icon">📢</div>
+          <div class="cp-remark-content">
+            <div class="cp-remark-title">Operations Remark & Status Note</div>
+            <p id="serviceDetailRemarkText">Application submitted on GST Portal. Awaiting ARN verification.</p>
+          </div>
+        </div>
+
+        <!-- Progress Tracker / Stepper -->
+        <div class="cp-service-stepper-wrap" id="serviceDetailStepperWrap">
+          <div class="cp-service-stepper-title">Application Milestone Progress</div>
+          <div class="cp-progress-stepper" id="serviceDetailProgressStepper">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Assigned Documents Section -->
+        <div class="cp-service-docs-section">
+          <div class="cp-service-docs-header">
+            <h4>Assigned Documents & Certificates <span class="cp-docs-count-pill" id="serviceDetailDocsCount">0</span></h4>
+            <span class="cp-docs-subtext">Official filings, approvals, and certificates for this service</span>
+          </div>
+          <div class="cp-service-docs-list" id="serviceDetailDocsList">
+            <!-- Populated dynamically with preview & download buttons -->
+          </div>
+        </div>
+      </div>
+
+      <div class="cp-modal-footer">
+        <button type="button" class="cp-btn cp-btn-secondary" data-close-modal>Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Client Document Preview -->
+  <div class="cp-modal" id="modalClientDocPreview" aria-hidden="true">
+    <div class="cp-modal-backdrop" data-close-modal></div>
+    <div class="cp-modal-dialog cp-modal-dialog-preview">
+      <div class="cp-modal-header cp-preview-header">
+        <div class="cp-preview-title-wrap">
+          <h3 id="clientDocPreviewTitle">Document Preview</h3>
+          <div class="cp-preview-meta">
+            <span id="clientDocPreviewCategory" class="cp-badge cp-badge-purple">Category</span>
+            <span id="clientDocPreviewFileName" class="cp-preview-filename">certificate.pdf</span>
+          </div>
+        </div>
+        <div class="cp-preview-actions">
+          <a id="clientDocPreviewNewTab" href="#" target="_blank" class="cp-btn cp-btn-secondary cp-btn-sm" title="Open in new browser tab">
+            ↗ Open in Tab
+          </a>
+          <a id="clientDocPreviewDownload" href="#" download class="cp-btn cp-btn-primary cp-btn-sm" title="Download to device">
+            ⬇ Download
+          </a>
+          <button type="button" class="cp-modal-close" data-close-modal title="Close">&times;</button>
+        </div>
+      </div>
+      <div class="cp-preview-body" id="clientDocPreviewBody">
+        <!-- Dynamically injected viewer -->
+      </div>
+    </div>
+  </div>
+
+  <!-- PWA DOWNLOAD SUGGESTION BANNER (ONE-TIME PROMPT) -->
+  <div class="portal-pwa-suggest" id="clientPwaSuggestBanner" style="display:none;">
+    <div style="font-size:24px; line-height:1;">📲</div>
+    <div class="portal-pwa-suggest-text">
+      <strong>Install Client Portal?</strong>
+      <span>Add Corporate Mart Client Portal to your home screen or desktop for easy access.</span>
+    </div>
+    <div class="portal-pwa-suggest-actions">
+      <button type="button" class="portal-pwa-btn-install" id="btnClientPwaSuggestInstall">Install App</button>
+      <button type="button" class="portal-pwa-btn-dismiss" id="btnClientPwaSuggestDismiss" title="Don't show again">✕</button>
+    </div>
+  </div>
+
+  <!-- MOBILE BOTTOM NAVIGATION (NATIVE APP STYLE) -->
+  <nav class="portal-bottom-nav" id="clientBottomNav" aria-label="Mobile Bottom Navigation">
+    <a href="#dashboard" class="portal-bottom-nav-item active" data-nav="dashboard">
+      <div class="bottom-nav-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+      </div>
+      <span class="bottom-nav-label">Dashboard</span>
+    </a>
+    <a href="#services" class="portal-bottom-nav-item" data-nav="services">
+      <div class="bottom-nav-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+        </svg>
+        <span class="bottom-nav-badge" id="bottomNavServicesBadge" style="display:none;">0</span>
+      </div>
+      <span class="bottom-nav-label">Services</span>
+    </a>
+    <a href="#buy" class="portal-bottom-nav-item" data-nav="buy">
+      <div class="bottom-nav-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <path d="M16 10a4 4 0 0 1-8 0"></path>
+        </svg>
+        <span class="bottom-nav-badge bottom-nav-badge-hot">New</span>
+      </div>
+      <span class="bottom-nav-label">Buy</span>
+    </a>
+    <a href="#documents" class="portal-bottom-nav-item" data-nav="documents">
+      <div class="bottom-nav-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span class="bottom-nav-badge" id="bottomNavDocsBadge" style="display:none;">0</span>
+      </div>
+      <span class="bottom-nav-label">Docs</span>
+    </a>
+    <a href="#support" class="portal-bottom-nav-item" data-nav="support">
+      <div class="bottom-nav-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span class="bottom-nav-badge" id="bottomNavTicketsBadge" style="display:none;">0</span>
+      </div>
+      <span class="bottom-nav-label">Support</span>
+    </a>
+  </nav>
+
+  <!-- Toast Alerts Container -->
+  <div id="toastContainer" class="cp-toast-container"></div>
+
+  <script src="client.js"></script>
+</body>
+</html>

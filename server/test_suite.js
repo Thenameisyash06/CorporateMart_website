@@ -8,6 +8,7 @@ async function runTests() {
 
   // 1. Test Database Initialization
   db.initDB();
+  await db.ensureMongoConnected();
   const dbFile = path.join(__dirname, 'data', 'database.json');
   assert(fs.existsSync(dbFile), 'database.json must exist');
   console.log('✔ DB File initialized');

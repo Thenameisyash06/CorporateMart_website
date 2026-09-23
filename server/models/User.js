@@ -27,6 +27,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  companyName: {
+    type: String,
+    default: '',
+    trim: true
+  },
   plan: {
     type: String,
     enum: ['free', 'pro'],
@@ -34,14 +39,31 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'admin'],
+    enum: ['user', 'admin', 'client', 'operations'],
     default: 'user'
+  },
+  status: {
+    type: String,
+    enum: ['active', 'pending', 'suspended', 'inactive'],
+    default: 'active'
   },
   isSubscribed: {
     type: Boolean,
     default: false
   },
   subscriptionExpiresAt: {
+    type: Date,
+    default: null
+  },
+  pushSubscriptions: {
+    type: [Object],
+    default: []
+  },
+  resetOtp: {
+    type: String,
+    default: null
+  },
+  resetOtpExpires: {
     type: Date,
     default: null
   },
