@@ -397,6 +397,13 @@
   if (tabBtnOpsProfile) tabBtnOpsProfile.addEventListener('click', () => switchOpsProfileTab('profile'));
   if (tabBtnOpsSecurity) tabBtnOpsSecurity.addEventListener('click', () => switchOpsProfileTab('security'));
 
+  document.querySelectorAll('.btn-ops-modal-logout').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      closeModal();
+      if (opsLogoutBtn) opsLogoutBtn.click();
+    });
+  });
+
   if (formOpsProfile) {
     formOpsProfile.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -520,8 +527,8 @@
     });
 
     if (pageHeaders[sectionId]) {
-      opsPageTitle.textContent = pageHeaders[sectionId].title;
-      opsPageSubtitle.textContent = pageHeaders[sectionId].sub;
+      if (opsPageTitle) opsPageTitle.textContent = pageHeaders[sectionId].title;
+      if (opsPageSubtitle) opsPageSubtitle.textContent = pageHeaders[sectionId].sub;
     }
 
     if (opsSidebar) opsSidebar.classList.remove('open');

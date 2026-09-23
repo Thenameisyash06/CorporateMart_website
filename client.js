@@ -599,6 +599,13 @@
   if (tabBtnClientProfile) tabBtnClientProfile.addEventListener('click', () => switchProfileTab('profile'));
   if (tabBtnClientSecurity) tabBtnClientSecurity.addEventListener('click', () => switchProfileTab('security'));
 
+  document.querySelectorAll('.btn-client-modal-logout').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      closeModal();
+      if (clientLogoutBtn) clientLogoutBtn.click();
+    });
+  });
+
   if (formClientProfile) {
     formClientProfile.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -722,8 +729,8 @@
     });
 
     if (pageHeaders[sectionId]) {
-      cpPageTitle.textContent = pageHeaders[sectionId].title;
-      cpPageSubtitle.textContent = pageHeaders[sectionId].sub;
+      if (cpPageTitle) cpPageTitle.textContent = pageHeaders[sectionId].title;
+      if (cpPageSubtitle) cpPageSubtitle.textContent = pageHeaders[sectionId].sub;
     }
 
     if (cpSidebar) cpSidebar.classList.remove('open');
@@ -835,6 +842,86 @@
     }
   }
 
+  function setupCarousel(track, prevBtn, nextBtn, dotsContainer) {
+    if (!track) return;
+
+    function getItems() {
+      return track.querySelectorAll('.cp-carousel-card-item');
+    }
+
+    function updateNav() {
+      const items = getItems();
+      if (items.length <= 1) {
+        if (prevBtn) prevBtn.disabled = true;
+        if (nextBtn) nextBtn.disabled = true;
+        if (dotsContainer) dotsContainer.innerHTML = '';
+        return;
+      }
+
+      const scrollLeft = track.scrollLeft;
+      const maxScroll = track.scrollWidth - track.clientWidth;
+
+      if (prevBtn) prevBtn.disabled = scrollLeft <= 4;
+      if (nextBtn) nextBtn.disabled = scrollLeft >= maxScroll - 4;
+
+      if (dotsContainer) {
+        const itemWidth = items[0].offsetWidth + 16;
+        const activeIdx = Math.min(items.length - 1, Math.max(0, Math.round(scrollLeft / itemWidth)));
+        const dots = dotsContainer.querySelectorAll('.cp-carousel-dot');
+        dots.forEach((dot, idx) => {
+          dot.classList.toggle('active', idx === activeIdx);
+        });
+      }
+    }
+
+    if (prevBtn) {
+      prevBtn.onclick = (e) => {
+        e.preventDefault();
+        const items = getItems();
+        if (items.length === 0) return;
+        const step = items[0].offsetWidth + 16;
+        track.scrollBy({ left: -step, behavior: 'smooth' });
+      };
+    }
+
+    if (nextBtn) {
+      nextBtn.onclick = (e) => {
+        e.preventDefault();
+        const items = getItems();
+        if (items.length === 0) return;
+        const step = items[0].offsetWidth + 16;
+        track.scrollBy({ left: step, behavior: 'smooth' });
+      };
+    }
+
+    track.onscroll = () => {
+      updateNav();
+    };
+
+    if (dotsContainer) {
+      const items = getItems();
+      if (items.length > 1) {
+        dotsContainer.innerHTML = Array.from(items).map((_, i) =>
+          `<span class="cp-carousel-dot ${i === 0 ? 'active' : ''}" data-index="${i}"></span>`
+        ).join('');
+
+        dotsContainer.querySelectorAll('.cp-carousel-dot').forEach((dot) => {
+          dot.onclick = () => {
+            const idx = parseInt(dot.dataset.index, 10);
+            const items = getItems();
+            if (items.length === 0) return;
+            const step = items[0].offsetWidth + 16;
+            track.scrollTo({ left: idx * step, behavior: 'smooth' });
+          };
+        });
+      } else {
+        dotsContainer.innerHTML = '';
+      }
+    }
+
+    updateNav();
+  }
+
   // A. Dashboard Render
   function renderDashboard(data) {
     const stats = data.stats || {};
@@ -862,60 +949,114 @@
     if (bDocs) { bDocs.textContent = stats.totalDocuments || 0; bDocs.style.display = stats.totalDocuments > 0 ? 'block' : 'none'; }
     if (bTickets) { bTickets.textContent = stats.openTickets || 0; bTickets.style.display = stats.openTickets > 0 ? 'block' : 'none'; }
 
-    // Render Dashboard Services Table (top 5)
-    const sBody = document.getElementById('dashServicesBody');
+    // Render Dashboard Services Carousel
+    const sTrack = document.getElementById('dashServicesCarousel');
+    const prevServiceBtn = document.getElementById('btnPrevDashService');
+    const nextServiceBtn = document.getElementById('btnNextDashService');
+    const sDots = document.getElementById('dashServicesDots');
     const cases = data.cases || [];
-    if (sBody) {
+
+    if (sTrack) {
       if (cases.length === 0) {
-        sBody.innerHTML = '<tr><td colspan="4" class="cp-td-empty">No active services assigned yet.</td></tr>';
+        sTrack.innerHTML = `
+          <div class="cp-carousel-card-item">
+            <div class="cp-carousel-empty-card">
+              <span style="font-size:32px;">📋</span>
+              <strong>No ongoing services assigned yet</strong>
+              <p>Your active business filings, approvals, and status notes will appear here.</p>
+            </div>
+          </div>
+        `;
+        if (prevServiceBtn) prevServiceBtn.disabled = true;
+        if (nextServiceBtn) nextServiceBtn.disabled = true;
+        if (sDots) sDots.innerHTML = '';
       } else {
-        sBody.innerHTML = cases.slice(0, 5).map((c) => `
-          <tr>
-            <td><strong>${escapeHtml(c.serviceName)}</strong><br><span style="font-size:11px; color:var(--cp-text-muted);">${escapeHtml(c.caseId)}</span></td>
-            <td>${getStatusBadge(c.status)}</td>
-            <td style="max-width:200px; font-size:12px; color:var(--cp-text-muted);">${escapeHtml(c.statusNote || 'In processing')}</td>
-            <td>
-              <button type="button" class="cp-btn cp-btn-secondary cp-btn-sm btn-dash-view-case" data-case-id="${escapeHtml(c.caseId)}">View Details</button>
-            </td>
-          </tr>
+        sTrack.innerHTML = cases.map((c) => `
+          <div class="cp-carousel-card-item">
+            <div class="cp-carousel-card-inner">
+              <div class="cp-carousel-card-top">
+                <span class="cp-badge cp-badge-id">${escapeHtml(c.caseId)}</span>
+                ${getStatusBadge(c.status)}
+              </div>
+              <div class="cp-carousel-card-content">
+                <h4 class="cp-carousel-card-name" title="${escapeHtml(c.serviceName)}">${escapeHtml(c.serviceName)}</h4>
+                <div class="cp-carousel-card-meta-line">
+                  <span class="cp-meta-muted-label">Status Remark:</span>
+                  <span class="cp-carousel-card-desc">${escapeHtml(c.statusNote || 'In processing with operations')}</span>
+                </div>
+              </div>
+              <div class="cp-carousel-card-footer">
+                <button type="button" class="cp-btn cp-btn-primary cp-btn-sm btn-dash-view-case" data-case-id="${escapeHtml(c.caseId)}" style="width:100%; justify-content:center;">
+                  View Details
+                </button>
+              </div>
+            </div>
+          </div>
         `).join('');
 
-        sBody.querySelectorAll('.btn-dash-view-case').forEach((btn) => {
+        sTrack.querySelectorAll('.btn-dash-view-case').forEach((btn) => {
           btn.addEventListener('click', () => {
             openServiceDetailsModal(btn.dataset.caseId);
           });
         });
+
+        setupCarousel(sTrack, prevServiceBtn, nextServiceBtn, sDots);
       }
     }
 
-    // Render Dashboard Documents Table (top 5)
-    const dBody = document.getElementById('dashDocsBody');
+    // Render Dashboard Documents Carousel
+    const dTrack = document.getElementById('dashDocsCarousel');
+    const prevDocBtn = document.getElementById('btnPrevDashDoc');
+    const nextDocBtn = document.getElementById('btnNextDashDoc');
+    const dDots = document.getElementById('dashDocsDots');
     const docs = data.documents || [];
-    if (dBody) {
+
+    if (dTrack) {
       if (docs.length === 0) {
-        dBody.innerHTML = '<tr><td colspan="4" class="cp-td-empty">No certificates uploaded yet.</td></tr>';
+        dTrack.innerHTML = `
+          <div class="cp-carousel-card-item">
+            <div class="cp-carousel-empty-card">
+              <span style="font-size:32px;">📁</span>
+              <strong>No certificates uploaded yet</strong>
+              <p>Official registration certificates, GST documents, and DSC files will appear here.</p>
+            </div>
+          </div>
+        `;
+        if (prevDocBtn) prevDocBtn.disabled = true;
+        if (nextDocBtn) nextDocBtn.disabled = true;
+        if (dDots) dDots.innerHTML = '';
       } else {
-        dBody.innerHTML = docs.slice(0, 5).map((d) => {
-          const dateStr = d.createdAt ? new Date(d.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '—';
+        dTrack.innerHTML = docs.map((d) => {
+          const dateStr = d.createdAt ? new Date(d.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
           return `
-            <tr>
-              <td><strong>${escapeHtml(d.title)}</strong><br><span style="font-size:11px; color:var(--cp-text-muted);">${escapeHtml(d.fileName)}</span></td>
-              <td><span class="cp-badge cp-badge-purple">${escapeHtml(d.category)}</span></td>
-              <td>${dateStr}</td>
-              <td>
-                <div style="display:flex; gap:6px; align-items:center;">
-                  <button type="button" class="cp-btn cp-btn-secondary cp-btn-sm btn-client-preview-doc" data-doc-id="${escapeHtml(d.docId)}" title="Preview certificate">
+            <div class="cp-carousel-card-item">
+              <div class="cp-carousel-card-inner">
+                <div class="cp-carousel-card-top">
+                  <span class="cp-badge cp-badge-purple">${escapeHtml(d.category || 'Certificate')}</span>
+                  <span class="cp-carousel-card-date">${dateStr}</span>
+                </div>
+                <div class="cp-carousel-card-content">
+                  <h4 class="cp-carousel-card-name" title="${escapeHtml(d.title)}">${escapeHtml(d.title)}</h4>
+                  <div class="cp-carousel-card-meta-line">
+                    <span class="cp-meta-muted-label">Official File:</span>
+                    <span class="cp-carousel-card-desc" style="font-family:monospace; font-size:12px;">${escapeHtml(d.fileName)}</span>
+                  </div>
+                </div>
+                <div class="cp-carousel-card-footer cp-carousel-card-actions">
+                  <button type="button" class="cp-btn cp-btn-secondary cp-btn-sm btn-client-preview-doc" data-doc-id="${escapeHtml(d.docId)}" style="flex:1; justify-content:center;">
                     👁 Preview
                   </button>
-                  <a href="${escapeHtml(d.fileUrl)}" target="_blank" download class="cp-btn cp-btn-primary cp-btn-sm" title="Download file" style="text-decoration:none;">
+                  <a href="${escapeHtml(d.fileUrl)}" target="_blank" download class="cp-btn cp-btn-primary cp-btn-sm" style="flex:1; justify-content:center; text-decoration:none;">
                     ⬇ Download
                   </a>
                 </div>
-              </td>
-            </tr>
+              </div>
+            </div>
           `;
         }).join('');
-        wireDocPreviewButtons(dBody);
+
+        wireDocPreviewButtons(dTrack);
+        setupCarousel(dTrack, prevDocBtn, nextDocBtn, dDots);
       }
     }
   }

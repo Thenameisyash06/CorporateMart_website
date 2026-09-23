@@ -238,14 +238,17 @@
           </button>
           <div class="cp-page-heading">
             <h1 id="cpPageTitle">Dashboard</h1>
-            <p id="cpPageSubtitle">Track company services, status & certificates</p>
+            <p id="cpPageSubtitle" style="display:none;">Track company services, status & certificates</p>
           </div>
         </div>
 
         <div class="cp-topbar-right">
           <!-- Profile / Settings Button -->
-          <button type="button" class="cp-theme-toggle" id="clientTopSettingsBtn" title="Profile & Password Settings">
-            ⚙️
+          <button type="button" class="cp-theme-toggle" id="clientTopSettingsBtn" title="Profile & Account">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
           </button>
 
           <!-- In-Phone Push Notifications Bell Button -->
@@ -360,58 +363,70 @@
             </button>
           </div>
 
-          <!-- Dual Split Grid: Active Work & Downloadable Documents -->
+          <!-- Dual Split Grid: Active Work & Downloadable Documents Carousels -->
           <div class="cp-split-grid">
             
-            <!-- Ongoing Services -->
-            <div class="cp-card">
+            <!-- Ongoing Services Carousel Card -->
+            <div class="cp-card cp-carousel-card">
               <div class="cp-card-header">
                 <div class="cp-card-title">
                   <h3>Ongoing Services & Filings</h3>
                   <p>Current progress and status from operations</p>
                 </div>
-                <a href="#services" class="cp-link">View All Services →</a>
+                <div class="cp-carousel-header-controls">
+                  <a href="#services" class="cp-link">View All →</a>
+                  <div class="cp-carousel-nav-arrows">
+                    <button type="button" class="cp-carousel-arrow-btn" id="btnPrevDashService" aria-label="Previous Service" title="Previous Service">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    </button>
+                    <button type="button" class="cp-carousel-arrow-btn" id="btnNextDashService" aria-label="Next Service" title="Next Service">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div class="cp-table-responsive">
-                <table class="cp-table">
-                  <thead>
-                    <tr>
-                      <th>Service</th>
-                      <th>Status</th>
-                      <th>Latest Note</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody id="dashServicesBody">
-                    <tr><td colspan="4" class="cp-td-empty">Loading services...</td></tr>
-                  </tbody>
-                </table>
+              <div class="cp-carousel-wrapper">
+                <div class="cp-carousel-track" id="dashServicesCarousel">
+                  <div class="cp-carousel-card-item">
+                    <div class="cp-carousel-empty-card">
+                      <span style="font-size:28px;">📋</span>
+                      <strong>Loading services...</strong>
+                    </div>
+                  </div>
+                </div>
+                <div class="cp-carousel-indicators" id="dashServicesDots"></div>
               </div>
             </div>
 
-            <!-- Recent Documents -->
-            <div class="cp-card">
+            <!-- Recent Documents Carousel Card -->
+            <div class="cp-card cp-carousel-card">
               <div class="cp-card-header">
                 <div class="cp-card-title">
                   <h3>Recent Certificates & Downloads</h3>
                   <p>Official files issued for your company</p>
                 </div>
-                <a href="#documents" class="cp-link">View All Documents →</a>
+                <div class="cp-carousel-header-controls">
+                  <a href="#documents" class="cp-link">View All →</a>
+                  <div class="cp-carousel-nav-arrows">
+                    <button type="button" class="cp-carousel-arrow-btn" id="btnPrevDashDoc" aria-label="Previous Document" title="Previous Document">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    </button>
+                    <button type="button" class="cp-carousel-arrow-btn" id="btnNextDashDoc" aria-label="Next Document" title="Next Document">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div class="cp-table-responsive">
-                <table class="cp-table">
-                  <thead>
-                    <tr>
-                      <th>Document</th>
-                      <th>Category</th>
-                      <th>Date</th>
-                      <th>Download</th>
-                    </tr>
-                  </thead>
-                  <tbody id="dashDocsBody">
-                    <tr><td colspan="4" class="cp-td-empty">Loading documents...</td></tr>
-                  </tbody>
-                </table>
+              <div class="cp-carousel-wrapper">
+                <div class="cp-carousel-track" id="dashDocsCarousel">
+                  <div class="cp-carousel-card-item">
+                    <div class="cp-carousel-empty-card">
+                      <span style="font-size:28px;">📁</span>
+                      <strong>Loading documents...</strong>
+                    </div>
+                  </div>
+                </div>
+                <div class="cp-carousel-indicators" id="dashDocsDots"></div>
               </div>
             </div>
 
@@ -1044,9 +1059,19 @@
           <small style="color:var(--cp-text-muted); font-size:11px;">Primary login email is verified and locked to your account.</small>
         </div>
         <div id="clientProfileMsg" style="display:none; padding:10px; border-radius:6px; font-size:13px; margin-bottom:12px;"></div>
-        <div class="cp-modal-footer" style="padding:16px 0 0 0;">
-          <button type="button" class="cp-btn cp-btn-secondary" data-close-modal>Close</button>
-          <button type="submit" id="btnSaveClientProfile" class="cp-btn cp-btn-primary">Save Profile</button>
+        <div class="cp-modal-footer" style="padding:16px 0 0 0; display:flex; justify-content:space-between; align-items:center;">
+          <button type="button" class="cp-btn cp-btn-secondary btn-client-modal-logout" style="color:#ef4444; border-color:rgba(239, 68, 68, 0.4); display:inline-flex; align-items:center; gap:6px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            <span>Log Out</span>
+          </button>
+          <div style="display:flex; gap:8px;">
+            <button type="button" class="cp-btn cp-btn-secondary" data-close-modal>Close</button>
+            <button type="submit" id="btnSaveClientProfile" class="cp-btn cp-btn-primary">Save Profile</button>
+          </div>
         </div>
       </form>
 
@@ -1065,9 +1090,19 @@
           <input type="password" id="confirmClientPassword" class="cp-input" placeholder="Repeat new password" minlength="6" required>
         </div>
         <div id="clientChangePassMsg" style="display:none; padding:10px; border-radius:6px; font-size:13px; margin-bottom:12px;"></div>
-        <div class="cp-modal-footer" style="padding:16px 0 0 0;">
-          <button type="button" class="cp-btn cp-btn-secondary" data-close-modal>Close</button>
-          <button type="submit" id="btnSaveClientPassword" class="cp-btn cp-btn-primary">Update Password</button>
+        <div class="cp-modal-footer" style="padding:16px 0 0 0; display:flex; justify-content:space-between; align-items:center;">
+          <button type="button" class="cp-btn cp-btn-secondary btn-client-modal-logout" style="color:#ef4444; border-color:rgba(239, 68, 68, 0.4); display:inline-flex; align-items:center; gap:6px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            <span>Log Out</span>
+          </button>
+          <div style="display:flex; gap:8px;">
+            <button type="button" class="cp-btn cp-btn-secondary" data-close-modal>Close</button>
+            <button type="submit" id="btnSaveClientPassword" class="cp-btn cp-btn-primary">Update Password</button>
+          </div>
         </div>
       </form>
     </div>
