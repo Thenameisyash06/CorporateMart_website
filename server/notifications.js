@@ -138,7 +138,7 @@ async function notifyClient({ client, eventType, data }) {
 
   let title = '';
   let pushBody = '';
-  let pushUrl = '/client';
+  let pushUrl = '/client.html';
   let emailHtml = '';
   let emailText = '';
   let emailSubject = '';
@@ -156,7 +156,7 @@ async function notifyClient({ client, eventType, data }) {
 
     title = `📁 Document Ready: ${docTitle}`;
     pushBody = `Your document has been issued for ${companyName} and marked Completed. Tap to preview & download!`;
-    pushUrl = '/client#documents';
+    pushUrl = '/client.html#documents';
 
     emailSubject = `✅ Document Ready: ${docTitle} issued for ${companyName}`;
     emailText = `Dear ${directorName},\n\nYour Corporate Mart operations team has uploaded and issued your official document: ${docTitle}.\n\nThe related compliance service case ${caseId} has been marked as Approved (Completed).\n\nYou can view and download your certificate here:\n${APP_URL}/client#documents\n\nCorporate Mart • Legal & Compliance Services`;
@@ -185,7 +185,7 @@ async function notifyClient({ client, eventType, data }) {
 
     title = `⚠️ Action Required: ${serviceName}`;
     pushBody = `${statusNote}`;
-    pushUrl = '/client#services';
+    pushUrl = '/client.html#services';
 
     emailSubject = `⚠️ Action Required: Update regarding your ${serviceName} (${companyName})`;
     emailText = `Dear ${directorName},\n\nThere is an update requiring your attention regarding your ${serviceName} application (${caseId}):\n\n${statusNote}\n\nPlease log in to review and respond:\n${APP_URL}/client#services\n\nCorporate Mart • Legal & Compliance Services`;
@@ -218,7 +218,7 @@ async function notifyClient({ client, eventType, data }) {
 
     title = `💬 Message on Ticket #${ticketId}`;
     pushBody = `${staffName}: "${message.slice(0, 90)}${message.length > 90 ? '...' : ''}"`;
-    pushUrl = '/client#support';
+    pushUrl = '/client.html#support';
 
     emailSubject = `💬 Response to Ticket #${ticketId}: ${subject}`;
     emailText = `Dear ${directorName},\n\n${staffName} from Corporate Mart has replied to your query (${subject}):\n\n"${message}"\n\nReply in portal:\n${APP_URL}/client#support\n\nCorporate Mart Support`;

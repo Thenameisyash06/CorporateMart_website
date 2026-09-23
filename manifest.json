@@ -2,7 +2,7 @@
   "name": "Corporate Mart Client Portal",
   "short_name": "CorporateMart",
   "description": "Corporate Mart Client Portal - Status tracking, company certificates, filings, and support.",
-  "start_url": "/client",
+  "start_url": "/client.html",
   "display": "standalone",
   "background_color": "#0b1120",
   "theme_color": "#1e3a8a",

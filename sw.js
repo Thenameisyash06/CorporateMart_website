@@ -84,7 +84,7 @@ self.addEventListener('push', (event) => {
     icon: data.icon || '/icons/Your_paragraph_text__8_-removebg-preview.png',
     badge: data.badge || '/icons/Your_paragraph_text__8_-removebg-preview.png',
     data: {
-      url: data.url || '/client'
+      url: data.url || '/client.html'
     },
     tag: data.tag || 'cm-notification',
     renotify: true,
@@ -98,12 +98,12 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const targetUrl = (event.notification.data && event.notification.data.url) || '/client';
+  const targetUrl = (event.notification.data && event.notification.data.url) || '/client.html';
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
       for (let client of windowClients) {
-        if (client.url.includes('/client') && 'focus' in client) {
+        if (client.url.includes('/client.html') && 'focus' in client) {
           client.navigate(targetUrl);
           return client.focus();
         }

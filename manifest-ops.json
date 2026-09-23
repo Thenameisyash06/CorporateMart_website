@@ -2,7 +2,7 @@
   "name": "Corporate Mart Operations Desk",
   "short_name": "CM Operations",
   "description": "Corporate Mart Operations Portal - Client case management, document delivery, and compliance operations.",
-  "start_url": "/operations",
+  "start_url": "/operations.html",
   "display": "standalone",
   "background_color": "#0b1120",
   "theme_color": "#1e40af",
