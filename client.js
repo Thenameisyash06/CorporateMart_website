@@ -242,9 +242,21 @@
     const btnDismissNotifPrompt = document.getElementById('btnDismissNotifPrompt');
 
     if (btnEnableNotifications) {
-      btnEnableNotifications.addEventListener('click', () => {
+      btnEnableNotifications.addEventListener('click', async () => {
+        if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+          showToast('Push notifications are not supported on this browser/device.', 'warning');
+          return;
+        }
+
         if (Notification.permission === 'granted') {
-          showToast('In-phone push alerts are active for your account.', 'info');
+          showToast('Syncing push subscription & sending test alert...', 'info');
+          await ensurePushSubscribed();
+          try {
+            const res = await apiRequest('/api/portal/client/notifications/test', { method: 'POST' });
+            showToast(res.message || 'Test push alert sent!', 'success');
+          } catch (e) {
+            showToast('Test failed: ' + e.message, 'error');
+          }
         } else {
           requestNotificationPermission();
         }
@@ -1741,8 +1753,9 @@
     if (catEl) catEl.textContent = doc.category || 'certificate';
     if (nameEl) nameEl.textContent = `${doc.fileName || 'file'} (${doc.fileSize || ''})`;
     if (newTabEl) newTabEl.href = doc.fileUrl;
+    const downloadUrl = doc.fileUrl ? (doc.fileUrl.includes('?') ? `${doc.fileUrl}&download=1` : `${doc.fileUrl}?download=1`) : '#';
     if (dlEl) {
-      dlEl.href = doc.fileUrl;
+      dlEl.href = downloadUrl;
       dlEl.setAttribute('download', doc.fileName || 'download');
     }
 

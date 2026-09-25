@@ -15,21 +15,19 @@ const SCHEMES_FILE = path.join(__dirname, 'data', 'schemes.json');
 // Initialize Database
 db.initDB();
 
-// Setup Uploads Directory for Client & Operations Documents
+// Setup Uploads Directory for Client & Operations Documents (Safe for Serverless / Vercel)
 const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+try {
+  if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+} catch (e) {}
 const docsDir = path.join(uploadsDir, 'documents');
-if (!fs.existsSync(docsDir)) fs.mkdirSync(docsDir, { recursive: true });
+try {
+  if (!fs.existsSync(docsDir)) fs.mkdirSync(docsDir, { recursive: true });
+} catch (e) {}
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, docsDir);
-  },
-  filename: function (req, file, cb) {
-    const safeName = Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
-    cb(null, safeName);
-  }
-});
+// Use Memory Storage so files are held in memory buffers for direct streaming into MongoDB Atlas GridFS
+// without requiring local disk access (essential for Vercel serverless environments)
+const storage = multer.memoryStorage();
 const upload = multer({
   storage,
   limits: { fileSize: 25 * 1024 * 1024 } // 25MB max
@@ -923,9 +921,33 @@ app.post('/api/portal/ops/clients', requireStaff, upload.any(), async (req, res)
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
+      const safeName = Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+      file.filename = safeName;
+
+      // Try saving to local disk if directory is writable (e.g. localhost)
+      try {
+        if (fs.existsSync(docsDir) && file.buffer) {
+          fs.writeFileSync(path.join(docsDir, safeName), file.buffer);
+        }
+      } catch (wErr) {}
+
+      // Upload to MongoDB Atlas GridFS
+      let gridFsFileId = null;
+      try {
+        if (file.buffer) {
+          gridFsFileId = await db.uploadToGridFS(safeName, file.buffer, file.mimetype, {
+            originalname: file.originalname,
+            clientId: client.id,
+            companyName: client.companyName,
+            docType: 'company'
+          });
+        }
+      } catch (gErr) {
+        console.warn('GridFS upload warning during onboarding:', gErr.message);
+      }
+
       const meta = metadataList[i] || {};
-      const title = meta.title || file.originalname;
-      const fileUrl = '/uploads/documents/' + file.filename;
+      const title = (meta.title || file.originalname || 'Company Document').trim();
       const sizeInKb = (file.size / 1024).toFixed(1);
       const fileSize = file.size > 1024 * 1024 ? (file.size / (1024 * 1024)).toFixed(1) + ' MB' : sizeInKb + ' KB';
 
@@ -933,9 +955,9 @@ app.post('/api/portal/ops/clients', requireStaff, upload.any(), async (req, res)
         clientId: client.id,
         companyName: client.companyName,
         caseId: '', // Company documents are client/company level only, never associated to an individual case
-        title: title || file.originalname,
+        title,
         fileName: file.originalname,
-        fileUrl,
+        gridFsFileId,
         fileSize,
         fileType: file.mimetype,
         category: 'company_document',
@@ -1129,11 +1151,38 @@ app.post('/api/portal/ops/documents/upload', requireStaff, upload.any(), async (
     const createdDocuments = [];
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
+      const safeName = Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+      file.filename = safeName;
+
+      // Try saving to local disk if available (e.g. localhost)
+      try {
+        if (fs.existsSync(docsDir) && file.buffer) {
+          fs.writeFileSync(path.join(docsDir, safeName), file.buffer);
+        }
+      } catch (wErr) {}
+
       const meta = metadataList[i] || {};
       const docType = meta.docType || req.body.docType || 'issued';
       const defaultCategory = docType === 'company' ? 'company_document' : 'certificate';
       const category = meta.category || req.body.category || defaultCategory;
-      const fileUrl = '/uploads/documents/' + file.filename;
+
+      // Upload to MongoDB Atlas GridFS
+      let gridFsFileId = null;
+      try {
+        if (file.buffer) {
+          gridFsFileId = await db.uploadToGridFS(safeName, file.buffer, file.mimetype, {
+            originalname: file.originalname,
+            clientId: clientId || '',
+            companyName: companyName || '',
+            caseId: caseId || '',
+            docType
+          });
+        }
+      } catch (gErr) {
+        console.warn('GridFS upload warning during document upload:', gErr.message);
+      }
+
+      const title = (meta.title || file.originalname || 'Official Document').trim();
       const sizeInKb = (file.size / 1024).toFixed(1);
       const fileSize = file.size > 1024 * 1024 ? (file.size / (1024 * 1024)).toFixed(1) + ' MB' : sizeInKb + ' KB';
 
@@ -1145,9 +1194,9 @@ app.post('/api/portal/ops/documents/upload', requireStaff, upload.any(), async (
         clientId: clientId || '',
         companyName: companyName || '',
         caseId: effectiveCaseId,
-        title: title || file.originalname,
+        title,
         fileName: file.originalname,
-        fileUrl,
+        gridFsFileId,
         fileSize,
         fileType: file.mimetype,
         category,
@@ -1237,6 +1286,174 @@ app.delete('/api/portal/ops/documents/:id', requireStaff, async (req, res) => {
   } catch (err) {
     console.error('Error deleting document:', err);
     return res.status(500).json({ error: err.message || 'Failed to delete document' });
+  }
+});
+
+// ==========================================
+// DOCUMENT STREAMING & PREVIEW ENGINE
+// (Streams directly from MongoDB Atlas GridFS or local disk fallback)
+// ==========================================
+function getMimeType(filename = '') {
+  const ext = (path.extname(filename) || '').toLowerCase().replace('.', '');
+  const map = {
+    pdf: 'application/pdf',
+    png: 'image/png',
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    webp: 'image/webp',
+    svg: 'image/svg+xml',
+    gif: 'image/gif',
+    doc: 'application/msword',
+    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ppt: 'application/vnd.ms-powerpoint',
+    pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    zip: 'application/zip',
+    txt: 'text/plain'
+  };
+  return map[ext] || 'application/octet-stream';
+}
+
+function serveLocalDocFallback(doc, filename, res) {
+  const possiblePaths = [
+    doc && doc.fileUrl && !doc.fileUrl.startsWith('/api') ? path.join(__dirname, '..', doc.fileUrl) : null,
+    doc && doc.fileUrl && !doc.fileUrl.startsWith('/api') ? path.join(__dirname, doc.fileUrl) : null,
+    path.join(docsDir, filename || (doc && doc.fileName) || ''),
+    path.join(docsDir, 'sample_coi.pdf')
+  ].filter(Boolean);
+
+  for (const p of possiblePaths) {
+    if (fs.existsSync(p) && fs.statSync(p).isFile()) {
+      return res.sendFile(p);
+    }
+  }
+
+  if (!res.headersSent) {
+    res.status(404).send('Document file not found on storage or disk');
+  }
+}
+
+async function streamDocumentHandler(req, res) {
+  try {
+    const docId = req.params.id;
+    const doc = await db.getPortalDocumentById(docId);
+
+    if (!doc) {
+      const fallbackDoc = await db.getPortalDocumentByFileName(docId);
+      if (fallbackDoc) return streamDocumentHandler({ ...req, params: { id: fallbackDoc.docId || fallbackDoc.id } }, res);
+
+      // Check GridFS directly by filename
+      try {
+        const gridInfo = (await db.getGridFSFileInfo(docId)) || (req.params.filename ? await db.getGridFSFileInfo(req.params.filename) : null);
+        if (gridInfo) {
+          const stream = db.getGridFSStream(gridInfo.filename);
+          const mimeType = (gridInfo.metadata && gridInfo.metadata.contentType) || getMimeType(gridInfo.filename);
+          res.setHeader('Content-Type', mimeType);
+          res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(gridInfo.filename)}"`);
+          res.setHeader('Cache-Control', 'public, max-age=86400');
+          return stream.pipe(res);
+        }
+      } catch (e) {}
+
+      // Fallback: check local disk file
+      const localPath = path.join(docsDir, docId);
+      if (fs.existsSync(localPath)) {
+        return res.sendFile(localPath);
+      }
+
+      return res.status(404).send('Document not found');
+    }
+
+    const fileName = doc.fileName || req.params.filename || 'document.pdf';
+    const mimeType = doc.fileType || getMimeType(fileName);
+    const isDownload = req.query.download === '1' || req.query.download === 'true';
+
+    res.setHeader('Content-Type', mimeType);
+    res.setHeader(
+      'Content-Disposition',
+      `${isDownload ? 'attachment' : 'inline'}; filename="${encodeURIComponent(fileName)}"`
+    );
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+
+    // 1. Attempt streaming directly from MongoDB Atlas GridFS
+    if (doc.gridFsFileId) {
+      try {
+        const stream = db.getGridFSStream(doc.gridFsFileId);
+        stream.on('error', (err) => {
+          console.warn('GridFS stream error, falling back to local:', err.message);
+          serveLocalDocFallback(doc, fileName, res);
+        });
+        return stream.pipe(res);
+      } catch (err) {
+        console.warn('GridFS open stream error:', err.message);
+      }
+    }
+
+    // 2. Attempt streaming from GridFS by filename
+    try {
+      const stream = db.getGridFSStream(fileName);
+      stream.on('error', () => {
+        serveLocalDocFallback(doc, fileName, res);
+      });
+      return stream.pipe(res);
+    } catch (e) {
+      // Fall through to local fallback
+    }
+
+    // 3. Fallback to local disk file (for localhost testing or static seed files)
+    serveLocalDocFallback(doc, fileName, res);
+  } catch (err) {
+    console.error('Error streaming document:', err);
+    if (!res.headersSent) {
+      res.status(500).send('Error loading document: ' + err.message);
+    }
+  }
+}
+
+app.get('/api/portal/documents/:id/file', streamDocumentHandler);
+app.get('/api/portal/documents/:id/:filename', streamDocumentHandler);
+
+// Legacy /uploads/documents/:filename Catch-all Handler (supports both localhost and Vercel)
+app.get('/uploads/documents/:filename', async (req, res) => {
+  try {
+    const filename = req.params.filename;
+    const localPath = path.join(docsDir, filename);
+
+    // If file physically exists on disk, send it
+    if (fs.existsSync(localPath)) {
+      return res.sendFile(localPath);
+    }
+
+    // Otherwise, stream from MongoDB Atlas GridFS
+    const doc = await db.getPortalDocumentByFileName(filename);
+    const mimeType = (doc && doc.fileType) || getMimeType(filename);
+    const displayName = (doc && doc.fileName) || filename;
+
+    res.setHeader('Content-Type', mimeType);
+    res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(displayName)}"`);
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+
+    if (doc && doc.gridFsFileId) {
+      try {
+        const stream = db.getGridFSStream(doc.gridFsFileId);
+        return stream.pipe(res);
+      } catch (e) {}
+    }
+
+    try {
+      const stream = db.getGridFSStream(filename);
+      return stream.pipe(res);
+    } catch (e) {}
+
+    // Fallback to sample_coi.pdf if available
+    const samplePath = path.join(docsDir, 'sample_coi.pdf');
+    if (fs.existsSync(samplePath)) {
+      return res.sendFile(samplePath);
+    }
+
+    res.status(404).send('Document not found');
+  } catch (err) {
+    console.error('Uploads route error:', err);
+    res.status(404).send('Document not found');
   }
 });
 
@@ -1448,6 +1665,56 @@ app.post('/api/portal/client/notifications/subscribe', requireAuth, async (req, 
     return res.status(500).json({ error: 'Failed to save push subscription' });
   }
 });
+
+// Send Test Push Alert to Current User's Registered Devices
+app.post('/api/portal/client/notifications/test', requireAuth, async (req, res) => {
+  try {
+    const user = await db.findUserById(req.userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const result = await notifications.notifyClient({
+      client: user,
+      eventType: 'service_status_changed',
+      data: {
+        serviceName: 'Push Notification Test',
+        status: 'Active & Verified',
+        statusNote: 'Your device is successfully receiving instant alerts from Corporate Mart!'
+      }
+    });
+    return res.json({
+      success: true,
+      pushSentCount: result.pushSentCount,
+      subscriptionsCount: (user.pushSubscriptions || []).length,
+      message: result.pushSentCount > 0
+        ? `Test notification sent to ${result.pushSentCount} device(s)!`
+        : 'No push subscriptions found for this account. Make sure to tap Allow when prompted.'
+    });
+  } catch (err) {
+    console.error('Error sending test notification:', err);
+    return res.status(500).json({ error: err.message || 'Failed to send test push' });
+  }
+});
+
+// Seed default sample documents into MongoDB Atlas GridFS so previews work immediately on Vercel
+async function seedDefaultFilesToGridFS() {
+  try {
+    const samplePath = path.join(docsDir, 'sample_coi.pdf');
+    if (fs.existsSync(samplePath)) {
+      await db.ensureMongoConnected();
+      const existing = await db.getGridFSFileInfo('sample_coi.pdf');
+      if (!existing) {
+        const buf = fs.readFileSync(samplePath);
+        await db.uploadToGridFS('sample_coi.pdf', buf, 'application/pdf', {
+          title: 'Sample Certificate of Incorporation',
+          isSeed: true
+        });
+        console.log('✔ [Storage] Seeded sample_coi.pdf to MongoDB Atlas GridFS');
+      }
+    }
+  } catch (err) {
+    console.warn('GridFS seed warning:', err.message);
+  }
+}
+setTimeout(seedDefaultFilesToGridFS, 3000);
 
 // Start Server if run directly
 if (require.main === module) {

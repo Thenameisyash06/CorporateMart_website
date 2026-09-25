@@ -1381,8 +1381,9 @@
     if (catEl) catEl.textContent = doc.category || 'document';
     if (nameEl) nameEl.textContent = `${doc.fileName || 'file'} (${doc.fileSize || ''})`;
     if (newTabEl) newTabEl.href = doc.fileUrl;
+    const downloadUrl = doc.fileUrl ? (doc.fileUrl.includes('?') ? `${doc.fileUrl}&download=1` : `${doc.fileUrl}?download=1`) : '#';
     if (dlEl) {
-      dlEl.href = doc.fileUrl;
+      dlEl.href = downloadUrl;
       dlEl.setAttribute('download', doc.fileName || 'download');
     }
 

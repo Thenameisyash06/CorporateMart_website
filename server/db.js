@@ -1243,6 +1243,9 @@ async function createPortalDocument(data) {
   const isCompanyDoc = resolvedDocType === 'company' || data.category === 'company_document' || data.category === 'client_kyc';
   const effectiveCaseId = isCompanyDoc ? '' : (data.caseId || '');
 
+  const fileName = data.fileName || 'document.pdf';
+  const defaultFileUrl = '/api/portal/documents/' + docId + '/' + encodeURIComponent(fileName);
+
   const docObj = {
     id: 'doc_' + Date.now(),
     docId,
@@ -1250,8 +1253,9 @@ async function createPortalDocument(data) {
     clientId: data.clientId || '',
     companyName: data.companyName || '',
     title: String(data.title || 'Official Document').trim(),
-    fileName: data.fileName || 'document.pdf',
-    fileUrl: data.fileUrl || '/uploads/documents/sample_coi.pdf',
+    fileName,
+    fileUrl: data.fileUrl || defaultFileUrl,
+    gridFsFileId: data.gridFsFileId || null,
     fileSize: data.fileSize || '1.0 MB',
     fileType: data.fileType || 'application/pdf',
     category: data.category || (isCompanyDoc ? 'company_document' : 'certificate'),
@@ -1397,6 +1401,15 @@ async function deletePortalDocument(docIdentifier) {
       }
     } catch (err) {
       console.warn('Failed to delete physical file:', err.message);
+    }
+  }
+
+  // Delete from MongoDB GridFS if present
+  if (deletedDoc && deletedDoc.gridFsFileId) {
+    try {
+      await deleteFromGridFS(deletedDoc.gridFsFileId);
+    } catch (gErr) {
+      console.warn('Failed to delete from GridFS:', gErr.message);
     }
   }
 
@@ -1710,6 +1723,128 @@ async function replyClientTicket(ticketId, clientId, messageText, clientName = '
   return ticket;
 }
 
+// ==========================================
+// GRIDFS STORAGE & STREAMING FOR DOCUMENTS
+// ==========================================
+async function uploadToGridFS(filename, buffer, contentType = 'application/pdf', metadata = {}) {
+  await ensureMongoConnected();
+  if (!mongoose.connection || mongoose.connection.readyState !== 1) {
+    throw new Error('MongoDB Atlas is not connected');
+  }
+  const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+    bucketName: 'portal_documents'
+  });
+
+  return new Promise((resolve, reject) => {
+    const uploadStream = bucket.openUploadStream(filename, {
+      contentType: contentType || 'application/pdf',
+      metadata
+    });
+    uploadStream.on('error', reject);
+    uploadStream.on('finish', () => {
+      resolve(uploadStream.id);
+    });
+    uploadStream.end(buffer);
+  });
+}
+
+function getGridFSStream(fileIdOrName) {
+  if (!mongoose.connection || mongoose.connection.readyState !== 1) {
+    throw new Error('MongoDB Atlas is not connected');
+  }
+  const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+    bucketName: 'portal_documents'
+  });
+
+  if (typeof fileIdOrName === 'string' && mongoose.Types.ObjectId.isValid(fileIdOrName)) {
+    return bucket.openDownloadStream(new mongoose.Types.ObjectId(fileIdOrName));
+  } else if (fileIdOrName instanceof mongoose.Types.ObjectId) {
+    return bucket.openDownloadStream(fileIdOrName);
+  } else {
+    return bucket.openDownloadStreamByName(String(fileIdOrName));
+  }
+}
+
+async function getGridFSFileInfo(fileIdOrName) {
+  await ensureMongoConnected();
+  if (!mongoose.connection || mongoose.connection.readyState !== 1) return null;
+  try {
+    const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+      bucketName: 'portal_documents'
+    });
+    let filter = {};
+    if (typeof fileIdOrName === 'string' && mongoose.Types.ObjectId.isValid(fileIdOrName)) {
+      filter = { _id: new mongoose.Types.ObjectId(fileIdOrName) };
+    } else if (fileIdOrName instanceof mongoose.Types.ObjectId) {
+      filter = { _id: fileIdOrName };
+    } else {
+      filter = { filename: String(fileIdOrName) };
+    }
+    const files = await bucket.find(filter).toArray();
+    return files && files.length > 0 ? files[0] : null;
+  } catch (err) {
+    console.warn('GridFS find file error:', err.message);
+    return null;
+  }
+}
+
+async function deleteFromGridFS(gridFsId) {
+  await ensureMongoConnected();
+  if (!mongoose.connection || mongoose.connection.readyState !== 1 || !gridFsId) return;
+  try {
+    const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+      bucketName: 'portal_documents'
+    });
+    const id = typeof gridFsId === 'string' ? new mongoose.Types.ObjectId(gridFsId) : gridFsId;
+    await bucket.delete(id);
+  } catch (err) {
+    console.warn('GridFS delete error:', err.message);
+  }
+}
+
+async function getPortalDocumentById(docIdentifier) {
+  await ensureMongoConnected();
+  if (mongoose.connection && mongoose.connection.readyState === 1) {
+    try {
+      const isObjectId = mongoose.Types.ObjectId.isValid(docIdentifier);
+      const q = isObjectId
+        ? { $or: [{ _id: docIdentifier }, { docId: docIdentifier }, { id: docIdentifier }] }
+        : { $or: [{ docId: docIdentifier }, { id: docIdentifier }] };
+      const doc = await PortalDocument.findOne(q).lean();
+      if (doc) return doc;
+    } catch (e) {
+      console.warn('Mongo find doc error:', e.message);
+    }
+  }
+
+  const local = readDB();
+  const docs = local.portal_documents || [];
+  return docs.find(d => d.id === docIdentifier || d.docId === docIdentifier || (d._id && String(d._id) === docIdentifier));
+}
+
+async function getPortalDocumentByFileName(fileNameOrUrl) {
+  await ensureMongoConnected();
+  const cleanName = path.basename(fileNameOrUrl);
+  if (mongoose.connection && mongoose.connection.readyState === 1) {
+    try {
+      const doc = await PortalDocument.findOne({
+        $or: [
+          { fileName: cleanName },
+          { fileUrl: fileNameOrUrl },
+          { fileUrl: { $regex: cleanName + '$' } }
+        ]
+      }).lean();
+      if (doc) return doc;
+    } catch (e) {
+      console.warn('Mongo find doc by filename error:', e.message);
+    }
+  }
+
+  const local = readDB();
+  const docs = local.portal_documents || [];
+  return docs.find(d => d.fileName === cleanName || d.fileUrl === fileNameOrUrl || (d.fileUrl && d.fileUrl.endsWith(cleanName)));
+}
+
 module.exports = {
   initDB,
   initMongo,
@@ -1737,9 +1872,15 @@ module.exports = {
   updatePortalCaseStatus,
   deletePortalCase,
   getPortalDocuments,
+  getPortalDocumentById,
+  getPortalDocumentByFileName,
   createPortalDocument,
   revokePortalDocument,
   deletePortalDocument,
+  uploadToGridFS,
+  getGridFSStream,
+  getGridFSFileInfo,
+  deleteFromGridFS,
   getPortalOrders,
   createPortalOrder,
   activatePortalOrder,

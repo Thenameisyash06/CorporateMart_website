@@ -67,6 +67,10 @@ const portalDocumentSchema = new mongoose.Schema({
     enum: ['approved', 'pending_verification', 'rejected', 'revoked'],
     default: 'approved'
   },
+  gridFsFileId: {
+    type: mongoose.Schema.Types.ObjectId,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now
