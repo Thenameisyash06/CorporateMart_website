@@ -233,15 +233,6 @@
         </div>
 
         <div class="ops-topbar-right">
-          <!-- Global Search -->
-          <div class="ops-search-box">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <input type="text" id="opsGlobalSearch" placeholder="Search clients, cases, documents...">
-          </div>
-
           <!-- Theme Toggle -->
           <button type="button" class="ops-theme-toggle" id="opsThemeToggle" title="Toggle Light/Dark Theme">
             <span class="theme-icon-dark">🌙</span>
@@ -408,9 +399,14 @@
               <h2>Clients List</h2>
               <p>Add and manage all registered clients and authorized contacts</p>
             </div>
-            <button type="button" class="ops-btn ops-btn-primary" id="openAddClientModalBtn">
-              + Add Client
-            </button>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+              <button type="button" class="ops-btn ops-btn-secondary" id="openAddCompanyDocsModalBtn" style="display:inline-flex; align-items:center; gap:6px;">
+                📁 + Add Company Documents
+              </button>
+              <button type="button" class="ops-btn ops-btn-primary" id="openAddClientModalBtn">
+                + Add Client
+              </button>
+            </div>
           </div>
 
           <div class="ops-card">
@@ -596,18 +592,52 @@
           </div>
         </div>
         <div class="ops-form-group">
-          <label for="newInitialService">Service to Start (Optional)</label>
-          <select id="newInitialService" class="ops-select">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <label for="newInitialService" style="margin:0; font-weight:600;">Service to Start (Optional)</label>
+            <span id="newClientServiceMatchCount" style="font-size:12px; font-weight:500; color:var(--ops-text-muted,#64748b);"></span>
+          </div>
+
+          <div class="service-filter-row" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
+            <div>
+              <label for="newClientCategoryFilter" style="display:block; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--ops-text-muted,#64748b); margin-bottom:4px; font-weight:600;">Category</label>
+              <select id="newClientCategoryFilter" class="ops-select" style="font-size:13px; padding:7px 10px; height:38px;">
+                <option value="all" selected>📂 All Categories</option>
+                <option value="incorporation">🏛️ Incorporation &amp; Registration</option>
+                <option value="tax">📊 Tax &amp; Compliance</option>
+                <option value="ip">🛡️ Trademark &amp; IP</option>
+                <option value="licenses">📜 Licenses &amp; Municipal</option>
+                <option value="digital">💻 Digital &amp; Web Solutions</option>
+                <option value="conversion">🔄 Conversions &amp; Closures</option>
+                <option value="other">💡 Other &amp; Advisory</option>
+              </select>
+            </div>
+            <div>
+              <label for="newClientServiceSearch" style="display:block; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--ops-text-muted,#64748b); margin-bottom:4px; font-weight:600;">Quick Search</label>
+              <input type="text" id="newClientServiceSearch" class="ops-input" placeholder="Type to filter e.g. GST, ISO..." style="font-size:13px; padding:7px 10px; height:38px;">
+            </div>
+          </div>
+
+          <select id="newInitialService" class="ops-select" style="font-size:13.5px;">
             <option value="">-- None (Just Create Client Account) --</option>
-            <option value="Company Registration" selected>Company Registration</option>
-            <option value="GST Registration">GST Registration</option>
-            <option value="Trademark Registration">Trademark Registration</option>
-            <option value="MSME Registration">MSME Registration</option>
-            <option value="Startup India Registration">Startup India Registration</option>
-            <option value="ROC Annual Filing">ROC Annual Filing</option>
-            <option value="Accounting & Bookkeeping">Accounting & Bookkeeping</option>
           </select>
         </div>
+
+        <!-- Client's Onboarding Company Documents Section -->
+        <div class="ops-form-group" style="border-top:1px dashed var(--ops-border, #cbd5e1); padding-top:14px; margin-top:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div>
+              <label style="margin:0; font-weight:700; font-size:13px; color:var(--ops-text-main);">Client's Company Documents (Optional)</label>
+              <p style="font-size:12px; color:var(--ops-text-muted,#64748b); margin:2px 0 0;">Upload KYC, PAN, Aadhaar, MoA/AoA, electricity bills, or existing certificates given by client</p>
+            </div>
+            <button type="button" class="ops-btn ops-btn-secondary ops-btn-sm" id="btnAddOnboardDoc" style="font-size:12px; font-weight:600; display:inline-flex; align-items:center; gap:4px;">
+              <span>+</span> Add Document
+            </button>
+          </div>
+          <div id="onboardDocItemsContainer" style="display:flex; flex-direction:column; gap:10px;">
+            <!-- Document rows injected by operations.js -->
+          </div>
+        </div>
+
         <div class="ops-modal-footer">
           <button type="button" class="ops-btn ops-btn-secondary" data-close-modal>Cancel</button>
           <button type="submit" class="ops-btn ops-btn-primary" id="btnSaveClient">Create Client Account</button>
@@ -643,9 +673,14 @@
           <label for="updateCaseNote">Status Note for Client *</label>
           <textarea id="updateCaseNote" class="ops-textarea" rows="3" placeholder="Explain current status to display on the client's screen..." required></textarea>
         </div>
-        <div class="ops-modal-footer">
-          <button type="button" class="ops-btn ops-btn-secondary" data-close-modal>Cancel</button>
-          <button type="submit" class="ops-btn ops-btn-primary" id="btnSaveCaseStatus">Save Status Update</button>
+        <div class="ops-modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
+          <button type="button" class="ops-btn ops-btn-danger" id="btnDeleteCase" style="background:#fee2e2; color:#ef4444; border:1px solid rgba(239,68,68,0.3); padding:8px 14px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer;">
+            Delete Service
+          </button>
+          <div style="display:flex; gap:8px;">
+            <button type="button" class="ops-btn ops-btn-secondary" data-close-modal>Cancel</button>
+            <button type="submit" class="ops-btn ops-btn-primary" id="btnSaveCaseStatus">Save Status Update</button>
+          </div>
         </div>
       </form>
     </div>
@@ -667,17 +702,34 @@
           </select>
         </div>
         <div class="ops-form-group">
-          <label for="caseServiceName">Service Name *</label>
-          <select id="caseServiceName" class="ops-select" required>
-            <option value="Company Registration">Company Registration</option>
-            <option value="GST Registration">GST Registration</option>
-            <option value="Trademark Registration">Trademark Registration</option>
-            <option value="MSME Registration">MSME Registration</option>
-            <option value="Startup India Registration">Startup India Registration</option>
-            <option value="ROC Annual Compliance">ROC Annual Compliance</option>
-            <option value="Accounting & Bookkeeping">Accounting & Bookkeeping</option>
-            <option value="Digital Signature Certificate (DSC)">Digital Signature Certificate (DSC)</option>
-            <option value="Fundraising Advisory">Fundraising Advisory</option>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <label for="caseServiceName" style="margin:0; font-weight:600;">Service Name *</label>
+            <span id="caseServiceMatchCount" style="font-size:12px; font-weight:500; color:var(--ops-text-muted,#64748b);"></span>
+          </div>
+
+          <div class="service-filter-row" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
+            <div>
+              <label for="caseCategoryFilter" style="display:block; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--ops-text-muted,#64748b); margin-bottom:4px; font-weight:600;">Category</label>
+              <select id="caseCategoryFilter" class="ops-select" style="font-size:13px; padding:7px 10px; height:38px;">
+                <option value="incorporation" selected>🏛️ Incorporation &amp; Registration</option>
+                <option value="tax">📊 Tax &amp; Compliance</option>
+                <option value="ip">🛡️ Trademark &amp; IP</option>
+                <option value="licenses">📜 Licenses &amp; Municipal</option>
+                <option value="digital">💻 Digital &amp; Web Solutions</option>
+                <option value="conversion">🔄 Conversions &amp; Closures</option>
+                <option value="other">💡 Other &amp; Advisory</option>
+                <option value="all">📂 All Categories</option>
+              </select>
+            </div>
+            <div>
+              <label for="caseServiceSearch" style="display:block; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--ops-text-muted,#64748b); margin-bottom:4px; font-weight:600;">Quick Search</label>
+              <input type="text" id="caseServiceSearch" class="ops-input" placeholder="Type to filter e.g. GST, ISO..." style="font-size:13px; padding:7px 10px; height:38px;">
+            </div>
+          </div>
+
+          <label for="caseServiceName" style="display:block; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--ops-text-muted,#64748b); margin-bottom:4px; font-weight:600;">Select Specific Service</label>
+          <select id="caseServiceName" class="ops-select" required style="font-size:13.5px; font-weight:500;">
+            <!-- Populated dynamically via initServicePicker -->
           </select>
         </div>
         <div class="ops-form-group">
@@ -703,45 +755,60 @@
   <!-- Modal: Upload Document -->
   <div class="ops-modal" id="modalUploadDoc" aria-hidden="true">
     <div class="ops-modal-backdrop" data-close-modal></div>
-    <div class="ops-modal-dialog">
+    <div class="ops-modal-dialog ops-modal-dialog-large" style="max-width: 680px; max-height: 90vh; display:flex; flex-direction:column;">
       <div class="ops-modal-header">
-        <h3>Upload Document for Client</h3>
+        <div>
+          <h3>Upload Documents for Client</h3>
+          <p class="ops-modal-sub" style="margin:2px 0 0 0; font-size:12px; color:var(--ops-text-muted);">Share one or multiple official certificates, Word reports, or presentations directly with the client</p>
+        </div>
         <button type="button" class="ops-modal-close" data-close-modal>&times;</button>
       </div>
-      <form id="formUploadDoc" class="ops-form" enctype="multipart/form-data">
-        <div class="ops-form-group">
-          <label for="uploadClientSelect">Select Client *</label>
-          <select id="uploadClientSelect" class="ops-select" required>
-            <option value="">-- Choose Client --</option>
-          </select>
-        </div>
-        <div class="ops-form-group">
-          <label for="uploadCaseSelect">Associated Service (Optional)</label>
-          <select id="uploadCaseSelect" class="ops-select">
-            <option value="">-- General Document (No specific service) --</option>
-          </select>
-        </div>
+      <form id="formUploadDoc" class="ops-form" enctype="multipart/form-data" style="overflow-y:auto; padding-right:4px;">
         <div class="ops-form-row">
-          <div class="ops-form-group">
-            <label for="uploadDocTitle">Document Title *</label>
-            <input type="text" id="uploadDocTitle" class="ops-input" placeholder="e.g. Certificate of Incorporation" required>
+          <div class="ops-form-group" style="flex:1;">
+            <label for="uploadClientSelect">Select Client *</label>
+            <select id="uploadClientSelect" class="ops-select" required>
+              <option value="">-- Choose Client --</option>
+            </select>
           </div>
-          <div class="ops-form-group">
-            <label for="uploadDocCategory">Category</label>
-            <select id="uploadDocCategory" class="ops-select">
-              <option value="certificate" selected>Certificate</option>
-              <option value="filing">Filing / Challan</option>
-              <option value="government_letter">Government Approval / Letter</option>
-              <option value="client_kyc">Client KYC Paper</option>
-              <option value="other">Other Document</option>
+          <div class="ops-form-group" style="flex:1;" id="uploadCaseSelectGroup">
+            <label for="uploadCaseSelect">Associated Service (Optional)</label>
+            <select id="uploadCaseSelect" class="ops-select">
+              <option value="">-- General Document (No specific service) --</option>
             </select>
           </div>
         </div>
-        <div class="ops-form-group">
-          <label for="uploadFileInput">Choose File (PDF, Images, ZIP up to 25MB) *</label>
-          <input type="file" id="uploadFileInput" class="ops-input-file" accept=".pdf,.png,.jpg,.jpeg,.zip" required>
+
+        <div class="ops-form-group" style="margin-top:6px; margin-bottom:12px; padding:10px 14px; border-radius:8px; border:1px solid var(--ops-border,#e2e8f0);">
+          <label style="font-weight:700; font-size:12px; margin-bottom:6px; display:block; text-transform:uppercase; letter-spacing:0.5px; color:var(--ops-text-muted,#64748b);">Document Classification *</label>
+          <div style="display:flex; gap:20px; flex-wrap:wrap;">
+            <label style="display:inline-flex; align-items:center; gap:8px; cursor:pointer; font-size:13.5px; font-weight:600; color:var(--ops-text-main);">
+              <input type="radio" name="uploadDocType" value="issued" checked style="accent-color:var(--ops-primary); width:16px; height:16px;">
+              <span>📜 Issued Document (Prepared &amp; Issued by Us)</span>
+            </label>
+            <label style="display:inline-flex; align-items:center; gap:8px; cursor:pointer; font-size:13.5px; font-weight:600; color:var(--ops-text-main);">
+              <input type="radio" name="uploadDocType" value="company" style="accent-color:var(--ops-primary); width:16px; height:16px;">
+              <span>📁 Company Document (Client KYC, PAN, Aadhaar, etc.)</span>
+            </label>
+          </div>
         </div>
-        <div class="ops-form-group" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 10px 14px;">
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid var(--ops-border);">
+          <div>
+            <label style="font-weight:700; font-size:14px; margin:0; color:var(--ops-text-main);">Documents to Upload</label>
+            <span id="uploadDocCountBadge" style="margin-left:8px; font-size:11px; font-weight:600; background:rgba(37,99,235,0.1); color:var(--ops-primary); padding:2px 8px; border-radius:12px;">1 Document</span>
+          </div>
+          <button type="button" class="ops-btn ops-btn-secondary ops-btn-sm" id="btnAddMoreUploadDoc" style="font-size:12px; display:inline-flex; align-items:center; gap:6px;">
+            <span>+</span> Add More Documents
+          </button>
+        </div>
+
+        <!-- Repeatable Document Items Container -->
+        <div id="uploadDocItemsContainer" style="display:flex; flex-direction:column; gap:12px; margin-bottom:14px;">
+          <!-- Item rows will be injected and managed by operations.js -->
+        </div>
+
+        <div class="ops-form-group" id="uploadAutoApproveGroup" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 10px 14px;">
           <label style="display:flex; align-items:center; gap:8px; margin:0; cursor:pointer; font-size:13px; font-weight:600; color:var(--ops-text-main);">
             <input type="checkbox" id="uploadAutoApprove" checked style="width:16px; height:16px; accent-color:var(--ops-success);">
             <span>Automatically mark service as <strong>Completed (Approved)</strong> upon upload</span>
@@ -750,6 +817,52 @@
         <div class="ops-modal-footer">
           <button type="button" class="ops-btn ops-btn-secondary" data-close-modal>Cancel</button>
           <button type="submit" class="ops-btn ops-btn-primary" id="btnSubmitUpload">Upload & Share with Client</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add Company Documents (Post-Onboarding) -->
+  <div class="ops-modal" id="modalAddCompanyDocs" aria-hidden="true">
+    <div class="ops-modal-backdrop" data-close-modal></div>
+    <div class="ops-modal-dialog ops-modal-dialog-large" style="max-height:90vh; display:flex; flex-direction:column;">
+      <div class="ops-modal-header">
+        <div>
+          <h3 id="companyDocsModalTitle">Add Company Documents for Client</h3>
+          <p class="ops-modal-sub" id="companyDocsModalSub">Upload KYC, PAN, Aadhaar, MoA, or registration records directly to client's Company Vault</p>
+        </div>
+        <button type="button" class="ops-modal-close" data-close-modal>&times;</button>
+      </div>
+      <form id="formAddCompanyDocs" class="ops-form" enctype="multipart/form-data" style="overflow-y:auto; padding-right:4px;">
+        <div class="ops-form-group">
+          <label for="companyDocsClientSelect">Select Client *</label>
+          <select id="companyDocsClientSelect" class="ops-select" required>
+            <option value="">-- Choose Client --</option>
+          </select>
+        </div>
+
+        <div style="background: rgba(37,99,235,0.06); border: 1px solid rgba(37,99,235,0.2); border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; font-size: 12.5px; color: var(--ops-text-main);">
+          ℹ️ <strong>Company Documents:</strong> These documents belong to the client company profile (Director PAN, Aadhaar, MoA, Deeds, Electricity Bills) and will appear in their dashboard Company Documents grid. They do <em>not</em> modify or complete service cases.
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid var(--ops-border);">
+          <div>
+            <label style="font-weight:700; font-size:14px; margin:0; color:var(--ops-text-main);">Company Documents to Upload</label>
+            <span id="companyDocCountBadge" style="margin-left:8px; font-size:11px; font-weight:600; background:rgba(37,99,235,0.1); color:var(--ops-primary); padding:2px 8px; border-radius:12px;">1 Document</span>
+          </div>
+          <button type="button" class="ops-btn ops-btn-secondary ops-btn-sm" id="btnAddMoreCompanyDoc" style="font-size:12px; display:inline-flex; align-items:center; gap:6px;">
+            <span>+</span> Add Another Document
+          </button>
+        </div>
+
+        <!-- Repeatable Company Document Items Container -->
+        <div id="companyDocItemsContainer" style="display:flex; flex-direction:column; gap:12px; margin-bottom:14px;">
+          <!-- Item rows will be injected by operations.js -->
+        </div>
+
+        <div class="ops-modal-footer">
+          <button type="button" class="ops-btn ops-btn-secondary" data-close-modal>Cancel</button>
+          <button type="submit" class="ops-btn ops-btn-primary" id="btnSubmitCompanyDocs">Upload to Company Vault</button>
         </div>
       </form>
     </div>
@@ -974,7 +1087,7 @@
             <h4 style="margin:0 0 4px 0; font-size:14px;">Client File Vault</h4>
             <p style="margin:0; font-size:12px; color:var(--ops-text-muted,#64748b);">View client documents or remove files permanently from the database</p>
           </div>
-          <button type="button" class="ops-btn ops-btn-sm ops-btn-primary" id="btnOpenUploadForThisClient">+ Upload New</button>
+          <button type="button" class="ops-btn ops-btn-sm ops-btn-primary" id="btnOpenUploadForThisClient">📁 + Add Docs</button>
         </div>
 
         <div class="ops-table-responsive" style="max-height: 320px; overflow-y: auto;">
@@ -1091,6 +1204,7 @@
   <!-- Toast Alerts Container -->
   <div id="toastContainer" class="ops-toast-container"></div>
 
+  <script src="services-catalog.js"></script>
   <script src="operations.js"></script>
 </body>
 </html>

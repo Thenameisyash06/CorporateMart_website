@@ -302,39 +302,102 @@
           <!-- Welcome Banner -->
           <div class="cp-welcome-banner">
             <div class="cp-welcome-text">
-              <h2 id="welcomeTitle">Welcome to your Portal!</h2>
+              <h2 id="welcomeTitle">Hello! 👋</h2>
               <p id="welcomeSubtitle">Live compliance tracking and digital certificate delivery for your business.</p>
             </div>
             <div class="cp-welcome-badge" id="welcomeCompanyTag">Active Account</div>
           </div>
 
-          <!-- 3 KPI Cards -->
-          <div class="cp-kpi-grid">
-            <div class="cp-kpi-card">
-              <div class="cp-kpi-header">
-                <span class="cp-kpi-title">In Progress</span>
-                <span class="cp-kpi-icon kpi-amber">⚡</span>
+          <!-- Carousels Dual Grid: Side-by-side on laptop, one below other on mobile -->
+          <div class="cp-dash-carousels-container">
+            <!-- 1. Issued Documents Carousel (DigiLocker Hero Style) -->
+            <div class="cp-hero-carousel-card cp-issued-carousel-theme">
+              <div class="cp-hero-carousel-header">
+                <div class="cp-hero-carousel-title-group">
+                  <h3 class="cp-hero-carousel-title">Issued Documents</h3>
+                </div>
+                <div class="cp-hero-carousel-actions">
+                  <a href="#documents" class="cp-hero-see-all-pill">See All</a>
+                  <div class="cp-carousel-nav-arrows">
+                    <button type="button" class="cp-carousel-arrow-btn cp-arrow-white" id="btnPrevDashDoc" aria-label="Previous Document" title="Previous Document">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    </button>
+                    <button type="button" class="cp-carousel-arrow-btn cp-arrow-white" id="btnNextDashDoc" aria-label="Next Document" title="Next Document">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div class="cp-kpi-value" id="kpiActiveServices">0</div>
-              <div class="cp-kpi-sub">Services undergoing processing</div>
+              <div class="cp-carousel-wrapper">
+                <div class="cp-carousel-track" id="dashDocsCarousel">
+                  <div class="cp-carousel-card-item">
+                    <div class="cp-carousel-empty-card">
+                      <span style="font-size:28px;">📁</span>
+                      <strong>Loading documents...</strong>
+                    </div>
+                  </div>
+                </div>
+                <div class="cp-carousel-indicators" id="dashDocsDots"></div>
+              </div>
             </div>
 
-            <div class="cp-kpi-card">
-              <div class="cp-kpi-header">
-                <span class="cp-kpi-title">Completed Services</span>
-                <span class="cp-kpi-icon kpi-green">✅</span>
+            <!-- 2. Ongoing Services Carousel (DigiLocker Hero Style) -->
+            <div class="cp-hero-carousel-card cp-services-carousel-theme">
+              <div class="cp-hero-carousel-header">
+                <div class="cp-hero-carousel-title-group">
+                  <h3 class="cp-hero-carousel-title">Ongoing Services</h3>
+                </div>
+                <div class="cp-hero-carousel-actions">
+                  <a href="#services" class="cp-hero-see-all-pill">See All</a>
+                  <div class="cp-carousel-nav-arrows">
+                    <button type="button" class="cp-carousel-arrow-btn cp-arrow-white" id="btnPrevDashService" aria-label="Previous Service" title="Previous Service">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    </button>
+                    <button type="button" class="cp-carousel-arrow-btn cp-arrow-white" id="btnNextDashService" aria-label="Next Service" title="Next Service">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div class="cp-kpi-value" id="kpiCompletedServices">0</div>
-              <div class="cp-kpi-sub">Approved & certificates issued</div>
+              <div class="cp-carousel-wrapper">
+                <div class="cp-carousel-track" id="dashServicesCarousel">
+                  <div class="cp-carousel-card-item">
+                    <div class="cp-carousel-empty-card">
+                      <span style="font-size:28px;">📋</span>
+                      <strong>Loading services...</strong>
+                    </div>
+                  </div>
+                </div>
+                <div class="cp-carousel-indicators" id="dashServicesDots"></div>
+              </div>
             </div>
+          </div>
 
-            <div class="cp-kpi-card">
-              <div class="cp-kpi-header">
-                <span class="cp-kpi-title">Available Documents</span>
-                <span class="cp-kpi-icon kpi-blue">📁</span>
+          <!-- 3. Company Documents Grid (Below Services Carousel, DigiLocker Style) -->
+          <div class="cp-card" style="margin-bottom: 22px;">
+            <div class="cp-card-header">
+              <div class="cp-card-title">
+                <h3>Company Documents</h3>
+                <p>Documents provided during onboarding (PAN, Aadhaar, MoA, Address Proof, etc.)</p>
               </div>
-              <div class="cp-kpi-value" id="kpiTotalDocuments">0</div>
-              <div class="cp-kpi-sub">Certificates ready for download</div>
+              <a href="#documents" class="cp-link">View All →</a>
+            </div>
+            <div class="company-docs-grid" id="dashCompanyDocsGrid">
+              <!-- Rendered by client.js -->
+            </div>
+          </div>
+
+          <!-- Service Category Cards (Explore Business Services) -->
+          <div class="cp-dashboard-section" style="margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+              <div>
+                <h3 style="font-size: 18px; font-weight: 800; color: var(--cp-text-main); margin: 0 0 4px 0;">Business Services &amp; Solutions</h3>
+                <p style="font-size: 13px; color: var(--cp-text-muted); margin: 0;">Explore corporate registrations, tax compliance, IP, licenses, and digital services</p>
+              </div>
+              <a href="#buy" class="cp-link" onclick="if (typeof switchSection === 'function') switchSection('buy');">View All Packages &rarr;</a>
+            </div>
+            <div class="cp-category-cards-grid" id="dashCategoryCardsContainer">
+              <!-- Rendered dynamically by client.js with same form functionality -->
             </div>
           </div>
 
@@ -362,75 +425,6 @@
               </div>
             </button>
           </div>
-
-          <!-- Dual Split Grid: Active Work & Downloadable Documents Carousels -->
-          <div class="cp-split-grid">
-            
-            <!-- Ongoing Services Carousel Card -->
-            <div class="cp-card cp-carousel-card">
-              <div class="cp-card-header">
-                <div class="cp-card-title">
-                  <h3>Ongoing Services & Filings</h3>
-                  <p>Current progress and status from operations</p>
-                </div>
-                <div class="cp-carousel-header-controls">
-                  <a href="#services" class="cp-link">View All →</a>
-                  <div class="cp-carousel-nav-arrows">
-                    <button type="button" class="cp-carousel-arrow-btn" id="btnPrevDashService" aria-label="Previous Service" title="Previous Service">
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                    </button>
-                    <button type="button" class="cp-carousel-arrow-btn" id="btnNextDashService" aria-label="Next Service" title="Next Service">
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div class="cp-carousel-wrapper">
-                <div class="cp-carousel-track" id="dashServicesCarousel">
-                  <div class="cp-carousel-card-item">
-                    <div class="cp-carousel-empty-card">
-                      <span style="font-size:28px;">📋</span>
-                      <strong>Loading services...</strong>
-                    </div>
-                  </div>
-                </div>
-                <div class="cp-carousel-indicators" id="dashServicesDots"></div>
-              </div>
-            </div>
-
-            <!-- Recent Documents Carousel Card -->
-            <div class="cp-card cp-carousel-card">
-              <div class="cp-card-header">
-                <div class="cp-card-title">
-                  <h3>Recent Certificates & Downloads</h3>
-                  <p>Official files issued for your company</p>
-                </div>
-                <div class="cp-carousel-header-controls">
-                  <a href="#documents" class="cp-link">View All →</a>
-                  <div class="cp-carousel-nav-arrows">
-                    <button type="button" class="cp-carousel-arrow-btn" id="btnPrevDashDoc" aria-label="Previous Document" title="Previous Document">
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                    </button>
-                    <button type="button" class="cp-carousel-arrow-btn" id="btnNextDashDoc" aria-label="Next Document" title="Next Document">
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div class="cp-carousel-wrapper">
-                <div class="cp-carousel-track" id="dashDocsCarousel">
-                  <div class="cp-carousel-card-item">
-                    <div class="cp-carousel-empty-card">
-                      <span style="font-size:28px;">📁</span>
-                      <strong>Loading documents...</strong>
-                    </div>
-                  </div>
-                </div>
-                <div class="cp-carousel-indicators" id="dashDocsDots"></div>
-              </div>
-            </div>
-
-          </div>
         </section>
 
         <!-- ========================================== -->
@@ -439,12 +433,42 @@
         <section id="sec-services" class="cp-view-section">
           <div class="cp-section-header">
             <div>
-              <h2>My Services & Registrations</h2>
+              <h2>My Services &amp; Registrations</h2>
               <p>Real-time status updates and progress for all your corporate services</p>
             </div>
             <button type="button" class="cp-btn cp-btn-primary" id="openRequestServiceModalBtn">
               + Request New Service
             </button>
+          </div>
+
+          <!-- 3 KPI Stats Cards (In Progress, Completed, Available Documents) -->
+          <div class="cp-kpi-grid">
+            <div class="cp-kpi-card">
+              <div class="cp-kpi-header">
+                <span class="cp-kpi-title">In Progress</span>
+                <span class="cp-kpi-icon kpi-amber">⚡</span>
+              </div>
+              <div class="cp-kpi-value" id="kpiActiveServices">0</div>
+              <div class="cp-kpi-sub">Services undergoing processing</div>
+            </div>
+
+            <div class="cp-kpi-card">
+              <div class="cp-kpi-header">
+                <span class="cp-kpi-title">Completed Services</span>
+                <span class="cp-kpi-icon kpi-green">✅</span>
+              </div>
+              <div class="cp-kpi-value" id="kpiCompletedServices">0</div>
+              <div class="cp-kpi-sub">Approved &amp; certificates issued</div>
+            </div>
+
+            <div class="cp-kpi-card">
+              <div class="cp-kpi-header">
+                <span class="cp-kpi-title">Available Documents</span>
+                <span class="cp-kpi-icon kpi-blue">📁</span>
+              </div>
+              <div class="cp-kpi-value" id="kpiTotalDocuments">0</div>
+              <div class="cp-kpi-sub">Certificates ready for download</div>
+            </div>
           </div>
 
           <div class="cp-services-container" id="clientServicesContainer">
@@ -458,12 +482,32 @@
         <section id="sec-documents" class="cp-view-section">
           <div class="cp-section-header">
             <div>
-              <h2>My Documents & Certificates</h2>
-              <p>Official certificates of incorporation, GST certificates, challans, and DSC records</p>
+              <h2>My Documents &amp; Certificates</h2>
+              <p>Official company records, onboarding KYC proofs, and issued certificates</p>
             </div>
           </div>
 
+          <!-- A. Company Documents (DigiLocker Card Grid) -->
+          <div class="cp-card" style="margin-bottom: 24px;">
+            <div class="cp-card-header">
+              <div class="cp-card-title">
+                <h3>Company Documents</h3>
+                <p>Identity proofs, incorporation records, and credentials provided during onboarding</p>
+              </div>
+            </div>
+            <div class="company-docs-grid" id="pageCompanyDocsGrid">
+              <!-- Rendered by client.js -->
+            </div>
+          </div>
+
+          <!-- B. Issued Documents & Certificates Table -->
           <div class="cp-card">
+            <div class="cp-card-header">
+              <div class="cp-card-title">
+                <h3>Issued Certificates &amp; Filings</h3>
+                <p>Official registration certificates, filings, and approvals prepared &amp; issued by Corporate Mart</p>
+              </div>
+            </div>
             <div class="cp-table-responsive">
               <table class="cp-table">
                 <thead>
@@ -826,35 +870,16 @@
             </div>
           </div>
 
-          <!-- TAB 2: ALL BUSINESS SERVICES -->
+          <!-- TAB 2: ALL BUSINESS SERVICES (CATEGORY DIRECTORY) -->
           <div class="cp-buy-tab-pane" id="buyTabPaneServices" style="display:none;">
-            <!-- Search & Category Filters -->
-            <div class="cp-services-toolbar">
-              <div class="cp-services-search-box">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                <input type="text" id="serviceSearchInput" class="cp-input" placeholder="Search 100+ services (e.g. GST, Trademark, Private Limited, IEC, FSSAI)...">
-              </div>
-
-              <div class="cp-service-filter-chips" id="serviceCategoryChips">
-                <button type="button" class="cp-chip active" data-filter="all">All Services (134)</button>
-                <button type="button" class="cp-chip" data-filter="incorporation">Incorporation</button>
-                <button type="button" class="cp-chip" data-filter="tax">Tax &amp; Compliance</button>
-                <button type="button" class="cp-chip" data-filter="ip">Trademark &amp; IP</button>
-                <button type="button" class="cp-chip" data-filter="licenses">Licenses</button>
-                <button type="button" class="cp-chip" data-filter="digital">Digital &amp; Web</button>
-                <button type="button" class="cp-chip" data-filter="conversion">Conversions &amp; Closures</button>
-              </div>
+            <div style="margin-bottom:16px;">
+              <h3 style="font-size:18px; font-weight:800; color:var(--cp-text-main); margin-bottom:4px;">Business Services Directory</h3>
+              <p style="font-size:13px; color:var(--cp-text-muted); margin:0;">Select any category below to browse and request from our complete catalog of business registrations, compliances, and corporate services.</p>
             </div>
 
-            <!-- Streamlined Services List Directory -->
-            <div class="cp-services-meta-bar">
-              <span id="servicesCountDisplay" style="font-size:13px; font-weight:600; color:var(--cp-text-muted);">Showing all 134 services</span>
-            </div>
-            <div class="cp-services-list" id="servicesDirectoryList">
-              <!-- Rendered dynamically as streamlined rows with direct links and inquire buttons -->
+            <!-- Service Category Cards Grid -->
+            <div class="cp-category-cards-grid" id="serviceCategoryCardsContainer">
+              <!-- Rendered dynamically by client.js -->
             </div>
           </div>
 
@@ -935,20 +960,44 @@
         </div>
 
         <div class="cp-form-group" id="reqServiceSelectGroup">
-          <label for="reqServiceSelect">Service Desired *</label>
-          <select id="reqServiceSelect" name="service_name" class="cp-select">
-            <option value="Private Limited Company Registration">Private Limited Company Registration</option>
-            <option value="LLP Registration">Limited Liability Partnership (LLP)</option>
-            <option value="One Person Company (OPC)">One Person Company (OPC)</option>
-            <option value="GST Registration & Filing">GST Registration & Filing</option>
-            <option value="Trademark Registration">Trademark Registration</option>
-            <option value="MSME Udyam Registration">MSME Udyam Registration</option>
-            <option value="Startup India Recognition">Startup India Recognition (DPIIT)</option>
-            <option value="ROC Annual Compliance">ROC Annual Compliance</option>
-            <option value="Accounting & Bookkeeping">Accounting & Bookkeeping</option>
-            <option value="Digital Signature Certificate (DSC)">Digital Signature Certificate (DSC)</option>
-            <option value="Fundraising Advisory">Fundraising Advisory</option>
-            <option value="Other Custom Service">Other Custom Compliance Service</option>
+          <!-- Category Scope Banner (Displayed when opened for a specific category) -->
+          <div class="cp-category-form-banner" id="reqCategoryBanner" style="display:none;">
+            <div class="cp-cat-banner-icon" id="reqCategoryBannerIcon">🏛️</div>
+            <div class="cp-cat-banner-text">
+              <strong id="reqCategoryBannerTitle">Category: Incorporation</strong>
+              <small id="reqCategoryBannerSub">Select from associated services for this category below</small>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <label for="reqServiceSelect" style="margin:0; font-weight:600;">Service Desired *</label>
+            <span id="reqServiceMatchCount" style="font-size:12px; font-weight:500; color:var(--cp-text-muted,#64748b);"></span>
+          </div>
+
+          <!-- 2-Step Filter: Category + Instant Search -->
+          <div class="service-filter-row" id="reqCategoryFilterRow" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
+            <div>
+              <label for="reqCategoryFilter" style="display:block; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--cp-text-muted,#64748b); margin-bottom:4px; font-weight:600;">Category</label>
+              <select id="reqCategoryFilter" class="cp-select" style="font-size:13px; padding:7px 10px; height:38px;">
+                <option value="incorporation" selected>🏛️ Incorporation &amp; Registration</option>
+                <option value="tax">📊 Tax &amp; Compliance</option>
+                <option value="ip">🛡️ Trademark &amp; IP</option>
+                <option value="licenses">📜 Licenses &amp; Municipal</option>
+                <option value="digital">💻 Digital &amp; Web Solutions</option>
+                <option value="conversion">🔄 Conversions &amp; Closures</option>
+                <option value="other">💡 Other &amp; Advisory</option>
+                <option value="all">📂 All Categories</option>
+              </select>
+            </div>
+            <div>
+              <label for="reqServiceSearch" style="display:block; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--cp-text-muted,#64748b); margin-bottom:4px; font-weight:600;">Quick Search</label>
+              <input type="text" id="reqServiceSearch" class="cp-input" placeholder="Type to filter e.g. GST, ISO..." style="font-size:13px; padding:7px 10px; height:38px;">
+            </div>
+          </div>
+
+          <label for="reqServiceSelect" style="display:block; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--cp-text-muted,#64748b); margin-bottom:4px; font-weight:600;">Select Specific Service</label>
+          <select id="reqServiceSelect" name="service_name" class="cp-select" required style="font-size:13.5px; font-weight:500;">
+            <!-- Populated dynamically via initServicePicker -->
           </select>
         </div>
 
@@ -1115,11 +1164,11 @@
       <div class="cp-modal-header cp-service-modal-header">
         <div class="cp-service-modal-title-area">
           <div class="cp-service-modal-badges">
-            <span class="cp-badge cp-badge-id" id="serviceDetailCaseId">CAS-1001</span>
+            <span class="cp-badge cp-badge-id" id="serviceDetailCaseId">—</span>
             <span id="serviceDetailStatusBadge">🟢 Completed</span>
           </div>
           <h3 id="serviceDetailName" class="cp-service-modal-heading">Service Name</h3>
-          <div class="cp-service-modal-company" id="serviceDetailCompany">ABC PRIVATE LIMITED</div>
+          <div class="cp-service-modal-company" id="serviceDetailCompany">—</div>
         </div>
         <button type="button" class="cp-modal-close" data-close-modal title="Close">&times;</button>
       </div>
@@ -1129,19 +1178,19 @@
         <div class="cp-service-meta-grid">
           <div class="cp-service-meta-card">
             <span class="cp-meta-card-label">Service / Case ID</span>
-            <span class="cp-meta-card-value" id="serviceDetailMetaId">CAS-1001</span>
+            <span class="cp-meta-card-value" id="serviceDetailMetaId">—</span>
           </div>
           <div class="cp-service-meta-card">
             <span class="cp-meta-card-label">Current Status</span>
-            <span class="cp-meta-card-value" id="serviceDetailMetaStatus">Completed</span>
+            <span class="cp-meta-card-value" id="serviceDetailMetaStatus">—</span>
           </div>
           <div class="cp-service-meta-card">
             <span class="cp-meta-card-label">Last Updated Date</span>
-            <span class="cp-meta-card-value" id="serviceDetailUpdatedAt">23 Sep 2026, 04:30 PM</span>
+            <span class="cp-meta-card-value" id="serviceDetailUpdatedAt">—</span>
           </div>
           <div class="cp-service-meta-card">
             <span class="cp-meta-card-label">Case Created Date</span>
-            <span class="cp-meta-card-value" id="serviceDetailCreatedAt">10 Sep 2026</span>
+            <span class="cp-meta-card-value" id="serviceDetailCreatedAt">—</span>
           </div>
         </div>
 
@@ -1150,7 +1199,7 @@
           <div class="cp-remark-icon">📢</div>
           <div class="cp-remark-content">
             <div class="cp-remark-title">Operations Remark & Status Note</div>
-            <p id="serviceDetailRemarkText">Application submitted on GST Portal. Awaiting ARN verification.</p>
+            <p id="serviceDetailRemarkText">—</p>
           </div>
         </div>
 
@@ -1278,6 +1327,7 @@
   <!-- Toast Alerts Container -->
   <div id="toastContainer" class="cp-toast-container"></div>
 
+  <script src="services-catalog.js"></script>
   <script src="client.js"></script>
 </body>
 </html>

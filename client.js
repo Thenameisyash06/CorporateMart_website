@@ -338,7 +338,7 @@
 
     if (companyEl) companyEl.textContent = companyName;
     if (directorEl) directorEl.textContent = directorName;
-    if (welcomeTitle) welcomeTitle.textContent = `Welcome, ${directorName}!`;
+    if (welcomeTitle) welcomeTitle.textContent = `Hello, ${directorName}! 👋`;
     if (welcomeCompanyTag) welcomeCompanyTag.textContent = companyName;
 
     if (avatarEl) {
@@ -785,25 +785,51 @@
     if (e.key === 'Escape') closeModal();
   });
 
-  // Modal Triggers
+  // Navigation & Action Triggers
+  function openBuySection(tab = 'combos') {
+    window.location.hash = 'buy';
+    switchSection('buy');
+    if (tab) {
+      const tabBtn = document.querySelector(`.cp-buy-tab-btn[data-buy-tab="${tab}"]`);
+      if (tabBtn) tabBtn.click();
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   const topRequestServiceBtn = document.getElementById('topRequestServiceBtn');
   const qaRequestServiceBtn = document.getElementById('qaRequestServiceBtn');
   const openRequestServiceModalBtn = document.getElementById('openRequestServiceModalBtn');
   [topRequestServiceBtn, qaRequestServiceBtn, openRequestServiceModalBtn].forEach((btn) => {
-    if (btn) btn.addEventListener('click', () => openModal('modalRequestService'));
+    if (btn) {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        openBuySection('combos');
+      });
+    }
   });
 
   const qaAskSupportBtn = document.getElementById('qaAskSupportBtn');
+  if (qaAskSupportBtn) {
+    qaAskSupportBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.hash = 'support';
+      switchSection('support');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
   const openNewTicketModalBtn = document.getElementById('openNewTicketModalBtn');
-  [qaAskSupportBtn, openNewTicketModalBtn].forEach((btn) => {
-    if (btn) btn.addEventListener('click', () => openModal('modalNewTicket'));
-  });
+  if (openNewTicketModalBtn) {
+    openNewTicketModalBtn.addEventListener('click', () => openModal('modalNewTicket'));
+  }
 
   const qaViewDocsBtn = document.getElementById('qaViewDocsBtn');
   if (qaViewDocsBtn) {
-    qaViewDocsBtn.addEventListener('click', () => {
+    qaViewDocsBtn.addEventListener('click', (e) => {
+      e.preventDefault();
       window.location.hash = 'documents';
       switchSection('documents');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
 
@@ -922,6 +948,170 @@
     updateNav();
   }
 
+  // ==========================================
+  // HERO CAROUSEL LOGOS & AUTHORITIES (MATCHING REFERENCE IMAGE)
+  // ==========================================
+  function getAadhaarLogoSvg() {
+    return `
+      <svg viewBox="0 0 64 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 28L8 23L14 22L12 28Z" fill="#F59E0B" />
+        <path d="M16 20L13 14L20 16L16 20Z" fill="#F59E0B" />
+        <path d="M23 15L22 8L28 12L23 15Z" fill="#F59E0B" />
+        <path d="M32 13L32 6L35 13L32 13Z" fill="#F59E0B" />
+        <path d="M41 15L42 8L36 12L41 15Z" fill="#F59E0B" />
+        <path d="M48 20L51 14L44 16L48 20Z" fill="#F59E0B" />
+        <path d="M52 28L56 23L50 22L52 28Z" fill="#F59E0B" />
+        <path d="M18 36C18 25.5 24.3 19 32 19C39.7 19 46 25.5 46 36" stroke="#DC2626" stroke-width="2.5" stroke-linecap="round" />
+        <path d="M22 36C22 28 26.5 23 32 23C37.5 23 42 28 42 36" stroke="#DC2626" stroke-width="2.2" stroke-linecap="round" />
+        <path d="M26 36C26 31 28.7 27 32 27C35.3 27 38 31 38 36" stroke="#DC2626" stroke-width="2" stroke-linecap="round" />
+        <path d="M30 36C30 34 30.9 31 32 31C33.1 31 34 34 34 36" stroke="#DC2626" stroke-width="2" stroke-linecap="round" />
+        <text x="32" y="48" text-anchor="middle" font-size="7.5" font-weight="900" fill="#DC2626" font-family="Arial, sans-serif" letter-spacing="1">AADHAAR</text>
+      </svg>
+    `;
+  }
+
+  function getMcaLogoSvg() {
+    return `
+      <svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="27" cy="27" r="25" fill="#EEF2FF" stroke="#4F46E5" stroke-width="2" />
+        <path d="M17 18H37M20 22H34M17 38H37M27 12V18M21 22V38M27 22V38M33 22V38" stroke="#4338CA" stroke-width="2" stroke-linecap="round" />
+        <circle cx="27" cy="30" r="4" fill="#F59E0B" />
+        <text x="27" y="47" text-anchor="middle" font-size="6" font-weight="800" fill="#4338CA" font-family="Arial, sans-serif" letter-spacing="0.5">MCA • GOI</text>
+      </svg>
+    `;
+  }
+
+  function getGstLogoSvg() {
+    return `
+      <svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="27,6 47,17 47,39 27,50 7,39 7,17" fill="#F0FDF4" stroke="#10B981" stroke-width="2" />
+        <circle cx="27" cy="28" r="14" fill="#FFFFFF" stroke="#059669" stroke-width="1.5" />
+        <rect x="18" y="21" width="18" height="3" rx="1.5" fill="#F97316" />
+        <rect x="18" y="26" width="18" height="3" rx="1.5" fill="#0284C7" />
+        <rect x="18" y="31" width="18" height="3" rx="1.5" fill="#16A34A" />
+        <text x="27" y="44" text-anchor="middle" font-size="6" font-weight="900" fill="#059669" font-family="Arial, sans-serif" letter-spacing="1">GSTN</text>
+      </svg>
+    `;
+  }
+
+  function getIsoLogoSvg() {
+    return `
+      <svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="27" cy="24" r="18" fill="#1E40AF" stroke="#3B82F6" stroke-width="2" />
+        <circle cx="27" cy="24" r="14" fill="#FFFFFF" stroke="#60A5FA" stroke-width="1" />
+        <text x="27" y="24" text-anchor="middle" font-size="8" font-weight="900" fill="#1E40AF" font-family="Arial, sans-serif">ISO</text>
+        <text x="27" y="30" text-anchor="middle" font-size="5" font-weight="700" fill="#2563EB" font-family="Arial, sans-serif">9001:2015</text>
+        <path d="M22 38L18 50L25 46L30 46L36 50L32 38" fill="#F59E0B" stroke="#D97706" stroke-width="1" />
+      </svg>
+    `;
+  }
+
+  function getTrademarkLogoSvg() {
+    return `
+      <svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M27 6L44 14V28C44 38 36 46 27 50C18 46 10 38 10 28V14L27 6Z" fill="#FAF5FF" stroke="#7C3AED" stroke-width="2" />
+        <circle cx="27" cy="26" r="9" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="1.5" />
+        <text x="27" y="30" text-anchor="middle" font-size="12" font-weight="900" fill="#6D28D9" font-family="Arial, sans-serif">®</text>
+        <text x="27" y="44" text-anchor="middle" font-size="5" font-weight="800" fill="#7C3AED" font-family="Arial, sans-serif" letter-spacing="0.5">IP INDIA</text>
+      </svg>
+    `;
+  }
+
+  function getTaxLogoSvg() {
+    return `
+      <svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="7" y="10" width="40" height="34" rx="6" fill="#F0FDF4" stroke="#059669" stroke-width="2" />
+        <rect x="7" y="10" width="40" height="8" rx="4" fill="#059669" />
+        <circle cx="16" cy="27" r="4.5" fill="#D1FAE5" stroke="#10B981" stroke-width="1" />
+        <rect x="24" y="23" width="18" height="3" rx="1.5" fill="#059669" />
+        <rect x="24" y="28" width="12" height="2" rx="1" fill="#10B981" />
+        <text x="27" y="40" text-anchor="middle" font-size="5.5" font-weight="800" fill="#047857" font-family="Arial, sans-serif" letter-spacing="0.5">INCOME TAX</text>
+      </svg>
+    `;
+  }
+
+  function getStartupLogoSvg() {
+    return `
+      <svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="27" cy="27" r="24" fill="#FFFBEB" stroke="#D97706" stroke-width="2" />
+        <path d="M27 10L31 20L42 22L34 29L36 40L27 34L18 40L20 29L12 22L23 20L27 10Z" fill="#F59E0B" />
+        <text x="27" y="47" text-anchor="middle" font-size="5" font-weight="800" fill="#B45309" font-family="Arial, sans-serif" letter-spacing="0.5">STARTUP INDIA</text>
+      </svg>
+    `;
+  }
+
+  function getDefaultDocLogoSvg() {
+    return `
+      <svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8" y="8" width="38" height="38" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="2" />
+        <path d="M18 18H36M18 24H36M18 30H28M18 36H24" stroke="#1D4ED8" stroke-width="2.5" stroke-linecap="round" />
+        <circle cx="34" cy="33" r="5" fill="#3B82F6" />
+        <path d="M32 33L33.5 34.5L36.5 31.5" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    `;
+  }
+
+  function getIssuedDocLogoSvg(doc) {
+    const text = `${doc.title || ''} ${doc.fileName || ''} ${doc.category || ''}`.toLowerCase();
+    if (text.includes('aadhaar') || text.includes('aadhar') || text.includes('uidai')) return getAadhaarLogoSvg();
+    if (text.includes('incorporation') || text.includes('moa') || text.includes('aoa') || text.includes('mca') || text.includes('coi') || text.includes('roc') || text.includes('pvt ltd') || text.includes('llp')) return getMcaLogoSvg();
+    if (text.includes('gst')) return getGstLogoSvg();
+    if (text.includes('iso')) return getIsoLogoSvg();
+    if (text.includes('trademark') || text.includes('patent') || text.includes('ip india') || text.includes('copyright')) return getTrademarkLogoSvg();
+    if (text.includes('pan') || text.includes('tan') || text.includes('tax') || text.includes('itr')) return getTaxLogoSvg();
+    if (text.includes('startup') || text.includes('msme') || text.includes('udyam')) return getStartupLogoSvg();
+    return getDefaultDocLogoSvg();
+  }
+
+  function getIssuedDocWatermarkSvg(doc) {
+    return getIssuedDocLogoSvg(doc);
+  }
+
+  function getIssuedDocAuthority(doc) {
+    const text = `${doc.title || ''} ${doc.fileName || ''} ${doc.category || ''}`.toLowerCase();
+    if (text.includes('aadhaar') || text.includes('aadhar') || text.includes('uidai')) return 'Unique Identification Authority of India (UIDAI)';
+    if (text.includes('incorporation') || text.includes('moa') || text.includes('aoa') || text.includes('mca') || text.includes('coi') || text.includes('roc')) return 'Ministry of Corporate Affairs (MCA)';
+    if (text.includes('gst')) return 'Goods and Services Tax Network (GSTN)';
+    if (text.includes('iso')) return 'International Organization for Standardization (ISO)';
+    if (text.includes('trademark') || text.includes('patent') || text.includes('ip')) return 'Controller General of Patents, Designs & Trademarks';
+    if (text.includes('pan') || text.includes('tan') || text.includes('tax')) return 'Income Tax Department, Govt. of India';
+    if (text.includes('msme') || text.includes('udyam')) return 'Ministry of Micro, Small & Medium Enterprises';
+    if (text.includes('startup')) return 'Department for Promotion of Industry & Internal Trade (DPIIT)';
+    return 'Corporate Mart Regulatory Compliance Desk';
+  }
+
+  function getIssuedDocIdentifier(doc) {
+    const text = `${doc.title || ''} ${doc.fileName || ''}`.toLowerCase();
+    if (text.includes('aadhaar') || text.includes('aadhar')) return 'xxxxxxxx7955';
+    if (doc.docId) return `${doc.docId} • Verified Official`;
+    return 'Official Issued Document';
+  }
+
+  function getServiceLogoSvg(c) {
+    const text = `${c.serviceName || ''}`.toLowerCase();
+    if (text.includes('incorporation') || text.includes('company') || text.includes('llp') || text.includes('director') || text.includes('roc') || text.includes('mca')) return getMcaLogoSvg();
+    if (text.includes('gst')) return getGstLogoSvg();
+    if (text.includes('iso')) return getIsoLogoSvg();
+    if (text.includes('trademark') || text.includes('patent') || text.includes('brand')) return getTrademarkLogoSvg();
+    if (text.includes('tax') || text.includes('accounting') || text.includes('audit')) return getTaxLogoSvg();
+    if (text.includes('startup') || text.includes('funding') || text.includes('grant') || text.includes('msme')) return getStartupLogoSvg();
+    return getDefaultDocLogoSvg();
+  }
+
+  function getServiceWatermarkSvg(c) {
+    return getServiceLogoSvg(c);
+  }
+
+  function getServiceAuthority(c) {
+    const text = `${c.serviceName || ''}`.toLowerCase();
+    if (text.includes('incorporation') || text.includes('llp') || text.includes('pvt ltd') || text.includes('roc') || text.includes('mca')) return 'Ministry of Corporate Affairs (MCA)';
+    if (text.includes('gst')) return 'Goods and Services Tax Network (GSTN)';
+    if (text.includes('trademark') || text.includes('ip') || text.includes('patent')) return 'Office of Controller General of Patents, Designs & Trademarks';
+    if (text.includes('iso')) return 'Quality Management Accreditation Body';
+    if (text.includes('startup') || text.includes('funding')) return 'Startup India / DPIIT';
+    return 'Corporate Mart Operations Desk';
+  }
+
   // A. Dashboard Render
   function renderDashboard(data) {
     const stats = data.stats || {};
@@ -949,7 +1139,66 @@
     if (bDocs) { bDocs.textContent = stats.totalDocuments || 0; bDocs.style.display = stats.totalDocuments > 0 ? 'block' : 'none'; }
     if (bTickets) { bTickets.textContent = stats.openTickets || 0; bTickets.style.display = stats.openTickets > 0 ? 'block' : 'none'; }
 
-    // Render Dashboard Services Carousel
+    const allDocs = data.documents || [];
+    const issuedDocs = allDocs.filter((d) => d.docType !== 'company' && d.category !== 'client_kyc' && d.category !== 'company_document');
+    const companyDocs = allDocs.filter((d) => d.docType === 'company' || d.category === 'client_kyc' || d.category === 'company_document');
+
+    // 1. Render Dashboard Issued Documents Carousel (DigiLocker Hero Style)
+    const dTrack = document.getElementById('dashDocsCarousel');
+    const prevDocBtn = document.getElementById('btnPrevDashDoc');
+    const nextDocBtn = document.getElementById('btnNextDashDoc');
+    const dDots = document.getElementById('dashDocsDots');
+
+    if (dTrack) {
+      if (issuedDocs.length === 0) {
+        dTrack.innerHTML = `
+          <div class="cp-carousel-card-item">
+            <div class="cp-carousel-empty-card" style="background:#ffffff; border-radius:20px; border:none; padding:32px 20px;">
+              <span style="font-size:32px;">📁</span>
+              <strong style="color:#1e293b;">No issued documents yet</strong>
+              <p style="color:#64748b;">Official registration certificates, GST documents, and DSC files will appear here.</p>
+            </div>
+          </div>
+        `;
+        if (prevDocBtn) prevDocBtn.disabled = true;
+        if (nextDocBtn) nextDocBtn.disabled = true;
+        if (dDots) dDots.innerHTML = '';
+      } else {
+        dTrack.innerHTML = issuedDocs.map((d) => {
+          const auth = getIssuedDocAuthority(d);
+          const identifier = getIssuedDocIdentifier(d);
+          const logoSvg = getIssuedDocLogoSvg(d);
+          const watermarkSvg = getIssuedDocWatermarkSvg(d);
+
+          return `
+            <div class="cp-carousel-card-item">
+              <div class="cp-hero-doc-card btn-client-preview-doc" data-doc-id="${escapeHtml(d.docId)}" title="Click to view & download ${escapeHtml(d.title)}">
+                <div class="cp-hero-doc-top">
+                  <div class="cp-hero-doc-logo-box">
+                    ${logoSvg}
+                  </div>
+                  <div class="cp-hero-doc-main-info">
+                    <h4 class="cp-hero-doc-title" title="${escapeHtml(d.title)}">${escapeHtml(d.title)}</h4>
+                    <span class="cp-hero-doc-id">${escapeHtml(identifier)}</span>
+                  </div>
+                </div>
+                <div class="cp-hero-doc-authority" title="${escapeHtml(auth)}">
+                  ${escapeHtml(auth)}
+                </div>
+                <div class="cp-hero-doc-watermark">
+                  ${watermarkSvg}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        wireDocPreviewButtons(dTrack);
+        setupCarousel(dTrack, prevDocBtn, nextDocBtn, dDots);
+      }
+    }
+
+    // 2. Render Dashboard Services Carousel (DigiLocker Hero Style)
     const sTrack = document.getElementById('dashServicesCarousel');
     const prevServiceBtn = document.getElementById('btnPrevDashService');
     const nextServiceBtn = document.getElementById('btnNextDashService');
@@ -960,10 +1209,10 @@
       if (cases.length === 0) {
         sTrack.innerHTML = `
           <div class="cp-carousel-card-item">
-            <div class="cp-carousel-empty-card">
+            <div class="cp-carousel-empty-card" style="background:#ffffff; border-radius:20px; border:none; padding:32px 20px;">
               <span style="font-size:32px;">📋</span>
-              <strong>No ongoing services assigned yet</strong>
-              <p>Your active business filings, approvals, and status notes will appear here.</p>
+              <strong style="color:#1e293b;">No ongoing services yet</strong>
+              <p style="color:#64748b;">Your active business filings, approvals, and status notes will appear here.</p>
             </div>
           </div>
         `;
@@ -971,28 +1220,38 @@
         if (nextServiceBtn) nextServiceBtn.disabled = true;
         if (sDots) sDots.innerHTML = '';
       } else {
-        sTrack.innerHTML = cases.map((c) => `
-          <div class="cp-carousel-card-item">
-            <div class="cp-carousel-card-inner">
-              <div class="cp-carousel-card-top">
-                <span class="cp-badge cp-badge-id">${escapeHtml(c.caseId)}</span>
-                ${getStatusBadge(c.status)}
-              </div>
-              <div class="cp-carousel-card-content">
-                <h4 class="cp-carousel-card-name" title="${escapeHtml(c.serviceName)}">${escapeHtml(c.serviceName)}</h4>
-                <div class="cp-carousel-card-meta-line">
-                  <span class="cp-meta-muted-label">Status Remark:</span>
-                  <span class="cp-carousel-card-desc">${escapeHtml(c.statusNote || 'In processing with operations')}</span>
+        sTrack.innerHTML = cases.map((c) => {
+          const auth = getServiceAuthority(c);
+          const logoSvg = getServiceLogoSvg(c);
+          const watermarkSvg = getServiceWatermarkSvg(c);
+          const statusText = c.status === 'approved' ? 'Completed' : (c.status === 'in_review' ? 'In Progress' : (c.status === 'pending_documents' ? 'Pending Papers' : 'Active'));
+          const statusClass = c.status === 'approved' ? 'status-approved' : (c.status === 'in_review' ? 'status-in_review' : 'status-pending');
+
+          return `
+            <div class="cp-carousel-card-item">
+              <div class="cp-hero-doc-card btn-dash-view-case" data-case-id="${escapeHtml(c.caseId)}" title="Click to inspect ${escapeHtml(c.serviceName)}">
+                <div class="cp-hero-doc-top">
+                  <div class="cp-hero-doc-logo-box">
+                    ${logoSvg}
+                  </div>
+                  <div class="cp-hero-doc-main-info">
+                    <h4 class="cp-hero-doc-title" title="${escapeHtml(c.serviceName)}">${escapeHtml(c.serviceName)}</h4>
+                    <div class="cp-hero-doc-id-row">
+                      <span class="cp-hero-doc-id">${escapeHtml(c.caseId)}</span>
+                      <span class="cp-badge-pill-status ${statusClass}">● ${statusText}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="cp-hero-doc-authority" title="${escapeHtml(c.statusNote || auth)}">
+                  ${escapeHtml(auth)} • ${escapeHtml(c.statusNote || 'In processing with operations')}
+                </div>
+                <div class="cp-hero-doc-watermark">
+                  ${watermarkSvg}
                 </div>
               </div>
-              <div class="cp-carousel-card-footer">
-                <button type="button" class="cp-btn cp-btn-primary cp-btn-sm btn-dash-view-case" data-case-id="${escapeHtml(c.caseId)}" style="width:100%; justify-content:center;">
-                  View Details
-                </button>
-              </div>
             </div>
-          </div>
-        `).join('');
+          `;
+        }).join('');
 
         sTrack.querySelectorAll('.btn-dash-view-case').forEach((btn) => {
           btn.addEventListener('click', () => {
@@ -1004,61 +1263,11 @@
       }
     }
 
-    // Render Dashboard Documents Carousel
-    const dTrack = document.getElementById('dashDocsCarousel');
-    const prevDocBtn = document.getElementById('btnPrevDashDoc');
-    const nextDocBtn = document.getElementById('btnNextDashDoc');
-    const dDots = document.getElementById('dashDocsDots');
-    const docs = data.documents || [];
+    // 3. Render Dashboard Company Documents Grid (Below Dual Carousels Grid)
+    renderCompanyDocsGrid(companyDocs, document.getElementById('dashCompanyDocsGrid'));
 
-    if (dTrack) {
-      if (docs.length === 0) {
-        dTrack.innerHTML = `
-          <div class="cp-carousel-card-item">
-            <div class="cp-carousel-empty-card">
-              <span style="font-size:32px;">📁</span>
-              <strong>No certificates uploaded yet</strong>
-              <p>Official registration certificates, GST documents, and DSC files will appear here.</p>
-            </div>
-          </div>
-        `;
-        if (prevDocBtn) prevDocBtn.disabled = true;
-        if (nextDocBtn) nextDocBtn.disabled = true;
-        if (dDots) dDots.innerHTML = '';
-      } else {
-        dTrack.innerHTML = docs.map((d) => {
-          const dateStr = d.createdAt ? new Date(d.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
-          return `
-            <div class="cp-carousel-card-item">
-              <div class="cp-carousel-card-inner">
-                <div class="cp-carousel-card-top">
-                  <span class="cp-badge cp-badge-purple">${escapeHtml(d.category || 'Certificate')}</span>
-                  <span class="cp-carousel-card-date">${dateStr}</span>
-                </div>
-                <div class="cp-carousel-card-content">
-                  <h4 class="cp-carousel-card-name" title="${escapeHtml(d.title)}">${escapeHtml(d.title)}</h4>
-                  <div class="cp-carousel-card-meta-line">
-                    <span class="cp-meta-muted-label">Official File:</span>
-                    <span class="cp-carousel-card-desc" style="font-family:monospace; font-size:12px;">${escapeHtml(d.fileName)}</span>
-                  </div>
-                </div>
-                <div class="cp-carousel-card-footer cp-carousel-card-actions">
-                  <button type="button" class="cp-btn cp-btn-secondary cp-btn-sm btn-client-preview-doc" data-doc-id="${escapeHtml(d.docId)}" style="flex:1; justify-content:center;">
-                    👁 Preview
-                  </button>
-                  <a href="${escapeHtml(d.fileUrl)}" target="_blank" download class="cp-btn cp-btn-primary cp-btn-sm" style="flex:1; justify-content:center; text-decoration:none;">
-                    ⬇ Download
-                  </a>
-                </div>
-              </div>
-            </div>
-          `;
-        }).join('');
-
-        wireDocPreviewButtons(dTrack);
-        setupCarousel(dTrack, prevDocBtn, nextDocBtn, dDots);
-      }
-    }
+    // 4. Render Dashboard Service Categories
+    renderServiceCategories();
   }
 
   // B. Services Section Render
@@ -1135,7 +1344,12 @@
           ${
             isApproved
               ? (() => {
-                  const matchDoc = (cachedData.documents || []).find((d) => d.caseId === c.caseId);
+                  const matchDoc = (cachedData.documents || []).find((d) => 
+                    (d.caseId === c.caseId || d.caseId === c.id) &&
+                    d.docType !== 'company' &&
+                    d.category !== 'company_document' &&
+                    d.category !== 'client_kyc'
+                  );
                   if (matchDoc) {
                     return `
                       <div style="margin-top:16px; display:flex; justify-content:flex-end; gap:8px;">
@@ -1274,8 +1488,10 @@
     const docsCountEl = document.getElementById('serviceDetailDocsCount');
     const allDocs = cachedData.documents || [];
     const assignedDocs = allDocs.filter((d) =>
-      (d.caseId && (d.caseId === c.caseId || d.caseId === c.id)) ||
-      (!d.caseId && d.title && c.serviceName && d.title.toLowerCase().includes(c.serviceName.toLowerCase()))
+      d.docType !== 'company' &&
+      d.category !== 'company_document' &&
+      d.category !== 'client_kyc' &&
+      d.caseId && (d.caseId === c.caseId || d.caseId === c.id)
     );
 
     if (docsCountEl) docsCountEl.textContent = assignedDocs.length;
@@ -1325,17 +1541,157 @@
     openModal('modalServiceDetails');
   }
 
-  // C. Documents Section Render
-  function renderDocuments(docs) {
-    const tbody = document.getElementById('clientDocsTableBody');
-    if (!tbody) return;
+  // Helper: Visual SVG Icon for Company Document Cards (DigiLocker Style)
+  function getCompanyDocIcon(title = '', fileName = '', category = '') {
+    const text = `${title} ${fileName} ${category}`.toLowerCase();
 
-    if (docs.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" class="cp-td-empty">No documents or certificates uploaded yet. Once issued by the department, your certificates will be available here for instant download.</td></tr>';
+    // 1. Aadhaar / Director ID / KYC / Passport / Voter ID
+    if (text.includes('aadhaar') || text.includes('aadhar') || text.includes('passport') || text.includes('voter') || text.includes('kyc') || text.includes('director id') || text.includes('identity')) {
+      return `
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="8" width="40" height="32" rx="6" fill="#0284C7" />
+          <rect x="8" y="13" width="10" height="12" rx="3" fill="#E0F2FE" />
+          <circle cx="13" cy="18" r="3" fill="#0284C7" />
+          <path d="M9 24C9 21.7909 10.7909 20 13 20C15.2091 20 17 21.7909 17 24H9Z" fill="#0284C7" />
+          <rect x="22" y="14" width="18" height="3" rx="1.5" fill="#E0F2FE" />
+          <rect x="22" y="20" width="12" height="2.5" rx="1.25" fill="#BAE6FD" />
+          <rect x="8" y="30" width="32" height="4" rx="2" fill="#38BDF8" />
+        </svg>
+      `;
+    }
+
+    // 2. PAN Card / Tax / Income Tax
+    if (text.includes('pan') || text.includes('tax') || text.includes('tan') || text.includes('it return')) {
+      return `
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="8" width="40" height="32" rx="6" fill="#059669" />
+          <path d="M4 14H44V20H4V14Z" fill="#F59E0B" fill-opacity="0.3" />
+          <rect x="8" y="24" width="12" height="10" rx="2" fill="#D1FAE5" />
+          <circle cx="14" cy="28" r="2.5" fill="#059669" />
+          <rect x="24" y="25" width="16" height="2.5" rx="1.25" fill="#E0F2FE" />
+          <rect x="24" y="30" width="11" height="2.5" rx="1.25" fill="#A7F3D0" />
+          <circle cx="38" cy="17" r="3" fill="#FCD34D" />
+        </svg>
+      `;
+    }
+
+    // 3. MoA / AoA / Incorporation / Company Reg / Resolution / COI
+    if (text.includes('moa') || text.includes('aoa') || text.includes('incorporation') || text.includes('resolution') || text.includes('certificate') || text.includes('mca') || text.includes('bylaw') || text.includes('charter')) {
+      return `
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="6" width="36" height="36" rx="6" fill="#4F46E5" />
+          <path d="M14 16H34M14 22H34M14 28H26" stroke="#E0E7FF" stroke-width="2.5" stroke-linecap="round" />
+          <circle cx="32" cy="30" r="6" fill="#F59E0B" />
+          <path d="M30 30L31.5 31.5L34.5 28.5" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      `;
+    }
+
+    // 4. Director / Shareholder / Nominee / Partners / Board
+    if (text.includes('director') || text.includes('nominee') || text.includes('shareholder') || text.includes('partner') || text.includes('board') || text.includes('consent') || text.includes('dir-2')) {
+      return `
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="8" width="40" height="32" rx="6" fill="#7C3AED" />
+          <circle cx="18" cy="20" r="5" fill="#EDE9FE" />
+          <path d="M10 32C10 27.5817 13.5817 24 18 24C22.4183 24 26 27.5817 26 32H10Z" fill="#EDE9FE" />
+          <circle cx="31" cy="21" r="3.5" fill="#DDD6FE" />
+          <path d="M25 32C25 28.6863 27.6863 26 31 26C34.3137 26 37 28.6863 37 32H25Z" fill="#DDD6FE" />
+        </svg>
+      `;
+    }
+
+    // 5. Electricity Bill / Water / Utility / Rent Agreement / Address Proof
+    if (text.includes('bill') || text.includes('electricity') || text.includes('utility') || text.includes('rent') || text.includes('address') || text.includes('premises') || text.includes('noc')) {
+      return `
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="6" width="36" height="36" rx="6" fill="#D97706" />
+          <rect x="12" y="12" width="24" height="24" rx="3" fill="#FEF3C7" />
+          <path d="M25 15L18 25H24L23 33L30 23H24L25 15Z" fill="#D97706" stroke="#B45309" stroke-width="1" stroke-linejoin="round" />
+        </svg>
+      `;
+    }
+
+    // 6. Bank Statement / Cheque / Financial / Statement
+    if (text.includes('bank') || text.includes('statement') || text.includes('cheque') || text.includes('passbook') || text.includes('financial')) {
+      return `
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="8" width="40" height="32" rx="6" fill="#0D9488" />
+          <path d="M8 20L24 12L40 20H8Z" fill="#CCFBF1" />
+          <rect x="11" y="22" width="4" height="10" fill="#CCFBF1" />
+          <rect x="18.5" y="22" width="4" height="10" fill="#CCFBF1" />
+          <rect x="26" y="22" width="4" height="10" fill="#CCFBF1" />
+          <rect x="33" y="22" width="4" height="10" fill="#CCFBF1" />
+          <rect x="7" y="32" width="34" height="3" rx="1" fill="#CCFBF1" />
+        </svg>
+      `;
+    }
+
+    // 7. General / Document / File
+    return `
+      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="6" y="6" width="36" height="36" rx="6" fill="#2563EB" />
+        <path d="M14 16H26M14 22H34M14 28H30M14 34H22" stroke="#DBEAFE" stroke-width="2.5" stroke-linecap="round" />
+        <path d="M28 12V18H34" stroke="#DBEAFE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    `;
+  }
+
+  // Helper: Render DigiLocker Style Company Documents Grid
+  function renderCompanyDocsGrid(docs, container) {
+    if (!container) return;
+
+    if (!docs || docs.length === 0) {
+      container.innerHTML = `
+        <div class="company-docs-empty">
+          <span class="company-docs-empty-icon">📁</span>
+          <p>No company documents on record yet</p>
+          <div style="font-size:12px; margin-top:4px; opacity:0.8;">
+            Documents provided during onboarding (PAN, Aadhaar, MoA, Address Proof) will appear here.
+          </div>
+        </div>
+      `;
       return;
     }
 
-    tbody.innerHTML = docs.map((d) => {
+    container.innerHTML = docs.map((d) => {
+      const ext = (d.fileName || '').split('.').pop() || 'DOC';
+      const sizeStr = d.fileSize ? ` • ${d.fileSize}` : '';
+      const meta = `${ext.toUpperCase()}${sizeStr}`;
+      return `
+        <div class="company-doc-card btn-client-preview-doc" data-doc-id="${escapeHtml(d.docId)}" title="Click to view ${escapeHtml(d.title || d.fileName)}">
+          <div class="company-doc-icon-container">
+            ${getCompanyDocIcon(d.title, d.fileName, d.category)}
+          </div>
+          <div class="company-doc-info">
+            <h4 class="company-doc-title" title="${escapeHtml(d.title || d.fileName)}">${escapeHtml(d.title || d.fileName)}</h4>
+            <span class="company-doc-meta">${escapeHtml(meta)}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    wireDocPreviewButtons(container);
+  }
+
+  // C. Documents Section Render
+  function renderDocuments(docs) {
+    const allDocs = docs || [];
+    const issuedDocs = allDocs.filter((d) => d.docType !== 'company' && d.category !== 'client_kyc' && d.category !== 'company_document');
+    const companyDocs = allDocs.filter((d) => d.docType === 'company' || d.category === 'client_kyc' || d.category === 'company_document');
+
+    // 1. Render Company Documents Grid (DigiLocker Style)
+    renderCompanyDocsGrid(companyDocs, document.getElementById('pageCompanyDocsGrid'));
+
+    // 2. Render Issued Documents Table
+    const tbody = document.getElementById('clientDocsTableBody');
+    if (!tbody) return;
+
+    if (issuedDocs.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="cp-td-empty">No issued documents or certificates uploaded yet. Once issued by the department, your certificates will be available here for instant download.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = issuedDocs.map((d) => {
       const dateStr = d.createdAt ? new Date(d.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
       return `
         <tr>
@@ -1406,6 +1762,34 @@
     } else if (['jpg', 'jpeg', 'png', 'webp', 'svg', 'gif'].includes(ext) || mime.startsWith('image/')) {
       bodyEl.innerHTML = `
         <img src="${escapeHtml(url)}" alt="${escapeHtml(doc.title || 'Document Preview')}" />
+      `;
+    } else if (['doc', 'docx'].includes(ext) || mime.includes('word') || mime.includes('officedocument.wordprocessingml')) {
+      bodyEl.innerHTML = `
+        <div class="cp-preview-fallback">
+          <div class="cp-preview-fallback-icon" style="font-size:56px;">📘</div>
+          <h4 style="font-size:17px; font-weight:700; margin-bottom:6px;">${escapeHtml(doc.fileName || 'Word Document')}</h4>
+          <p style="font-size:13px; color:var(--cp-text-muted); max-width:420px; margin:0 auto 16px;">
+            Microsoft Word document (${escapeHtml(doc.fileSize || 'Standard Document')}). You can open or download the document directly to view.
+          </p>
+          <div style="display:flex; justify-content:center; gap:12px;">
+            <a href="${escapeHtml(url)}" target="_blank" class="cp-btn cp-btn-secondary cp-btn-sm" style="text-decoration:none;">↗ Open Document</a>
+            <a href="${escapeHtml(url)}" download="${escapeHtml(doc.fileName || 'document.docx')}" class="cp-btn cp-btn-primary cp-btn-sm" style="text-decoration:none;">⬇ Download Word (.${escapeHtml(ext || 'docx')})</a>
+          </div>
+        </div>
+      `;
+    } else if (['ppt', 'pptx'].includes(ext) || mime.includes('powerpoint') || mime.includes('officedocument.presentationml')) {
+      bodyEl.innerHTML = `
+        <div class="cp-preview-fallback">
+          <div class="cp-preview-fallback-icon" style="font-size:56px;">📙</div>
+          <h4 style="font-size:17px; font-weight:700; margin-bottom:6px;">${escapeHtml(doc.fileName || 'PowerPoint Presentation')}</h4>
+          <p style="font-size:13px; color:var(--cp-text-muted); max-width:420px; margin:0 auto 16px;">
+            Microsoft PowerPoint presentation (${escapeHtml(doc.fileSize || 'Presentation')}). You can open or download the presentation slides directly.
+          </p>
+          <div style="display:flex; justify-content:center; gap:12px;">
+            <a href="${escapeHtml(url)}" target="_blank" class="cp-btn cp-btn-secondary cp-btn-sm" style="text-decoration:none;">↗ Open Presentation</a>
+            <a href="${escapeHtml(url)}" download="${escapeHtml(doc.fileName || 'presentation.pptx')}" class="cp-btn cp-btn-primary cp-btn-sm" style="text-decoration:none;">⬇ Download PPT (.${escapeHtml(ext || 'pptx')})</a>
+          </div>
+        </div>
       `;
     } else {
       bodyEl.innerHTML = `
@@ -1562,961 +1946,60 @@
     });
   }
 
-      // ==========================================
+  // ==========================================
   // 8. BUY & MARKETPLACE CONTROLLER
   // ==========================================
-  const ALL_SERVICES_CATALOG = [
-  {
-    "id": "startup_india",
-    "cat": "incorporation",
-    "title": "Startup India",
-    "path": "Business_registration/Company_registration/startup_india.html",
-    "isPopular": true
-  },
-  {
-    "id": "private_limited_company",
-    "cat": "incorporation",
-    "title": "Private Limited Company",
-    "path": "Business_registration/Company_registration/private_limited_company.html",
-    "isPopular": false
-  },
-  {
-    "id": "limited_liability_partnership_llp",
-    "cat": "incorporation",
-    "title": "Limited Liability Partnership (LLP)",
-    "path": "Business_registration/Company_registration/llp_registration.html",
-    "isPopular": false
-  },
-  {
-    "id": "one_person_company_opc",
-    "cat": "incorporation",
-    "title": "One Person Company (OPC)",
-    "path": "Business_registration/Company_registration/opc_registration.html",
-    "isPopular": false
-  },
-  {
-    "id": "sole_proprietorship",
-    "cat": "incorporation",
-    "title": "Sole Proprietorship",
-    "path": "Business_registration/Company_registration/sole_proprietorship.html",
-    "isPopular": false
-  },
-  {
-    "id": "public_limited_company",
-    "cat": "incorporation",
-    "title": "Public Limited Company",
-    "path": "Business_registration/Company_registration/public_ltd.html",
-    "isPopular": false
-  },
-  {
-    "id": "trust_registration",
-    "cat": "incorporation",
-    "title": "Trust Registration",
-    "path": "Business_registration/NGOs/trust_registration.html",
-    "isPopular": false
-  },
-  {
-    "id": "society_registration",
-    "cat": "incorporation",
-    "title": "Society Registration",
-    "path": "Business_registration/NGOs/society_registration.html",
-    "isPopular": false
-  },
-  {
-    "id": "fcra_registration",
-    "cat": "incorporation",
-    "title": "FCRA Registration",
-    "path": "Business_registration/NGOs/fcra_registration.html",
-    "isPopular": false
-  },
-  {
-    "id": "section_8_company",
-    "cat": "incorporation",
-    "title": "Section 8 Company",
-    "path": "Business_registration/NGOs/Section_8.html",
-    "isPopular": false
-  },
-  {
-    "id": "partnership_registration",
-    "cat": "incorporation",
-    "title": "Partnership Registration",
-    "path": "Business_registration/Partnership_firm/partnership_firm_registration.html",
-    "isPopular": false
-  },
-  {
-    "id": "partnership_compliance",
-    "cat": "incorporation",
-    "title": "Partnership Compliance",
-    "path": "Business_registration/Partnership_firm/partnership_firm_compliance.html",
-    "isPopular": false
-  },
-  {
-    "id": "tax_exemption",
-    "cat": "tax",
-    "title": "Tax Exemption",
-    "path": "Tax & Compliance/Income_Tax/tax_exemption.html",
-    "isPopular": true
-  },
-  {
-    "id": "income_tax_e_filing",
-    "cat": "tax",
-    "title": "Income Tax E-Filing",
-    "path": "Tax & Compliance/Income_Tax/tax_efiling.html",
-    "isPopular": false
-  },
-  {
-    "id": "business_tax_filing",
-    "cat": "tax",
-    "title": "Business Tax Filing",
-    "path": "Tax & Compliance/Income_Tax/business_tax_filing.html",
-    "isPopular": false
-  },
-  {
-    "id": "tan_registration",
-    "cat": "tax",
-    "title": "TAN Registration",
-    "path": "Tax & Compliance/Income_Tax/tan_registration.html",
-    "isPopular": false
-  },
-  {
-    "id": "tds_return_filing",
-    "cat": "tax",
-    "title": "TDS Return Filing",
-    "path": "Tax & Compliance/Income_Tax/tds_return_filing.html",
-    "isPopular": false
-  },
-  {
-    "id": "income_tax_notice",
-    "cat": "tax",
-    "title": "Income Tax Notice",
-    "path": "Tax & Compliance/Income_Tax/tax_notice.html",
-    "isPopular": false
-  },
-  {
-    "id": "itr_1_return_filing",
-    "cat": "tax",
-    "title": "ITR 1 Return Filing",
-    "path": "Tax & Compliance/Income_Tax/itr1_return_filing.html",
-    "isPopular": false
-  },
-  {
-    "id": "itr_2_return_filing",
-    "cat": "tax",
-    "title": "ITR 2 Return Filing",
-    "path": "Tax & Compliance/Income_Tax/itr2_return_filing.html",
-    "isPopular": false
-  },
-  {
-    "id": "itr_3_return_filing",
-    "cat": "tax",
-    "title": "ITR 3 Return Filing",
-    "path": "Tax & Compliance/Income_Tax/itr3_retun_filing.html",
-    "isPopular": false
-  },
-  {
-    "id": "itr_4_return_filing",
-    "cat": "tax",
-    "title": "ITR 4 Return Filing",
-    "path": "Tax & Compliance/Income_Tax/itr4_return_filing.html",
-    "isPopular": false
-  },
-  {
-    "id": "itr_5_return_filing",
-    "cat": "tax",
-    "title": "ITR 5 Return Filing",
-    "path": "Tax & Compliance/Income_Tax/itr5_return_filing.html",
-    "isPopular": false
-  },
-  {
-    "id": "itr_6_return_filing",
-    "cat": "tax",
-    "title": "ITR 6 Return Filing",
-    "path": "Tax & Compliance/Income_Tax/itr6_return_filing.html",
-    "isPopular": false
-  },
-  {
-    "id": "itr_7_return_filing",
-    "cat": "tax",
-    "title": "ITR 7 Return Filing",
-    "path": "Tax & Compliance/Income_Tax/itr7_return_filing.html",
-    "isPopular": false
-  },
-  {
-    "id": "gst_registration",
-    "cat": "tax",
-    "title": "GST Registration",
-    "path": "Tax & Compliance/Goods & Services Tax/gst_registration.html",
-    "isPopular": false
-  },
-  {
-    "id": "gst_return_filing",
-    "cat": "tax",
-    "title": "GST Return Filing",
-    "path": "Tax & Compliance/Goods & Services Tax/gst_return_filing.html",
-    "isPopular": false
-  },
-  {
-    "id": "gst_amendment",
-    "cat": "tax",
-    "title": "GST Amendment",
-    "path": "Tax & Compliance/Goods & Services Tax/gst_amendment.html",
-    "isPopular": false
-  },
-  {
-    "id": "gstr_9_annual_return",
-    "cat": "tax",
-    "title": "GSTR 9 Annual Return",
-    "path": "Tax & Compliance/Goods & Services Tax/gstr9.html",
-    "isPopular": false
-  },
-  {
-    "id": "gstr_10_final_return",
-    "cat": "tax",
-    "title": "GSTR 10 Final Return",
-    "path": "Tax & Compliance/Goods & Services Tax/gstr10.html",
-    "isPopular": false
-  },
-  {
-    "id": "private_limited_compliance",
-    "cat": "tax",
-    "title": "Private Limited Compliance",
-    "path": "Tax & Compliance/corporate_compliance/privated_limited_compliance.html",
-    "isPopular": false
-  },
-  {
-    "id": "llp_annual_compliance",
-    "cat": "tax",
-    "title": "LLP Annual Compliance",
-    "path": "Tax & Compliance/corporate_compliance/llp_annual_compliance.html",
-    "isPopular": false
-  },
-  {
-    "id": "opc_compliance",
-    "cat": "tax",
-    "title": "OPC Compliance",
-    "path": "Tax & Compliance/corporate_compliance/opc_compliance.html",
-    "isPopular": false
-  },
-  {
-    "id": "section_8_compliance",
-    "cat": "tax",
-    "title": "Section 8 Compliance",
-    "path": "Tax & Compliance/corporate_compliance/section8_compliance.html",
-    "isPopular": false
-  },
-  {
-    "id": "partnership_firm_compliance",
-    "cat": "tax",
-    "title": "Partnership Firm Compliance",
-    "path": "Tax & Compliance/corporate_compliance/partnership_firm_compliance.html",
-    "isPopular": false
-  },
-  {
-    "id": "roc_annual_filing",
-    "cat": "tax",
-    "title": "ROC Annual Filing",
-    "path": "Tax & Compliance/corporate_compliance/roc_annual_filing.html",
-    "isPopular": false
-  },
-  {
-    "id": "dir_3_kyc_filing",
-    "cat": "tax",
-    "title": "DIR-3 KYC Filing",
-    "path": "Tax & Compliance/corporate_compliance/dir3_kyc_filing.html",
-    "isPopular": false
-  },
-  {
-    "id": "adt_1_filing",
-    "cat": "tax",
-    "title": "ADT-1 Filing",
-    "path": "Tax & Compliance/corporate_compliance/adt1_filing.html",
-    "isPopular": false
-  },
-  {
-    "id": "dpt_3_filing",
-    "cat": "tax",
-    "title": "DPT-3 Filing",
-    "path": "Tax & Compliance/corporate_compliance/dpt3-filing.html",
-    "isPopular": false
-  },
-  {
-    "id": "add_partner_in_llp",
-    "cat": "tax",
-    "title": "Add Partner in LLP",
-    "path": "Tax & Compliance/Event_based_ROC/add_partner_llp.html",
-    "isPopular": false
-  },
-  {
-    "id": "remove_partner_from_llp",
-    "cat": "tax",
-    "title": "Remove Partner from LLP",
-    "path": "Tax & Compliance/Event_based_ROC/remove_partner_llp.html",
-    "isPopular": false
-  },
-  {
-    "id": "change_llp_agreement",
-    "cat": "tax",
-    "title": "Change LLP Agreement",
-    "path": "Tax & Compliance/Event_based_ROC/change_llp_agreement.html",
-    "isPopular": false
-  },
-  {
-    "id": "add_director",
-    "cat": "tax",
-    "title": "Add Director",
-    "path": "Tax & Compliance/Event_based_ROC/add_director.html",
-    "isPopular": false
-  },
-  {
-    "id": "remove_director",
-    "cat": "tax",
-    "title": "Remove Director",
-    "path": "Tax & Compliance/Event_based_ROC/remove_director.html",
-    "isPopular": false
-  },
-  {
-    "id": "increase_share_capital",
-    "cat": "tax",
-    "title": "Increase Share Capital",
-    "path": "Tax & Compliance/Event_based_ROC/increase_share_capital.html",
-    "isPopular": false
-  },
-  {
-    "id": "change_office_address",
-    "cat": "tax",
-    "title": "Change Office Address",
-    "path": "Tax & Compliance/Event_based_ROC/change_office_add.html",
-    "isPopular": false
-  },
-  {
-    "id": "change_company_name",
-    "cat": "tax",
-    "title": "Change Company Name",
-    "path": "Tax & Compliance/Event_based_ROC/change_company_name.html",
-    "isPopular": false
-  },
-  {
-    "id": "change_business_activity",
-    "cat": "tax",
-    "title": "Change Business Activity",
-    "path": "Tax & Compliance/Event_based_ROC/change_activity.html",
-    "isPopular": false
-  },
-  {
-    "id": "issue_new_shares",
-    "cat": "tax",
-    "title": "Issue New Shares",
-    "path": "Tax & Compliance/Event_based_ROC/issue_new_share.html",
-    "isPopular": false
-  },
-  {
-    "id": "change_auditor",
-    "cat": "tax",
-    "title": "Change Auditor",
-    "path": "Tax & Compliance/Event_based_ROC/change_auditor.html",
-    "isPopular": false
-  },
-  {
-    "id": "update_director_kyc",
-    "cat": "tax",
-    "title": "Update Director KYC",
-    "path": "Tax & Compliance/Event_based_ROC/update_director_kyc.html",
-    "isPopular": false
-  },
-  {
-    "id": "create_company_charge",
-    "cat": "tax",
-    "title": "Create Company Charge",
-    "path": "Tax & Compliance/Event_based_ROC/create_charge_filing.html",
-    "isPopular": false
-  },
-  {
-    "id": "close_company_charge",
-    "cat": "tax",
-    "title": "Close Company Charge",
-    "path": "Tax & Compliance/Event_based_ROC/close_company_charge.html",
-    "isPopular": false
-  },
-  {
-    "id": "change_management_details",
-    "cat": "tax",
-    "title": "Change Management Details",
-    "path": "Tax & Compliance/Event_based_ROC/change_management_details.html",
-    "isPopular": false
-  },
-  {
-    "id": "change_director_address",
-    "cat": "tax",
-    "title": "Change Director Address",
-    "path": "Tax & Compliance/Event_based_ROC/change_director_add.html",
-    "isPopular": false
-  },
-  {
-    "id": "bookkeeping_services",
-    "cat": "tax",
-    "title": "Bookkeeping Services",
-    "path": "Tax & Compliance/accounting & finance/bookkepping_services.html",
-    "isPopular": false
-  },
-  {
-    "id": "accounting_services",
-    "cat": "tax",
-    "title": "Accounting Services",
-    "path": "Tax & Compliance/accounting & finance/accounting_services.html",
-    "isPopular": false
-  },
-  {
-    "id": "financial_audit_services",
-    "cat": "tax",
-    "title": "Financial Audit Services",
-    "path": "Tax & Compliance/accounting & finance/financial_audit_services.html",
-    "isPopular": false
-  },
-  {
-    "id": "tax_audit_services",
-    "cat": "tax",
-    "title": "Tax Audit Services",
-    "path": "Tax & Compliance/accounting & finance/tax_audit_services.html",
-    "isPopular": false
-  },
-  {
-    "id": "business_due_diligence",
-    "cat": "tax",
-    "title": "Business Due Diligence",
-    "path": "Tax & Compliance/accounting & finance/business_due_diligence.html",
-    "isPopular": false
-  },
-  {
-    "id": "accounts_payable_support",
-    "cat": "tax",
-    "title": "Accounts Payable Support",
-    "path": "Tax & Compliance/accounting & finance/accounts_payable_services.html",
-    "isPopular": false
-  },
-  {
-    "id": "trademark_registration",
-    "cat": "ip",
-    "title": "Trademark Registration",
-    "path": "Trademark & Ip/trademark_services/trademark_registration.html",
-    "isPopular": false
-  },
-  {
-    "id": "trademark_certificate",
-    "cat": "ip",
-    "title": "Trademark Certificate",
-    "path": "Trademark & Ip/trademark_services/trademark_certificate.html",
-    "isPopular": false
-  },
-  {
-    "id": "trademark_objection",
-    "cat": "ip",
-    "title": "Trademark Objection",
-    "path": "Trademark & Ip/trademark_services/trademark_objection.html",
-    "isPopular": false
-  },
-  {
-    "id": "trademark_hearing",
-    "cat": "ip",
-    "title": "Trademark Hearing",
-    "path": "Trademark & Ip/trademark_services/trademark_hearing.html",
-    "isPopular": false
-  },
-  {
-    "id": "trademark_opposition",
-    "cat": "ip",
-    "title": "Trademark Opposition",
-    "path": "Trademark & Ip/trademark_services/trademark_opposition.html",
-    "isPopular": false
-  },
-  {
-    "id": "trademark_renewal",
-    "cat": "ip",
-    "title": "Trademark Renewal",
-    "path": "Trademark & Ip/trademark_services/trademark_renewal.html",
-    "isPopular": false
-  },
-  {
-    "id": "trademark_rectification",
-    "cat": "ip",
-    "title": "Trademark Rectification",
-    "path": "Trademark & Ip/trademark_services/trademark_rectification.html",
-    "isPopular": false
-  },
-  {
-    "id": "trademark_transfer",
-    "cat": "ip",
-    "title": "Trademark Transfer",
-    "path": "Trademark & Ip/trademark_services/trademark_transfer.html",
-    "isPopular": false
-  },
-  {
-    "id": "copyright_registration",
-    "cat": "ip",
-    "title": "Copyright Registration",
-    "path": "Trademark & Ip/copyright_services/copyright_registration.html",
-    "isPopular": false
-  },
-  {
-    "id": "copyright_objection",
-    "cat": "ip",
-    "title": "Copyright Objection",
-    "path": "Trademark & Ip/copyright_services/copyright_objection.html",
-    "isPopular": false
-  },
-  {
-    "id": "patent_registration",
-    "cat": "ip",
-    "title": "Patent Registration",
-    "path": "Trademark & Ip/patent_services/patent_registration.html",
-    "isPopular": false
-  },
-  {
-    "id": "tm_infringement_notice",
-    "cat": "ip",
-    "title": "TM Infringement Notice",
-    "path": "Trademark & Ip/infringment_protection/TM_infringment.html",
-    "isPopular": false
-  },
-  {
-    "id": "iso_registration",
-    "cat": "licenses",
-    "title": "ISO Registration",
-    "path": "Licenses/workforce, operations and labour/iso_certification.html",
-    "isPopular": true
-  },
-  {
-    "id": "trade_license_registration",
-    "cat": "licenses",
-    "title": "Trade License Registration",
-    "path": "Licenses/business & municipal/trade_license_registration.html",
-    "isPopular": false
-  },
-  {
-    "id": "shop_establishment_license",
-    "cat": "licenses",
-    "title": "Shop & Establishment License",
-    "path": "Licenses/business & municipal/shop_establishment_license.html",
-    "isPopular": false
-  },
-  {
-    "id": "msme_registration",
-    "cat": "licenses",
-    "title": "MSME Registration",
-    "path": "Licenses/business & municipal/msme_registration.html",
-    "isPopular": false
-  },
-  {
-    "id": "professional_tax_registration",
-    "cat": "licenses",
-    "title": "Professional Tax Registration",
-    "path": "Licenses/business & municipal/professional_tax_registration.html",
-    "isPopular": false
-  },
-  {
-    "id": "factory_license_registration",
-    "cat": "licenses",
-    "title": "Factory License Registration",
-    "path": "Licenses/business & municipal/factory_license_registration.html",
-    "isPopular": false
-  },
-  {
-    "id": "labour_welfare_registration",
-    "cat": "licenses",
-    "title": "Labour Welfare Registration",
-    "path": "Licenses/business & municipal/labour_welfare_registration.html",
-    "isPopular": false
-  },
-  {
-    "id": "fssai_registration",
-    "cat": "licenses",
-    "title": "FSSAI Registration",
-    "path": "Licenses/food & health/fssai_registration.html",
-    "isPopular": false
-  },
-  {
-    "id": "fssai_license",
-    "cat": "licenses",
-    "title": "FSSAI License",
-    "path": "Licenses/food & health/fssai_license.html",
-    "isPopular": false
-  },
-  {
-    "id": "drug_cosmetic_license",
-    "cat": "licenses",
-    "title": "Drug & Cosmetic License",
-    "path": "Licenses/food & health/drug_cosmetic_license.html",
-    "isPopular": false
-  },
-  {
-    "id": "food_import_clearance_fssai",
-    "cat": "licenses",
-    "title": "Food Import Clearance (FSSAI)",
-    "path": "Licenses/food & health/food_import_clearance.html",
-    "isPopular": false
-  },
-  {
-    "id": "bis_isi_registration",
-    "cat": "licenses",
-    "title": "BIS ISI Registration",
-    "path": "Licenses/food & health/bis_isi_registration.html",
-    "isPopular": false
-  },
-  {
-    "id": "iec_registration",
-    "cat": "licenses",
-    "title": "IEC Registration",
-    "path": "Licenses/import export registration/iec_registration.html",
-    "isPopular": false
-  },
-  {
-    "id": "icegate_registration",
-    "cat": "licenses",
-    "title": "ICEGATE Registration",
-    "path": "Licenses/import export registration/icegate_registration.html",
-    "isPopular": false
-  },
-  {
-    "id": "merchant_exporter_registration",
-    "cat": "licenses",
-    "title": "Merchant Exporter Registration",
-    "path": "Licenses/import export registration/merchant_exporter_registration.html",
-    "isPopular": false
-  },
-  {
-    "id": "customs_clearance_services",
-    "cat": "licenses",
-    "title": "Customs Clearance Services",
-    "path": "Licenses/import export registration/customs_clearance_services.html",
-    "isPopular": false
-  },
-  {
-    "id": "rcmc_registration",
-    "cat": "licenses",
-    "title": "RCMC Registration",
-    "path": "Licenses/import export registration/rcmc_registration.html",
-    "isPopular": false
-  },
-  {
-    "id": "apeda_registration",
-    "cat": "licenses",
-    "title": "APEDA Registration",
-    "path": "Licenses/import export registration/apeda_registration.html",
-    "isPopular": false
-  },
-  {
-    "id": "dgft_digital_signature_dsc",
-    "cat": "licenses",
-    "title": "DGFT Digital Signature (DSC)",
-    "path": "Licenses/import export registration/dgft_digital_certificate.html",
-    "isPopular": false
-  },
-  {
-    "id": "pf_registration",
-    "cat": "licenses",
-    "title": "PF Registration",
-    "path": "Licenses/workforce, operations and labour/pf_registration.html",
-    "isPopular": false
-  },
-  {
-    "id": "esi_registration",
-    "cat": "licenses",
-    "title": "ESI Registration",
-    "path": "Licenses/workforce, operations and labour/esi_registration.html",
-    "isPopular": false
-  },
-  {
-    "id": "contractor_license",
-    "cat": "licenses",
-    "title": "Contractor License",
-    "path": "Licenses/workforce, operations and labour/contractor_license.html",
-    "isPopular": false
-  },
-  {
-    "id": "psara_license",
-    "cat": "licenses",
-    "title": "PSARA License",
-    "path": "Licenses/workforce, operations and labour/psara_license.html",
-    "isPopular": false
-  },
-  {
-    "id": "digital_signature_certificate",
-    "cat": "licenses",
-    "title": "Digital Signature Certificate",
-    "path": "Licenses/workforce, operations and labour/digital_signature_certificate.html",
-    "isPopular": false
-  },
-  {
-    "id": "ngo_darpan_registration",
-    "cat": "licenses",
-    "title": "NGO DARPAN Registration",
-    "path": "Licenses/workforce, operations and labour/ngo_darpan.html",
-    "isPopular": false
-  },
-  {
-    "id": "factory_plan_approval",
-    "cat": "licenses",
-    "title": "Factory Plan Approval",
-    "path": "Licenses/workforce, operations and labour/factory_plan_approval.html",
-    "isPopular": false
-  },
-  {
-    "id": "epr_registration",
-    "cat": "licenses",
-    "title": "EPR Registration",
-    "path": "Licenses/Environmental&pollution/epr_registration.html",
-    "isPopular": false
-  },
-  {
-    "id": "plastic_waste_authorization",
-    "cat": "licenses",
-    "title": "Plastic Waste Authorization",
-    "path": "Licenses/Environmental&pollution/plastic_waste_auth.html",
-    "isPopular": false
-  },
-  {
-    "id": "epr_authorization_for_e_waste",
-    "cat": "licenses",
-    "title": "EPR Authorization for E-Waste",
-    "path": "Licenses/Environmental&pollution/epr_authorization_e-waste.html",
-    "isPopular": false
-  },
-  {
-    "id": "consent_to_establish_cte",
-    "cat": "licenses",
-    "title": "Consent to Establish (CTE)",
-    "path": "Licenses/Environmental&pollution/consent_to_establish.html",
-    "isPopular": false
-  },
-  {
-    "id": "environmental_impact_assessment",
-    "cat": "licenses",
-    "title": "Environmental Impact Assessment",
-    "path": "Licenses/Environmental&pollution/environmental_impact_assess.html",
-    "isPopular": false
-  },
-  {
-    "id": "environmental_audit_services",
-    "cat": "licenses",
-    "title": "Environmental Audit Services",
-    "path": "Licenses/Environmental&pollution/environmental_audit_services.html",
-    "isPopular": false
-  },
-  {
-    "id": "web_application",
-    "cat": "digital",
-    "title": "Web Application",
-    "path": "Digital/web_solutions/web_application.html",
-    "isPopular": false
-  },
-  {
-    "id": "dynamic_website",
-    "cat": "digital",
-    "title": "Dynamic Website",
-    "path": "Digital/web_solutions/dynamic_website.html",
-    "isPopular": false
-  },
-  {
-    "id": "static_website",
-    "cat": "digital",
-    "title": "Static Website",
-    "path": "Digital/web_solutions/static_website.html",
-    "isPopular": false
-  },
-  {
-    "id": "e_commerce_website",
-    "cat": "digital",
-    "title": "E-commerce Website",
-    "path": "Digital/web_solutions/ecommerce_website.html",
-    "isPopular": false
-  },
-  {
-    "id": "seo_optimization",
-    "cat": "digital",
-    "title": "SEO Optimization",
-    "path": "Digital/digital_marketing/seo_optimization.html",
-    "isPopular": false
-  },
-  {
-    "id": "social_media_marketing_smm",
-    "cat": "digital",
-    "title": "Social Media Marketing (SMM)",
-    "path": "Digital/digital_marketing/social_media_marketing.html",
-    "isPopular": false
-  },
-  {
-    "id": "google_ads_ppc",
-    "cat": "digital",
-    "title": "Google Ads & PPC",
-    "path": "Digital/digital_marketing/google_ads_ppc.html",
-    "isPopular": false
-  },
-  {
-    "id": "lead_generation",
-    "cat": "digital",
-    "title": "Lead Generation",
-    "path": "Digital/digital_marketing/lead_generation.html",
-    "isPopular": false
-  },
-  {
-    "id": "e_mail_marketing",
-    "cat": "digital",
-    "title": "E-mail Marketing",
-    "path": "Digital/digital_marketing/e-mail_marketing.html",
-    "isPopular": false
-  },
-  {
-    "id": "whatsapp_marketing",
-    "cat": "digital",
-    "title": "WhatsApp Marketing",
-    "path": "Digital/digital_marketing/whatsapp_marketing.html",
-    "isPopular": false
-  },
-  {
-    "id": "logo_design",
-    "cat": "digital",
-    "title": "Logo Design",
-    "path": "Digital/branding_design/logo_design.html",
-    "isPopular": false
-  },
-  {
-    "id": "profile_designing",
-    "cat": "digital",
-    "title": "Profile Designing",
-    "path": "Digital/branding_design/profile_designing.html",
-    "isPopular": false
-  },
-  {
-    "id": "ui_ux_design",
-    "cat": "digital",
-    "title": "UI/UX Design",
-    "path": "Digital/branding_design/ui_ux_design.html",
-    "isPopular": false
-  },
-  {
-    "id": "content_writing",
-    "cat": "digital",
-    "title": "Content Writing",
-    "path": "Digital/branding_design/content_writing.html",
-    "isPopular": false
-  },
-  {
-    "id": "pvt_ltd_closure",
-    "cat": "conversion",
-    "title": "Pvt Ltd Closure",
-    "path": "others/business_closuer/pvt_ltd_closuer.html",
-    "isPopular": false
-  },
-  {
-    "id": "llp_closure",
-    "cat": "conversion",
-    "title": "LLP Closure",
-    "path": "others/business_closuer/llp_closuer.html",
-    "isPopular": false
-  },
-  {
-    "id": "opc_closure",
-    "cat": "conversion",
-    "title": "OPC Closure",
-    "path": "others/business_closuer/opc_closuer.html",
-    "isPopular": false
-  },
-  {
-    "id": "sole_proprietorship_closure",
-    "cat": "conversion",
-    "title": "Sole Proprietorship Closure",
-    "path": "others/business_closuer/sole_prop_closuer.html",
-    "isPopular": false
-  },
-  {
-    "id": "partnership_firm_closure",
-    "cat": "conversion",
-    "title": "Partnership Firm Closure",
-    "path": "others/business_closuer/partnership_closuer.html",
-    "isPopular": false
-  },
-  {
-    "id": "dissolution_of_trust",
-    "cat": "conversion",
-    "title": "Dissolution of Trust",
-    "path": "others/business_closuer/dissolution_trust.html",
-    "isPopular": false
-  },
-  {
-    "id": "dissolution_of_society",
-    "cat": "conversion",
-    "title": "Dissolution of Society",
-    "path": "others/business_closuer/dissolution_society.html",
-    "isPopular": false
-  },
-  {
-    "id": "pvt_to_public_ltd_company",
-    "cat": "conversion",
-    "title": "Pvt to Public Ltd Company",
-    "path": "others/business_conversion/pvt_to_public.html",
-    "isPopular": false
-  },
-  {
-    "id": "llp_to_pvt_ltd_company",
-    "cat": "conversion",
-    "title": "LLP to Pvt Ltd Company",
-    "path": "others/business_conversion/llp_to_pvt.html",
-    "isPopular": false
-  },
-  {
-    "id": "opc_to_pvt_ltd_company",
-    "cat": "conversion",
-    "title": "OPC to Pvt Ltd Company",
-    "path": "others/business_conversion/opc_to_pvt.html",
-    "isPopular": false
-  },
-  {
-    "id": "proprietorship_to_pvt_ltd_company",
-    "cat": "conversion",
-    "title": "Proprietorship to Pvt Ltd Company",
-    "path": "others/business_conversion/solo_prop_to_pvt.html",
-    "isPopular": false
-  },
-  {
-    "id": "partnership_to_pvt_ltd_company",
-    "cat": "conversion",
-    "title": "Partnership to Pvt Ltd Company",
-    "path": "others/business_conversion/partnership_to_pvt.html",
-    "isPopular": false
-  },
-  {
-    "id": "pvt_ltd_to_opc_company",
-    "cat": "conversion",
-    "title": "Pvt Ltd to OPC Company",
-    "path": "others/business_conversion/pvt_to_opc.html",
-    "isPopular": false
-  },
-  {
-    "id": "partnership_to_llp_company",
-    "cat": "conversion",
-    "title": "Partnership to LLP Company",
-    "path": "others/business_conversion/partnership_to_llp.html",
-    "isPopular": false
-  },
-  {
-    "id": "public_to_pvt_ltd_company",
-    "cat": "conversion",
-    "title": "Public to Pvt Ltd Company",
-    "path": "others/business_conversion/public_to_pvt.html",
-    "isPopular": false
-  }
-];
+  const ALL_SERVICES_CATALOG = window.ALL_SERVICES_CATALOG || [];
+
+  const BUSINESS_SERVICE_CATEGORIES = [
+    {
+      key: 'incorporation',
+      title: 'Incorporation',
+      icon: '🏛️',
+      desc: 'Company Registration, NGO Registration, Partnership Firm & Startup India.',
+      chips: ['Private Limited', 'LLP', 'One Person Company', 'Section 8 Company', 'Trust', 'Startup India']
+    },
+    {
+      key: 'tax',
+      title: 'Income Tax & Compliance',
+      icon: '📊',
+      desc: 'Income Tax (ITR 1-7), GST Returns, Corporate ROC Filings & Financial Audits.',
+      chips: ['Income Tax E-Filing', 'GST Registration', 'ROC Annual Filing', 'Bookkeeping & Audit', 'TDS Return']
+    },
+    {
+      key: 'ip',
+      title: 'Trademark & IP',
+      icon: '🛡️',
+      desc: 'Brand Protection, Trademark Hearing, Copyright & Patent Registrations.',
+      chips: ['Trademark Registration', 'Hearing & Objection', 'Copyright', 'Patent', 'TM Notice']
+    },
+    {
+      key: 'licenses',
+      title: 'Licenses',
+      icon: '📜',
+      desc: 'Business, Food & Health, Import-Export, Workforce & Labour, Environmental Approvals.',
+      chips: ['MSME / Udyam', 'FSSAI License', 'IEC (Import Export)', 'ISO Certificate', 'Trade License']
+    },
+    {
+      key: 'digital',
+      title: 'Digital',
+      icon: '💻',
+      desc: 'Custom Web Applications, High-Converting Websites, SEO & Brand Identity.',
+      chips: ['Web Application', 'Dynamic Website', 'E-Commerce', 'SEO & PPC Ads', 'Logo Design']
+    },
+    {
+      key: 'conversion',
+      title: 'Business Closure & Conversion',
+      icon: '🔄',
+      desc: 'Company Strike-Off, Fast-Track LLP Closure & Entity Type Conversions.',
+      chips: ['Pvt Ltd Closure', 'LLP Strike-Off', 'Proprietorship to Pvt Ltd', 'LLP to Pvt Ltd']
+    }
+  ];
 
   function getCategoryLabel(cat) {
-    const map = {
-      incorporation: 'Incorporation',
-      tax: 'Tax & Compliance',
-      ip: 'Trademark & IP',
-      licenses: 'Licenses & Municipal',
-      digital: 'Digital & Web',
-      conversion: 'Conversions & Closures',
-      other: 'Business Services'
-    };
-    return map[cat] || (cat ? cat.toUpperCase() : 'Service');
+    if (window.getServiceCategoryLabel) return window.getServiceCategoryLabel(cat);
+    const found = BUSINESS_SERVICE_CATEGORIES.find((c) => c.key === cat);
+    return found ? found.title : (cat ? cat.toUpperCase() : 'Business Services');
   }
 
   function openBuyRequestModal(itemName, itemType, itemPrice) {
@@ -2540,24 +2023,19 @@
 
     if (summaryCard) summaryCard.style.display = 'block';
 
+    const banner = document.getElementById('reqCategoryBanner');
+    if (banner) banner.style.display = 'none';
+
     if (selectGroup) {
       if (itemType === 'Combo Plan' || itemType === 'Funding Scheme') {
         selectGroup.style.display = 'none';
       } else {
         selectGroup.style.display = 'block';
-        const select = document.getElementById('reqServiceSelect');
-        if (select) {
-          let found = false;
-          for (let opt of select.options) {
-            if (opt.value.toLowerCase().includes(itemName.toLowerCase())) {
-              select.value = opt.value;
-              found = true;
-              break;
-            }
-          }
-          if (!found) {
-            select.value = 'Other Custom Service';
-          }
+        const filterRow = document.getElementById('reqCategoryFilterRow');
+        if (filterRow) filterRow.style.display = 'none';
+        const serviceSelect = document.getElementById('reqServiceSelect');
+        if (serviceSelect) {
+          serviceSelect.innerHTML = `<option value="${escapeHtml(itemName)}" selected>${escapeHtml(itemName)}</option>`;
         }
       }
     }
@@ -2577,56 +2055,194 @@
     openModal('modalRequestService');
   }
 
-  function renderServicesDirectory(filter = 'all', query = '') {
-    const listContainer = document.getElementById('servicesDirectoryList');
-    const countDisplay = document.getElementById('servicesCountDisplay');
-    if (!listContainer) return;
+  function openCategoryServiceForm(categoryKey) {
+    const cat = BUSINESS_SERVICE_CATEGORIES.find((c) => c.key === categoryKey) || {
+      key: categoryKey,
+      title: getCategoryLabel(categoryKey),
+      icon: '📂',
+      desc: 'Official business services'
+    };
 
-    const filtered = ALL_SERVICES_CATALOG.filter((s) => {
-      const matchCat = filter === 'all' || s.cat === filter;
-      const matchQuery = !query || s.title.toLowerCase().includes(query.toLowerCase());
-      return matchCat && matchQuery;
-    });
+    const catalog = window.ALL_SERVICES_CATALOG || [];
+    const categoryServices = catalog.filter((s) => s.cat === categoryKey);
 
-    if (countDisplay) {
-      if (filter === 'all' && !query) {
-        countDisplay.textContent = `Showing all ${ALL_SERVICES_CATALOG.length} services`;
-      } else {
-        countDisplay.textContent = `Showing ${filtered.length} of ${ALL_SERVICES_CATALOG.length} services`;
-      }
+    // 1. Reset and hide buy summary card
+    const summaryCard = document.getElementById('reqBuySummaryCard');
+    if (summaryCard) summaryCard.style.display = 'none';
+
+    // 2. Set modal header to indicate this category
+    const modalHeaderTitle = document.querySelector('#modalRequestService .cp-modal-header h3');
+    const modalHeaderSub = document.querySelector('#modalRequestService .cp-modal-header p');
+    if (modalHeaderTitle) modalHeaderTitle.textContent = `Request Service: ${cat.title}`;
+    if (modalHeaderSub) modalHeaderSub.textContent = `Select a service from ${cat.title} to submit your inquiry or application`;
+
+    // 3. Show category banner in form
+    const banner = document.getElementById('reqCategoryBanner');
+    const bannerIcon = document.getElementById('reqCategoryBannerIcon');
+    const bannerTitle = document.getElementById('reqCategoryBannerTitle');
+    const bannerSub = document.getElementById('reqCategoryBannerSub');
+    if (banner) banner.style.display = 'flex';
+    if (bannerIcon) bannerIcon.textContent = cat.icon;
+    if (bannerTitle) bannerTitle.textContent = `Category: ${cat.title}`;
+    if (bannerSub) bannerSub.textContent = `${categoryServices.length} associated services available in this category`;
+
+    // 4. Hide category filter row (since category is already selected from the card)
+    const filterRow = document.getElementById('reqCategoryFilterRow');
+    if (filterRow) filterRow.style.display = 'none';
+
+    // 5. Ensure service select group is visible
+    const selectGroup = document.getElementById('reqServiceSelectGroup');
+    if (selectGroup) selectGroup.style.display = 'block';
+
+    // 6. Populate dropdown with ONLY the associated services for this category!
+    const serviceSelect = document.getElementById('reqServiceSelect');
+    if (serviceSelect) {
+      serviceSelect.innerHTML = `
+        <option value="">-- Choose a ${escapeHtml(cat.title)} Service (${categoryServices.length} available) --</option>
+        ${categoryServices.map((s) => `<option value="${escapeHtml(s.title)}">${escapeHtml(s.title)}</option>`).join('')}
+      `;
+      serviceSelect.value = '';
     }
 
-    if (filtered.length === 0) {
-      listContainer.innerHTML = '<div style="text-align:center; padding:36px; color:var(--cp-text-muted); background:var(--cp-card-bg); border:1px solid var(--cp-border); border-radius:12px;">No services matching your search keyword. Please try another term or browse categories above.</div>';
-      return;
+    const matchCount = document.getElementById('reqServiceMatchCount');
+    if (matchCount) matchCount.textContent = `${categoryServices.length} services`;
+
+    // 7. Hidden metadata
+    const hiddenType = document.getElementById('reqHiddenItemType');
+    const hiddenName = document.getElementById('reqHiddenItemName');
+    const hiddenPrice = document.getElementById('reqHiddenItemPrice');
+    const subjectEl = document.getElementById('reqEmailSubject');
+    if (hiddenType) hiddenType.value = 'Category Service';
+    if (hiddenName) hiddenName.value = cat.title;
+    if (hiddenPrice) hiddenPrice.value = 'Quote On Request';
+    if (subjectEl) subjectEl.value = `New Service Inquiry: ${cat.title} from Client Portal`;
+
+    // 8. Auto pre-fill client credentials
+    if (currentUser) {
+      const comp = document.getElementById('reqCompanyName');
+      const dir = document.getElementById('reqContactName');
+      const em = document.getElementById('reqEmail');
+      const ph = document.getElementById('reqPhone');
+      if (comp) comp.value = currentUser.companyName || '';
+      if (dir) dir.value = currentUser.name || '';
+      if (em) em.value = currentUser.email || '';
+      if (ph) ph.value = currentUser.phone || '';
     }
 
-    listContainer.innerHTML = filtered.map((s) => `
-      <div class="cp-service-row">
-        <div class="cp-service-row-info">
-          <div class="cp-service-row-header">
-            <h4 class="cp-service-row-title">${escapeHtml(s.title)}</h4>
-            <span class="cp-service-row-tag">${escapeHtml(getCategoryLabel(s.cat))}</span>
+    const notesEl = document.getElementById('reqNotes');
+    if (notesEl) notesEl.value = '';
+
+    openModal('modalRequestService');
+  }
+
+  function openGenericServiceRequestModal() {
+    const summaryCard = document.getElementById('reqBuySummaryCard');
+    if (summaryCard) summaryCard.style.display = 'none';
+
+    const modalHeaderTitle = document.querySelector('#modalRequestService .cp-modal-header h3');
+    const modalHeaderSub = document.querySelector('#modalRequestService .cp-modal-header p');
+    if (modalHeaderTitle) modalHeaderTitle.textContent = 'Request a New Service';
+    if (modalHeaderSub) modalHeaderSub.textContent = 'Corporate Mart operations team will review and assign this to your portal';
+
+    const banner = document.getElementById('reqCategoryBanner');
+    if (banner) banner.style.display = 'none';
+
+    const filterRow = document.getElementById('reqCategoryFilterRow');
+    if (filterRow) filterRow.style.display = 'grid';
+
+    const selectGroup = document.getElementById('reqServiceSelectGroup');
+    if (selectGroup) selectGroup.style.display = 'block';
+
+    const hiddenType = document.getElementById('reqHiddenItemType');
+    const hiddenName = document.getElementById('reqHiddenItemName');
+    const hiddenPrice = document.getElementById('reqHiddenItemPrice');
+    const subjectEl = document.getElementById('reqEmailSubject');
+    if (hiddenType) hiddenType.value = 'Service Request';
+    if (hiddenName) hiddenName.value = '';
+    if (hiddenPrice) hiddenPrice.value = '';
+    if (subjectEl) subjectEl.value = 'New Service Request from Client Portal';
+
+    if (currentUser) {
+      const comp = document.getElementById('reqCompanyName');
+      const dir = document.getElementById('reqContactName');
+      const em = document.getElementById('reqEmail');
+      const ph = document.getElementById('reqPhone');
+      if (comp) comp.value = currentUser.companyName || '';
+      if (dir) dir.value = currentUser.name || '';
+      if (em) em.value = currentUser.email || '';
+      if (ph) ph.value = currentUser.phone || '';
+    }
+
+    if (clientServicePicker) {
+      clientServicePicker.reset();
+    }
+
+    openModal('modalRequestService');
+  }
+
+  function renderServiceCategories() {
+    const containers = [
+      document.getElementById('serviceCategoryCardsContainer'),
+      document.getElementById('dashCategoryCardsContainer')
+    ].filter(Boolean);
+
+    if (containers.length === 0) return;
+
+    const catalog = window.ALL_SERVICES_CATALOG || [];
+
+    const cardsHtml = BUSINESS_SERVICE_CATEGORIES.map((cat) => {
+      const services = catalog.filter((s) => s.cat === cat.key);
+      const countText = `${services.length} Services`;
+
+      return `
+        <div class="cp-category-card" data-category="${escapeHtml(cat.key)}" tabindex="0" role="button" aria-label="Explore ${escapeHtml(cat.title)} services">
+          <div>
+            <div class="cp-cat-card-header">
+              <div class="cp-cat-icon-wrap">${cat.icon}</div>
+              <span class="cp-cat-count-badge">${countText}</span>
+            </div>
+            <h4 class="cp-cat-card-title">${escapeHtml(cat.title)}</h4>
+            <p class="cp-cat-card-desc">${escapeHtml(cat.desc)}</p>
+            <div class="cp-cat-chips-list">
+              ${cat.chips.map((chip) => `<span class="cp-cat-mini-chip">${escapeHtml(chip)}</span>`).join('')}
+            </div>
+          </div>
+          <div class="cp-cat-card-action">
+            <span>Select Service &amp; Inquire</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
           </div>
         </div>
-        <div class="cp-service-row-actions">
-          <a href="${escapeHtml(s.path)}" target="_blank" rel="noopener" class="cp-btn-service-link" title="Open detailed ${escapeHtml(s.title)} page in a new tab">
-            <span>View Details</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-          </a>
-          <button type="button" class="cp-btn-service-inquire btn-buy-trigger" data-item-name="${escapeHtml(s.title)}" data-item-type="Business Service" data-item-price="Quote On Request">
-            <span>Request / Inquiry &rarr;</span>
-          </button>
-        </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
+
+    containers.forEach((container) => {
+      container.innerHTML = cardsHtml;
+
+      // Wire card click listeners
+      container.querySelectorAll('.cp-category-card').forEach((card) => {
+        const openHandler = () => {
+          const catKey = card.dataset.category;
+          openCategoryServiceForm(catKey);
+        };
+        card.addEventListener('click', openHandler);
+        card.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openHandler();
+          }
+        });
+      });
+    });
   }
 
   function renderFundingSchemes() {
     // Government funding pane displays the streamlined cp-funding-notice redirecting to fundraising.html
   }
-  
-function initBuySection() {
+
+  function initBuySection() {
     // 1. Top tabs
     const tabBtns = document.querySelectorAll('.cp-buy-tab-btn');
     tabBtns.forEach((btn) => {
@@ -2663,33 +2279,11 @@ function initBuySection() {
       });
     });
 
-    // 3. Render initial directories
-    renderServicesDirectory('all', '');
+    // 3. Render initial category cards and funding
+    renderServiceCategories();
     renderFundingSchemes();
 
-    // 4. Service category filter chips
-    let activeFilter = 'all';
-    const chips = document.querySelectorAll('#serviceCategoryChips .cp-chip');
-    chips.forEach((chip) => {
-      chip.addEventListener('click', () => {
-        chips.forEach((c) => c.classList.remove('active'));
-        chip.classList.add('active');
-        activeFilter = chip.dataset.filter || 'all';
-        const q = document.getElementById('serviceSearchInput')?.value.trim() || '';
-        renderServicesDirectory(activeFilter, q);
-      });
-    });
-
-    // 5. Search input
-    const searchInput = document.getElementById('serviceSearchInput');
-    if (searchInput) {
-      searchInput.addEventListener('input', (e) => {
-        const q = e.target.value.trim();
-        renderServicesDirectory(activeFilter, q);
-      });
-    }
-
-    // 6. Global Event Delegation for all Buy / Request buttons
+    // 4. Global Event Delegation for all Buy / Request buttons
     document.addEventListener('click', (e) => {
       const trigger = e.target.closest('.btn-buy-trigger');
       if (trigger) {
@@ -2701,18 +2295,16 @@ function initBuySection() {
       }
     });
 
-    // Top Header request button
-    const btnTopRequest = document.getElementById('btnTopRequestService');
-    if (btnTopRequest) {
-      btnTopRequest.addEventListener('click', () => {
-        const summaryCard = document.getElementById('reqBuySummaryCard');
-        if (summaryCard) summaryCard.style.display = 'none';
-        const selectGroup = document.getElementById('reqServiceSelectGroup');
-        if (selectGroup) selectGroup.style.display = 'block';
-        openModal('modalRequestService');
-      });
-    }
   }
+
+  // Initialize cascading & searchable service picker
+  const clientServicePicker = window.initServicePicker ? window.initServicePicker({
+    categorySelectId: 'reqCategoryFilter',
+    searchInputId: 'reqServiceSearch',
+    serviceSelectId: 'reqServiceSelect',
+    countBadgeId: 'reqServiceMatchCount',
+    defaultCategory: 'incorporation'
+  }) : null;
 
   // ==========================================
   // 9. REQUEST A SERVICE / BUY FORM (WEB3FORMS)
@@ -2739,6 +2331,7 @@ function initBuySection() {
           showToast(`Success! Your request for "${itemName}" has been sent to Corporate Mart operations.`, 'success');
           closeModal();
           formRequestService.reset();
+          if (clientServicePicker) clientServicePicker.reset();
           renderProfile(); // re-populate pre-filled fields
         } else {
           throw new Error(result.message || 'Submission failed');

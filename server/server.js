@@ -881,7 +881,7 @@ app.get('/api/portal/ops/clients', requireStaff, async (req, res) => {
 });
 
 // Onboard New Client (Operations Only)
-app.post('/api/portal/ops/clients', requireStaff, async (req, res) => {
+app.post('/api/portal/ops/clients', requireStaff, upload.any(), async (req, res) => {
   try {
     const { name, companyName, email, phone, password, initialService } = req.body || {};
     if (!name || !companyName || !email) {
@@ -909,11 +909,50 @@ app.post('/api/portal/ops/clients', requireStaff, async (req, res) => {
       });
     }
 
+    // Process uploaded Company Documents during onboarding
+    const uploadedDocs = [];
+    const files = req.files || [];
+    let metadataList = [];
+    if (req.body.companyDocsMeta) {
+      try {
+        metadataList = typeof req.body.companyDocsMeta === 'string' ? JSON.parse(req.body.companyDocsMeta) : req.body.companyDocsMeta;
+      } catch (e) {
+        metadataList = [];
+      }
+    }
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const meta = metadataList[i] || {};
+      const title = meta.title || file.originalname;
+      const fileUrl = '/uploads/documents/' + file.filename;
+      const sizeInKb = (file.size / 1024).toFixed(1);
+      const fileSize = file.size > 1024 * 1024 ? (file.size / (1024 * 1024)).toFixed(1) + ' MB' : sizeInKb + ' KB';
+
+      const doc = await db.createPortalDocument({
+        clientId: client.id,
+        companyName: client.companyName,
+        caseId: '', // Company documents are client/company level only, never associated to an individual case
+        title: title || file.originalname,
+        fileName: file.originalname,
+        fileUrl,
+        fileSize,
+        fileType: file.mimetype,
+        category: 'company_document',
+        docType: 'company',
+        uploadedBy: 'operations',
+        status: 'approved',
+        autoApprove: false
+      });
+      uploadedDocs.push(doc);
+    }
+
     return res.status(201).json({
       success: true,
-      message: 'Client onboarded successfully',
+      message: 'Client onboarded successfully' + (uploadedDocs.length > 0 ? ` with ${uploadedDocs.length} company document(s)` : ''),
       client,
-      initialCase: createdCase
+      initialCase: createdCase,
+      companyDocuments: uploadedDocs
     });
   } catch (err) {
     console.error('Error onboarding client:', err);
@@ -1028,6 +1067,22 @@ app.patch('/api/portal/ops/cases/:id/status', requireStaff, async (req, res) => 
   }
 });
 
+// Delete Service Case (Operations Only)
+app.delete('/api/portal/ops/cases/:id', requireStaff, async (req, res) => {
+  try {
+    const caseId = req.params.id;
+    const result = await db.deletePortalCase(caseId);
+    return res.json({
+      success: true,
+      message: 'Service case deleted successfully',
+      caseId: result.caseId
+    });
+  } catch (err) {
+    console.error('Error deleting service case:', err);
+    return res.status(500).json({ error: err.message || 'Failed to delete service case' });
+  }
+});
+
 // Get Documents
 app.get('/api/portal/ops/documents', requireStaff, async (req, res) => {
   try {
@@ -1040,61 +1095,106 @@ app.get('/api/portal/ops/documents', requireStaff, async (req, res) => {
 });
 
 // Upload Document for Client/Case (Auto-Approves Service)
-app.post('/api/portal/ops/documents/upload', requireStaff, upload.single('file'), async (req, res) => {
+app.post('/api/portal/ops/documents/upload', requireStaff, upload.any(), async (req, res) => {
   try {
-    if (!req.file) {
+    // Filter uploaded files: prioritize multi-file 'files' field to prevent duplicate processing
+    let files = [];
+    if (req.files && req.files.length > 0) {
+      const filesGroup = req.files.filter(f => f.fieldname === 'files');
+      if (filesGroup.length > 0) {
+        files = filesGroup;
+      } else {
+        const singleFileGroup = req.files.filter(f => f.fieldname === 'file');
+        files = singleFileGroup.length > 0 ? singleFileGroup : req.files;
+      }
+    } else if (req.file) {
+      files = [req.file];
+    }
+
+    if (files.length === 0) {
       return res.status(400).json({ error: 'No document file uploaded' });
     }
-    const { clientId, companyName, caseId, title, category, autoApprove } = req.body || {};
-    const fileUrl = '/uploads/documents/' + req.file.filename;
-    const sizeInKb = (req.file.size / 1024).toFixed(1);
-    const fileSize = req.file.size > 1024 * 1024 ? (req.file.size / (1024 * 1024)).toFixed(1) + ' MB' : sizeInKb + ' KB';
+    const { clientId, companyName, caseId, autoApprove } = req.body || {};
     const shouldAutoApprove = autoApprove !== 'false';
 
-    const document = await db.createPortalDocument({
-      clientId: clientId || '',
-      companyName: companyName || '',
-      caseId: caseId || '',
-      title: title || req.file.originalname,
-      fileName: req.file.originalname,
-      fileUrl,
-      fileSize,
-      fileType: req.file.mimetype,
-      category: category || 'certificate',
-      uploadedBy: 'operations',
-      status: 'approved',
-      autoApprove: shouldAutoApprove
-    });
+    let metadataList = [];
+    if (req.body.metadata) {
+      try {
+        metadataList = typeof req.body.metadata === 'string' ? JSON.parse(req.body.metadata) : req.body.metadata;
+      } catch (e) {
+        metadataList = [];
+      }
+    }
+
+    const createdDocuments = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const meta = metadataList[i] || {};
+      const docType = meta.docType || req.body.docType || 'issued';
+      const defaultCategory = docType === 'company' ? 'company_document' : 'certificate';
+      const category = meta.category || req.body.category || defaultCategory;
+      const fileUrl = '/uploads/documents/' + file.filename;
+      const sizeInKb = (file.size / 1024).toFixed(1);
+      const fileSize = file.size > 1024 * 1024 ? (file.size / (1024 * 1024)).toFixed(1) + ' MB' : sizeInKb + ' KB';
+
+      const isCompanyDoc = docType === 'company' || category === 'company_document' || category === 'client_kyc';
+      const effectiveCaseId = isCompanyDoc ? '' : (caseId || '');
+      const effectiveAutoApprove = isCompanyDoc ? false : shouldAutoApprove;
+
+      const document = await db.createPortalDocument({
+        clientId: clientId || '',
+        companyName: companyName || '',
+        caseId: effectiveCaseId,
+        title: title || file.originalname,
+        fileName: file.originalname,
+        fileUrl,
+        fileSize,
+        fileType: file.mimetype,
+        category,
+        docType,
+        uploadedBy: 'operations',
+        status: 'approved',
+        autoApprove: effectiveAutoApprove
+      });
+
+      createdDocuments.push(document);
+    }
 
     let updatedCase = null;
-    if (caseId && shouldAutoApprove) {
+    const hasIssuedDocs = createdDocuments.some(d => d.docType !== 'company' && d.category !== 'company_document' && d.category !== 'client_kyc');
+    if (caseId && shouldAutoApprove && hasIssuedDocs) {
       try {
-        updatedCase = await db.updatePortalCaseStatus(
-          caseId,
-          'approved',
-          `Approved: ${title || req.file.originalname} has been uploaded and is ready for download.`
-        );
+        const titlesSummary = createdDocuments.filter(d => d.docType !== 'company').map(d => d.title).join(', ');
+        if (titlesSummary) {
+          updatedCase = await db.updatePortalCaseStatus(
+            caseId,
+            'approved',
+            `Approved: ${titlesSummary} uploaded and ready for download.`
+          );
+        }
       } catch (err) {
         console.warn('Auto-approval status update error:', err.message);
       }
     }
 
     // Trigger in-phone push alert and email notification for client
-    if (clientId) {
+    if (clientId && createdDocuments.length > 0) {
       (async () => {
         try {
           const clientUser = await db.findUserById(clientId);
           if (clientUser) {
-            await notifications.notifyClient({
-              client: clientUser,
-              eventType: 'document_uploaded',
-              data: {
-                title: document.title,
-                fileName: document.fileName,
-                caseId: document.caseId,
-                fileUrl: document.fileUrl
-              }
-            });
+            for (const doc of createdDocuments) {
+              await notifications.notifyClient({
+                client: clientUser,
+                eventType: 'document_uploaded',
+                data: {
+                  title: doc.title,
+                  fileName: doc.fileName,
+                  caseId: doc.caseId,
+                  fileUrl: doc.fileUrl
+                }
+              });
+            }
           }
         } catch (nErr) {
           console.warn('Document upload notification error:', nErr.message);
@@ -1104,8 +1204,9 @@ app.post('/api/portal/ops/documents/upload', requireStaff, upload.single('file')
 
     return res.status(201).json({
       success: true,
-      message: 'Document uploaded successfully' + (caseId && shouldAutoApprove ? ' and service marked Approved!' : ''),
-      document,
+      message: `${createdDocuments.length} document${createdDocuments.length > 1 ? 's' : ''} uploaded successfully` + (caseId && shouldAutoApprove ? ' and service marked Approved!' : ''),
+      documents: createdDocuments,
+      document: createdDocuments[0],
       case: updatedCase
     });
   } catch (err) {

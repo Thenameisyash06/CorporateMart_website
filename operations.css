@@ -848,6 +848,10 @@ body.dark-mode .theme-icon-dark { display: none; }
   visibility: visible;
 }
 
+#modalUploadDoc.is-open {
+  z-index: 1050;
+}
+
 .ops-modal-backdrop {
   position: absolute;
   inset: 0;
@@ -1549,6 +1553,20 @@ body.dark-mode .theme-icon-dark { display: none; }
 
   .ops-content {
     padding-bottom: 88px !important;
+  }
+}
+
+/* Service Filter Control Bar */
+.service-filter-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+@media (max-width: 520px) {
+  .service-filter-row {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
   }
 }
 

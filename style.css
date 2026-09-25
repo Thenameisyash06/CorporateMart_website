@@ -6571,68 +6571,120 @@ body.dark-mode .lead-field select {
   color: var(--text, #edf4ff);
 }
 
-/* ========== FUNDING SCHEME POSTER MODAL ========== */
-.funding-poster-modal {
+/* ========== DUAL ON-LOAD POPUP MODAL (SIDE BY SIDE + SINGLE CLOSE) ========== */
+.dual-popup-modal {
   position: fixed;
   inset: 0;
-  z-index: 10060;
+  z-index: 10050;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.28s ease, visibility 0.28s ease;
 }
 
-.funding-poster-modal.is-open {
+.dual-popup-modal.is-open {
   opacity: 1;
   visibility: visible;
 }
 
-.funding-poster-dialog {
+.dual-popup-wrapper {
   position: relative;
   z-index: 2;
-  width: min(540px, 100%);
-  max-height: min(92vh, 680px);
-  overflow-y: auto;
-  padding: 34px 30px 28px;
-  background: linear-gradient(145deg, #091a36 0%, #0f274e 45%, #193f77 100%);
-  border: 1px solid rgba(147, 197, 253, 0.28);
-  border-radius: 24px;
-  box-shadow: 0 25px 65px rgba(2, 6, 23, 0.65), 0 0 35px rgba(37, 99, 235, 0.25);
-  color: #ffffff;
-  transform: translateY(16px) scale(0.97);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-sizing: border-box;
+  max-width: 900px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateY(16px) scale(0.98);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.funding-poster-modal.is-open .funding-poster-dialog {
+.dual-popup-modal.is-open .dual-popup-wrapper {
   transform: translateY(0) scale(1);
 }
 
-.funding-poster-close {
+/* Single Unified Close Button for Both Popups */
+.dual-popup-close {
   position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #cbd5e1;
-  font-size: 22px;
+  top: -16px;
+  right: -16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #0b1329;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+  font-size: 24px;
   line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  z-index: 20;
+  transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
 }
 
-.funding-poster-close:hover {
-  background: rgba(255, 255, 255, 0.22);
+.dual-popup-close:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  transform: scale(1.08) rotate(90deg);
+}
+
+.dual-popup-grid {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+  max-height: min(92vh, 670px);
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+/* Identical Dimensions for Both Cards */
+.dual-popup-grid .funding-poster-dialog.portrait-poster,
+.dual-popup-grid .lead-modal-dialog {
+  flex: 1 1 420px;
+  max-width: 430px;
+  width: 100%;
+  margin: 0;
+  border-radius: 20px;
+  box-sizing: border-box;
+  transform: none !important;
+  transition: none;
+}
+
+/* ========== FUNDING SCHEME PORTRAIT POSTER ========== */
+.funding-poster-dialog.portrait-poster {
+  position: relative;
+  overflow-y: auto;
+  padding: 26px 24px 22px;
+  background: linear-gradient(155deg, #091a36 0%, #0f274e 45%, #193f77 100%);
+  border: 1px solid rgba(147, 197, 253, 0.32);
+  border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(2, 6, 23, 0.55), 0 0 30px rgba(37, 99, 235, 0.2);
   color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.dual-popup-grid .lead-modal-dialog {
+  padding: 26px 24px 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Hide internal separate close buttons */
+.dual-popup-grid .lead-modal-close,
+.dual-popup-grid .funding-poster-close {
+  display: none !important;
 }
 
 .funding-poster-badge {
@@ -6648,7 +6700,7 @@ body.dark-mode .lead-field select {
   text-transform: uppercase;
   padding: 4px 12px;
   border-radius: 999px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .funding-badge-dot {
@@ -6661,52 +6713,59 @@ body.dark-mode .lead-field select {
 }
 
 .funding-poster-title {
-  margin: 0 0 10px;
-  font-size: 23px;
+  margin: 0 0 8px;
+  font-size: 20.5px;
   font-weight: 800;
-  line-height: 1.32;
+  line-height: 1.34;
   color: #ffffff;
   letter-spacing: -0.01em;
 }
 
 .funding-poster-desc {
-  margin: 0 0 22px;
-  font-size: 14px;
+  margin: 0 0 16px;
+  font-size: 13.5px;
   color: #cbd5e1;
-  line-height: 1.55;
+  line-height: 1.5;
 }
 
-.funding-poster-highlights {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 24px;
+/* Portrait Highlights: 3 Sleek Stacked Rows */
+.portrait-poster .funding-poster-highlights {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-bottom: 18px;
 }
 
-.funding-highlight-card {
-  background: rgba(255, 255, 255, 0.07);
+.portrait-poster .funding-highlight-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 14px;
-  padding: 12px 10px;
-  text-align: center;
+  border-radius: 12px;
+  text-align: left;
   backdrop-filter: blur(10px);
 }
 
-.fhc-value {
+.portrait-poster .fhc-value {
   display: block;
   font-size: 16px;
   font-weight: 800;
   color: #38bdf8;
-  margin-bottom: 3px;
-  letter-spacing: -0.01em;
+  margin-bottom: 0;
+  white-space: nowrap;
+  min-width: 90px;
 }
 
-.fhc-label {
+.portrait-poster .fhc-label {
   display: block;
-  font-size: 11px;
-  color: #94a3b8;
+  font-size: 11.5px;
+  color: #cbd5e1;
   line-height: 1.35;
   font-weight: 500;
+  text-align: right;
 }
 
 .funding-poster-cta {
@@ -6715,13 +6774,13 @@ body.dark-mode .lead-field select {
   justify-content: center;
   gap: 10px;
   width: 100%;
-  padding: 15px 24px;
+  padding: 13px 20px;
   background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
   color: #0b1727 !important;
-  font: 800 15.5px/1 "DM Sans", Arial, sans-serif;
+  font: 800 15px/1 "DM Sans", Arial, sans-serif;
   text-decoration: none;
-  border-radius: 14px;
-  box-shadow: 0 10px 28px rgba(245, 158, 11, 0.4);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.38);
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
   box-sizing: border-box;
@@ -6729,7 +6788,7 @@ body.dark-mode .lead-field select {
 
 .funding-poster-cta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 14px 34px rgba(245, 158, 11, 0.55);
+  box-shadow: 0 12px 28px rgba(245, 158, 11, 0.5);
   filter: brightness(1.05);
 }
 
@@ -6739,8 +6798,8 @@ body.dark-mode .lead-field select {
 
 .funding-poster-secondary {
   text-align: center;
-  margin-top: 14px;
-  font-size: 12.5px;
+  margin-top: 12px;
+  font-size: 12px;
   color: #94a3b8;
 }
 
@@ -6750,7 +6809,7 @@ body.dark-mode .lead-field select {
   color: #93c5fd;
   text-decoration: underline;
   font-weight: 650;
-  font-size: 12.5px;
+  font-size: 12px;
   cursor: pointer;
   padding: 0;
   transition: color 0.15s ease;
@@ -6758,6 +6817,41 @@ body.dark-mode .lead-field select {
 
 .funding-poster-switch-btn:hover {
   color: #ffffff;
+}
+
+/* Mode: Lead Only (e.g. Chat Trigger, Quotation, Floating Lead Button) */
+.lead-modal.lead-only .dual-popup-wrapper {
+  max-width: 440px;
+}
+
+.lead-modal.lead-only .portrait-poster {
+  display: none !important;
+}
+
+/* Mobile & Tablet Responsiveness */
+@media (max-width: 880px) {
+  .dual-popup-wrapper {
+    max-width: 440px;
+  }
+  .dual-popup-close {
+    top: -12px;
+    right: 0px;
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+  }
+  .dual-popup-grid {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    max-height: 85vh;
+    padding-bottom: 10px;
+  }
+  .dual-popup-grid .funding-poster-dialog.portrait-poster,
+  .dual-popup-grid .lead-modal-dialog {
+    max-width: 100%;
+    flex: none;
+  }
 }
 
 /* ========== CIRCULAR FLOATING LEAD BUTTON ========== */

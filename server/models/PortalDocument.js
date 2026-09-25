@@ -48,8 +48,14 @@ const portalDocumentSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ['certificate', 'filing', 'government_letter', 'client_kyc', 'other'],
+    enum: ['certificate', 'filing', 'government_letter', 'client_kyc', 'company_document', 'presentation', 'report', 'other'],
     default: 'certificate'
+  },
+  docType: {
+    type: String,
+    enum: ['company', 'issued'],
+    default: 'issued',
+    index: true
   },
   uploadedBy: {
     type: String,

@@ -2014,6 +2014,13 @@ window.addEventListener("resize", () => {
   var eyebrow = modal.querySelector(".lead-eyebrow");
   var desc = modal.querySelector(".lead-modal-header p");
 
+  function openDualPopup() {
+    modal.classList.remove("lead-only");
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+  }
+
   function openLeadModal(isForQuotation) {
     var forQuotation = (isForQuotation === true);
     window.pendingQuotationAfterLead = forQuotation;
@@ -2022,9 +2029,11 @@ window.addEventListener("resize", () => {
     if (forQuotation) {
       if (eyebrow) eyebrow.textContent = "GET QUOTATION";
       if (desc) desc.textContent = "Please share your details to proceed with generating your quotation.";
+      modal.classList.add("lead-only");
     } else {
       if (eyebrow) eyebrow.textContent = "FREE CONSULTATION";
       if (desc) desc.textContent = "Share your details and we will get back during business hours.";
+      modal.classList.add("lead-only");
     }
 
     // Ensure any previous success message is hidden on fresh open
@@ -2046,7 +2055,7 @@ window.addEventListener("resize", () => {
     modal.setAttribute("aria-hidden", "true");
     modal.setAttribute("data-for-quotation", "false");
     window.pendingQuotationAfterLead = false;
-    var otherOpen = document.querySelector(".plan-modal.is-open, .funding-poster-modal.is-open, .quotation-modal.is-open, .custom-plan-modal.is-open");
+    var otherOpen = document.querySelector(".plan-modal.is-open, .quotation-modal.is-open, .custom-plan-modal.is-open");
     if (!otherOpen) {
       document.body.style.overflow = "";
     }
@@ -2062,6 +2071,9 @@ window.addEventListener("resize", () => {
 
   window.openLeadModal = openLeadModal;
   window.closeLeadModal = closeLeadModal;
+  window.openDualPopup = openDualPopup;
+  window.openFundingPosterModal = openDualPopup;
+  window.closeFundingPosterModal = closeLeadModal;
 
   // Wire "Click here" in chat (id="chatBtn")
   function bindTrigger() {
@@ -2080,7 +2092,7 @@ window.addEventListener("resize", () => {
   var observer = new MutationObserver(bindTrigger);
   observer.observe(document.body, { childList: true, subtree: true });
 
-  modal.querySelectorAll("[data-close-lead]").forEach(function (el) {
+  modal.querySelectorAll("[data-close-lead], [data-close-funding-poster]").forEach(function (el) {
     el.addEventListener("click", function () {
       closeLeadModal();
     });
@@ -2088,10 +2100,6 @@ window.addEventListener("resize", () => {
 
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape" && modal.classList.contains("is-open")) {
-      var posterOpen = document.getElementById("fundingPosterModal");
-      if (posterOpen && posterOpen.classList.contains("is-open")) {
-        return; // Let posterModal close first
-      }
       closeLeadModal();
     }
   });
@@ -2156,63 +2164,25 @@ window.addEventListener("resize", () => {
     });
   }
 
-  // Funding Poster Modal Controller
-  var posterModal = document.getElementById("fundingPosterModal");
-  function openFundingPosterModal() {
-    if (!posterModal) return;
-    posterModal.classList.add("is-open");
-    posterModal.setAttribute("aria-hidden", "false");
-    document.body.style.overflow = "hidden";
-  }
-
-  function closeFundingPosterModal() {
-    if (!posterModal) return;
-    posterModal.classList.remove("is-open");
-    posterModal.setAttribute("aria-hidden", "true");
-    var otherOpen = document.querySelector(".lead-modal.is-open:not(#fundingPosterModal), .plan-modal.is-open, .quotation-modal.is-open, .custom-plan-modal.is-open");
-    if (!otherOpen) {
-      document.body.style.overflow = "";
-    } else {
-      var leadNameInput = document.getElementById("leadName");
-      if (leadNameInput && document.getElementById("leadModal") && document.getElementById("leadModal").classList.contains("is-open")) {
-        setTimeout(function () { leadNameInput.focus(); }, 100);
-      }
-    }
-  }
-
-  if (posterModal) {
-    posterModal.querySelectorAll("[data-close-funding-poster]").forEach(function (el) {
-      el.addEventListener("click", closeFundingPosterModal);
-    });
-
-    var switchBtn = document.getElementById("switchToLeadModalBtn");
-    if (switchBtn) {
-      switchBtn.addEventListener("click", function (e) {
-        e.preventDefault();
-        closeFundingPosterModal();
-        openLeadModal(false);
-      });
-    }
-
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && posterModal.classList.contains("is-open")) {
-        closeFundingPosterModal();
+  // Switch to lead form from poster
+  var switchBtn = document.getElementById("switchToLeadModalBtn");
+  if (switchBtn) {
+    switchBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      var nameInput = document.getElementById("leadName");
+      if (nameInput) {
+        nameInput.focus();
+        nameInput.scrollIntoView({ behavior: "smooth", block: "center" });
       }
     });
   }
-
-  window.openFundingPosterModal = openFundingPosterModal;
-  window.closeFundingPosterModal = closeFundingPosterModal;
 
   // 5-Second Automatic Popup Timer on Index Page
   setTimeout(function () {
     var otherModalOpen = document.querySelector(".plan-modal.is-open, .quotation-modal.is-open, .custom-plan-modal.is-open");
     if (!otherModalOpen) {
-      // Both lead modal and funding poster modal appear on index page
-      openLeadModal(false);
-      if (posterModal) {
-        openFundingPosterModal();
-      }
+      // Both lead modal and funding poster modal appear side-by-side on index page
+      openDualPopup();
     }
   }, 5000);
 })();

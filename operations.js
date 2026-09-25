@@ -26,6 +26,33 @@
   const opsPageSubtitle = document.getElementById('opsPageSubtitle');
   const toastContainer = document.getElementById('toastContainer');
 
+  // Initialize Service Pickers (Clean 2-step cascading & instant search)
+  let createCaseServicePicker = null;
+  let addClientServicePicker = null;
+
+  function ensureOpsServicePickers() {
+    if (!createCaseServicePicker && window.initServicePicker) {
+      createCaseServicePicker = window.initServicePicker({
+        categorySelectId: 'caseCategoryFilter',
+        searchInputId: 'caseServiceSearch',
+        serviceSelectId: 'caseServiceName',
+        countBadgeId: 'caseServiceMatchCount',
+        defaultCategory: 'incorporation'
+      });
+    }
+    if (!addClientServicePicker && window.initServicePicker) {
+      addClientServicePicker = window.initServicePicker({
+        categorySelectId: 'newClientCategoryFilter',
+        searchInputId: 'newClientServiceSearch',
+        serviceSelectId: 'newInitialService',
+        countBadgeId: 'newClientServiceMatchCount',
+        allowEmptyOption: true,
+        emptyLabel: '-- None (Just Create Client Account) --',
+        defaultCategory: 'all'
+      });
+    }
+  }
+
   // ==========================================
   // 1. NOTIFICATIONS & TOASTS
   // ==========================================
@@ -568,6 +595,14 @@
     document.body.style.overflow = '';
   }
 
+  function closeAllModals() {
+    document.querySelectorAll('.ops-modal.is-open').forEach((m) => {
+      m.classList.remove('is-open');
+      m.setAttribute('aria-hidden', 'true');
+    });
+    document.body.style.overflow = '';
+  }
+
   document.querySelectorAll('[data-close-modal]').forEach((el) => {
     el.addEventListener('click', () => {
       closeModal(el.closest('.ops-modal'));
@@ -583,13 +618,22 @@
   const qaAddClientBtn = document.getElementById('qaAddClientBtn');
   const openAddClientModalBtn = document.getElementById('openAddClientModalBtn');
   [topOnboardBtn, qaAddClientBtn, openAddClientModalBtn].forEach((btn) => {
-    if (btn) btn.addEventListener('click', () => openModal('modalAddClient'));
+    if (btn) btn.addEventListener('click', () => {
+        ensureOpsServicePickers();
+        if (addClientServicePicker) addClientServicePicker.reset();
+        resetOnboardDocRows();
+        openModal('modalAddClient');
+      });
   });
 
   const qaCreateCaseBtn = document.getElementById('qaCreateCaseBtn');
   const openCreateCaseModalBtn = document.getElementById('openCreateCaseModalBtn');
   [qaCreateCaseBtn, openCreateCaseModalBtn].forEach((btn) => {
-    if (btn) btn.addEventListener('click', () => openModal('modalCreateCase'));
+    if (btn) btn.addEventListener('click', () => {
+        ensureOpsServicePickers();
+        if (createCaseServicePicker) createCaseServicePicker.reset();
+        openModal('modalCreateCase');
+      });
   });
 
   const qaUploadDocBtn = document.getElementById('qaUploadDocBtn');
@@ -862,6 +906,7 @@
   function populateClientSelects() {
     const caseSelect = document.getElementById('caseClientSelect');
     const docSelect = document.getElementById('uploadClientSelect');
+    const compDocSelect = document.getElementById('companyDocsClientSelect');
 
     const optionsHtml = '<option value="">-- Choose Client --</option>' +
       cachedClients
@@ -870,6 +915,11 @@
 
     if (caseSelect) caseSelect.innerHTML = optionsHtml;
     if (docSelect) docSelect.innerHTML = optionsHtml;
+    if (compDocSelect) {
+      const prev = compDocSelect.value;
+      compDocSelect.innerHTML = optionsHtml;
+      if (prev) compDocSelect.value = prev;
+    }
   }
 
   // Filter clients search
@@ -887,6 +937,56 @@
     });
   }
 
+  // --- Client Onboarding Documents Dynamic Manager ---
+  const onboardDocItemsContainer = document.getElementById('onboardDocItemsContainer');
+  const btnAddOnboardDoc = document.getElementById('btnAddOnboardDoc');
+
+  function createOnboardDocRow(index = 0) {
+    const row = document.createElement('div');
+    row.className = 'ops-onboard-doc-row';
+    row.style.cssText = 'display:flex; gap:10px; align-items:center; background:var(--ops-bg-card,#f8fafc); border:1px solid var(--ops-border,#e2e8f0); border-radius:8px; padding:10px;';
+    row.innerHTML = `
+      <div style="flex:1;">
+        <input type="text" class="ops-input onboard-doc-title" placeholder="Document Title (e.g. Director PAN, Aadhaar, MoA, Electricity Bill)" style="font-size:13px; padding:7px 10px;" required>
+      </div>
+      <div style="flex:1;">
+        <input type="file" class="ops-input-file onboard-doc-file" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.zip" style="font-size:12px;" required>
+      </div>
+      <button type="button" class="btn-remove-onboard-doc" style="background:transparent; border:none; color:#ef4444; cursor:pointer; font-weight:700; font-size:16px; padding:4px 8px;" title="Remove this document">✕</button>
+    `;
+
+    const titleInput = row.querySelector('.onboard-doc-title');
+    const fileInput = row.querySelector('.onboard-doc-file');
+    const removeBtn = row.querySelector('.btn-remove-onboard-doc');
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files && fileInput.files[0] && !titleInput.value.trim()) {
+        const rawName = fileInput.files[0].name;
+        const lastDot = rawName.lastIndexOf('.');
+        const baseName = lastDot > 0 ? rawName.substring(0, lastDot) : rawName;
+        titleInput.value = baseName.replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim().replace(/\b\w/g, c => c.toUpperCase());
+      }
+    });
+
+    removeBtn.addEventListener('click', () => {
+      row.remove();
+    });
+
+    return row;
+  }
+
+  function resetOnboardDocRows() {
+    if (onboardDocItemsContainer) onboardDocItemsContainer.innerHTML = '';
+  }
+
+  if (btnAddOnboardDoc) {
+    btnAddOnboardDoc.addEventListener('click', () => {
+      if (!onboardDocItemsContainer) return;
+      const count = onboardDocItemsContainer.querySelectorAll('.ops-onboard-doc-row').length;
+      onboardDocItemsContainer.appendChild(createOnboardDocRow(count));
+    });
+  }
+
   // Onboard Client Form Submit
   const formAddClient = document.getElementById('formAddClient');
   if (formAddClient) {
@@ -899,19 +999,58 @@
       const password = document.getElementById('newPassword').value.trim();
       const initialService = document.getElementById('newInitialService').value;
 
+      const formData = new FormData();
+      formData.append('companyName', companyName);
+      formData.append('name', name);
+      formData.append('phone', phone);
+      formData.append('email', email);
+      formData.append('password', password);
+      formData.append('initialService', initialService);
+
+      const onboardRows = onboardDocItemsContainer ? onboardDocItemsContainer.querySelectorAll('.ops-onboard-doc-row') : [];
+      const companyDocsMeta = [];
+      let missingFile = false;
+
+      onboardRows.forEach((row) => {
+        const title = row.querySelector('.onboard-doc-title')?.value.trim();
+        const fileInput = row.querySelector('.onboard-doc-file');
+        if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+          missingFile = true;
+          return;
+        }
+        const file = fileInput.files[0];
+        formData.append('files', file);
+        companyDocsMeta.push({ title: title || file.name, category: 'company_document', docType: 'company' });
+      });
+
+      if (missingFile) {
+        showToast('Please select a file for each added document row or remove it', 'error');
+        return;
+      }
+
+      if (companyDocsMeta.length > 0) {
+        formData.append('companyDocsMeta', JSON.stringify(companyDocsMeta));
+      }
+
+      const saveBtn = document.getElementById('btnSaveClient');
+      if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Onboarding Client...'; }
+
       try {
         const res = await apiRequest('/api/portal/ops/clients', {
           method: 'POST',
-          body: JSON.stringify({ companyName, name, phone, email, password, initialService })
+          body: formData
         });
-        showToast('Client successfully onboarded!', 'success');
+        showToast(res.message || 'Client successfully onboarded!', 'success');
         closeModal();
         formAddClient.reset();
+        resetOnboardDocRows();
         loadClients();
         loadCases();
         loadStats();
       } catch (err) {
         showToast(err.message, 'error');
+      } finally {
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Create Client Account'; }
       }
     });
   }
@@ -1021,6 +1160,14 @@
                   data-case-id="${c.caseId}">
                   + Doc
                 </button>
+                <button type="button" class="ops-btn ops-btn-secondary ops-btn-sm btn-delete-case-direct"
+                  data-case-id="${c.caseId}"
+                  data-service="${escapeHtml(c.serviceName)}"
+                  data-company="${escapeHtml(c.companyName)}"
+                  title="Delete Service"
+                  style="color:#ef4444; border-color:rgba(239,68,68,0.3); padding:4px 8px;">
+                  🗑️
+                </button>
               </div>
             </td>
           </tr>
@@ -1049,6 +1196,48 @@
         if (caseSelect) caseSelect.value = btn.dataset.caseId;
         openModal('modalUploadDoc');
       });
+    });
+
+    // Wire Direct Delete Case Buttons
+    tbody.querySelectorAll('.btn-delete-case-direct').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const caseId = btn.dataset.caseId;
+        const serviceName = btn.dataset.service;
+        const companyName = btn.dataset.company;
+        handleDeleteCase(caseId, serviceName, companyName);
+      });
+    });
+  }
+
+  // Helper: Delete Service with Confirmation
+  async function handleDeleteCase(caseId, serviceName = '', companyName = '') {
+    if (!caseId) return;
+    const label = serviceName ? (companyName ? `"${serviceName}" for "${companyName}" (${caseId})` : `"${serviceName}" (${caseId})`) : `Case #${caseId}`;
+    if (!confirm(`Are you sure you want to delete service ${label}?\n\nThis will remove this service from both the Operations Desk and the Client Portal. This action cannot be reversed.`)) {
+      return;
+    }
+
+    try {
+      const res = await apiRequest(`/api/portal/ops/cases/${caseId}`, {
+        method: 'DELETE'
+      });
+      showToast(res.message || 'Service deleted successfully!', 'success');
+      closeModal();
+      loadCases(currentCaseFilter);
+      loadStats();
+      loadDocuments();
+    } catch (err) {
+      showToast(err.message || 'Failed to delete service', 'error');
+    }
+  }
+
+  // Wire Modal Delete Service Button
+  const btnDeleteCase = document.getElementById('btnDeleteCase');
+  if (btnDeleteCase) {
+    btnDeleteCase.addEventListener('click', () => {
+      const caseId = document.getElementById('updateCaseId').value;
+      const infoText = document.getElementById('updateCaseInfo').textContent;
+      handleDeleteCase(caseId, infoText);
     });
   }
 
@@ -1214,6 +1403,34 @@
       bodyEl.innerHTML = `
         <img src="${escapeHtml(url)}" alt="${escapeHtml(doc.title || 'Document Preview')}" />
       `;
+    } else if (['doc', 'docx'].includes(ext) || mime.includes('word') || mime.includes('officedocument.wordprocessingml')) {
+      bodyEl.innerHTML = `
+        <div class="ops-preview-fallback">
+          <div class="ops-preview-fallback-icon" style="font-size:56px;">📘</div>
+          <h4 style="font-size:17px; font-weight:700; margin-bottom:6px; color:#1e293b;">${escapeHtml(doc.fileName || 'Word Document')}</h4>
+          <p style="font-size:13px; color:#64748b; max-width:420px; margin:0 auto 16px;">
+            Microsoft Word document (${escapeHtml(doc.fileSize || 'Standard Document')}). You can open or download the document directly to view or edit.
+          </p>
+          <div style="display:flex; justify-content:center; gap:12px;">
+            <a href="${escapeHtml(url)}" target="_blank" class="ops-btn ops-btn-secondary ops-btn-sm" style="text-decoration:none;">↗ Open Document</a>
+            <a href="${escapeHtml(url)}" download="${escapeHtml(doc.fileName || 'document.docx')}" class="ops-btn ops-btn-primary ops-btn-sm" style="text-decoration:none;">⬇ Download Word (.${escapeHtml(ext || 'docx')})</a>
+          </div>
+        </div>
+      `;
+    } else if (['ppt', 'pptx'].includes(ext) || mime.includes('powerpoint') || mime.includes('officedocument.presentationml')) {
+      bodyEl.innerHTML = `
+        <div class="ops-preview-fallback">
+          <div class="ops-preview-fallback-icon" style="font-size:56px;">📙</div>
+          <h4 style="font-size:17px; font-weight:700; margin-bottom:6px; color:#1e293b;">${escapeHtml(doc.fileName || 'PowerPoint Presentation')}</h4>
+          <p style="font-size:13px; color:#64748b; max-width:420px; margin:0 auto 16px;">
+            Microsoft PowerPoint presentation (${escapeHtml(doc.fileSize || 'Presentation')}). You can open or download the presentation slides directly.
+          </p>
+          <div style="display:flex; justify-content:center; gap:12px;">
+            <a href="${escapeHtml(url)}" target="_blank" class="ops-btn ops-btn-secondary ops-btn-sm" style="text-decoration:none;">↗ Open Presentation</a>
+            <a href="${escapeHtml(url)}" download="${escapeHtml(doc.fileName || 'presentation.pptx')}" class="ops-btn ops-btn-primary ops-btn-sm" style="text-decoration:none;">⬇ Download PPT (.${escapeHtml(ext || 'pptx')})</a>
+          </div>
+        </div>
+      `;
     } else {
       bodyEl.innerHTML = `
         <div class="ops-preview-fallback">
@@ -1254,55 +1471,462 @@
     });
   }
 
+  // --- Dynamic Multi-Document Upload Rows Engine ---
+  const uploadDocItemsContainer = document.getElementById('uploadDocItemsContainer');
+  const btnAddMoreUploadDoc = document.getElementById('btnAddMoreUploadDoc');
+  const uploadDocCountBadge = document.getElementById('uploadDocCountBadge');
+  const btnSubmitUpload = document.getElementById('btnSubmitUpload');
+
+  function createUploadDocRow(index = 0) {
+    const card = document.createElement('div');
+    card.className = 'ops-upload-item-card';
+    card.dataset.index = index;
+    card.style.cssText = 'border:1px solid var(--ops-border, #e2e8f0); border-radius:10px; padding:14px; position:relative;';
+
+    card.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span class="ops-upload-item-num" style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--ops-primary, #2563eb);">Document #${index + 1}</span>
+        <button type="button" class="ops-btn-remove-doc" style="display:none; background:transparent; border:none; color:#ef4444; cursor:pointer; font-size:12px; font-weight:600; padding:2px 6px; border-radius:4px;">✕ Remove</button>
+      </div>
+      <div class="ops-form-row">
+        <div class="ops-form-group" style="flex:1;">
+          <label>Document Title *</label>
+          <input type="text" class="ops-input upload-doc-title" placeholder="e.g. Certificate of Incorporation" required>
+        </div>
+        <div class="ops-form-group" style="flex:1;">
+          <label>Category</label>
+          <select class="ops-select upload-doc-category">
+            <option value="certificate" selected>Certificate</option>
+            <option value="filing">Filing / Challan</option>
+            <option value="government_letter">Government Approval / Letter</option>
+            <option value="presentation">Presentation (PPT / PPTX)</option>
+            <option value="report">Word Document / Report (DOC / DOCX)</option>
+            <option value="client_kyc">Client KYC Paper</option>
+            <option value="other">Other Document</option>
+          </select>
+        </div>
+      </div>
+      <div class="ops-form-group" style="margin-bottom:0;">
+        <label>Choose File (PDF, Word, PPT, Images, ZIP up to 25MB) *</label>
+        <input type="file" class="ops-input-file upload-doc-file" accept=".pdf,.png,.jpg,.jpeg,.zip,.doc,.docx,.ppt,.pptx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation" required>
+      </div>
+    `;
+
+    const titleInput = card.querySelector('.upload-doc-title');
+    const catSelect = card.querySelector('.upload-doc-category');
+    const fileInput = card.querySelector('.upload-doc-file');
+    const removeBtn = card.querySelector('.ops-btn-remove-doc');
+
+    // Auto-detect title and category when file is chosen
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files && fileInput.files[0]) {
+        const file = fileInput.files[0];
+        const rawName = file.name;
+        const lastDot = rawName.lastIndexOf('.');
+        const baseName = lastDot > 0 ? rawName.substring(0, lastDot) : rawName;
+        const ext = lastDot > 0 ? rawName.substring(lastDot + 1).toLowerCase() : '';
+
+        // Auto-fill title if currently blank
+        if (!titleInput.value.trim()) {
+          const prettyTitle = baseName
+            .replace(/[_-]+/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .replace(/\b\w/g, c => c.toUpperCase());
+          titleInput.value = prettyTitle || rawName;
+        }
+
+        // Auto-select category for Word / PPT
+        if (['ppt', 'pptx'].includes(ext)) {
+          catSelect.value = 'presentation';
+        } else if (['doc', 'docx'].includes(ext)) {
+          catSelect.value = 'report';
+        }
+      }
+    });
+
+    removeBtn.addEventListener('click', () => {
+      card.remove();
+      updateUploadDocRowsUI();
+    });
+
+    return card;
+  }
+
+  function updateUploadDocRowsUI() {
+    if (!uploadDocItemsContainer) return;
+    const cards = uploadDocItemsContainer.querySelectorAll('.ops-upload-item-card');
+    cards.forEach((card, idx) => {
+      const numSpan = card.querySelector('.ops-upload-item-num');
+      if (numSpan) numSpan.textContent = `Document #${idx + 1}`;
+      const removeBtn = card.querySelector('.ops-btn-remove-doc');
+      if (removeBtn) {
+        removeBtn.style.display = cards.length > 1 ? 'inline-block' : 'none';
+      }
+    });
+
+    const count = cards.length;
+    if (uploadDocCountBadge) {
+      uploadDocCountBadge.textContent = `${count} Document${count > 1 ? 's' : ''}`;
+    }
+    if (btnSubmitUpload) {
+      btnSubmitUpload.textContent = count > 1 ? `Upload & Share ${count} Documents with Client` : 'Upload & Share with Client';
+    }
+  }
+
+  const uploadDocTypeRadios = document.querySelectorAll('input[name="uploadDocType"]');
+  const uploadCaseSelectGroup = document.getElementById('uploadCaseSelectGroup');
+  const uploadAutoApproveGroup = document.getElementById('uploadAutoApproveGroup');
+  const uploadAutoApproveCheckbox = document.getElementById('uploadAutoApprove');
+  const uploadCaseSelect = document.getElementById('uploadCaseSelect');
+
+  function syncUploadDocTypeUI() {
+    const selectedType = document.querySelector('input[name="uploadDocType"]:checked')?.value || 'issued';
+    if (selectedType === 'company') {
+      if (uploadCaseSelectGroup) uploadCaseSelectGroup.style.display = 'none';
+      if (uploadAutoApproveGroup) uploadAutoApproveGroup.style.display = 'none';
+      if (uploadCaseSelect) uploadCaseSelect.value = '';
+      if (uploadAutoApproveCheckbox) uploadAutoApproveCheckbox.checked = false;
+    } else {
+      if (uploadCaseSelectGroup) uploadCaseSelectGroup.style.display = '';
+      if (uploadAutoApproveGroup) uploadAutoApproveGroup.style.display = '';
+      if (uploadAutoApproveCheckbox) uploadAutoApproveCheckbox.checked = true;
+    }
+  }
+
+  uploadDocTypeRadios.forEach(r => r.addEventListener('change', syncUploadDocTypeUI));
+
+  function resetUploadDocRows() {
+    if (!uploadDocItemsContainer) return;
+    uploadDocItemsContainer.innerHTML = '';
+    const initialRow = createUploadDocRow(0);
+    uploadDocItemsContainer.appendChild(initialRow);
+    const defRadio = document.querySelector('input[name="uploadDocType"][value="issued"]');
+    if (defRadio) defRadio.checked = true;
+    syncUploadDocTypeUI();
+    updateUploadDocRowsUI();
+  }
+
+  if (btnAddMoreUploadDoc) {
+    btnAddMoreUploadDoc.addEventListener('click', () => {
+      if (!uploadDocItemsContainer) return;
+      const count = uploadDocItemsContainer.querySelectorAll('.ops-upload-item-card').length;
+      const newRow = createUploadDocRow(count);
+      uploadDocItemsContainer.appendChild(newRow);
+      updateUploadDocRowsUI();
+      newRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  }
+
+  // Initialize with 1 default row
+  resetUploadDocRows();
+
   // Upload Document Form Submit
   const formUploadDoc = document.getElementById('formUploadDoc');
   if (formUploadDoc) {
     formUploadDoc.addEventListener('submit', async (e) => {
       e.preventDefault();
       const clientId = document.getElementById('uploadClientSelect').value;
-      const caseId = document.getElementById('uploadCaseSelect').value;
-      const title = document.getElementById('uploadDocTitle').value.trim();
-      const category = document.getElementById('uploadDocCategory').value;
-      const fileInput = document.getElementById('uploadFileInput');
+      const caseId = document.getElementById('uploadCaseSelect')?.value || '';
+      const autoApprove = document.getElementById('uploadAutoApprove')?.checked !== false;
+      const docType = document.querySelector('input[name="uploadDocType"]:checked')?.value || 'issued';
+      const isCompanyDoc = docType === 'company';
+      const effectiveCaseId = isCompanyDoc ? '' : caseId;
+      const effectiveAutoApprove = isCompanyDoc ? false : autoApprove;
 
-      if (!fileInput.files || fileInput.files.length === 0) {
-        showToast('Please select a file to upload', 'error');
+      const cards = uploadDocItemsContainer ? uploadDocItemsContainer.querySelectorAll('.ops-upload-item-card') : [];
+      if (cards.length === 0) {
+        showToast('Please add at least one document to upload', 'error');
         return;
       }
 
       const client = cachedClients.find((c) => c.id === clientId);
       const companyName = client ? (client.companyName || client.name) : '';
-      const autoApprove = document.getElementById('uploadAutoApprove')?.checked !== false;
 
       const formData = new FormData();
-      formData.append('file', fileInput.files[0]);
       formData.append('clientId', clientId);
       formData.append('companyName', companyName);
-      formData.append('caseId', caseId);
-      formData.append('title', title);
-      formData.append('category', category);
-      formData.append('autoApprove', autoApprove ? 'true' : 'false');
+      formData.append('caseId', effectiveCaseId);
+      formData.append('autoApprove', effectiveAutoApprove ? 'true' : 'false');
+      formData.append('docType', docType);
+
+      const metadata = [];
+      let missingFile = false;
+
+      cards.forEach((card, idx) => {
+        const title = card.querySelector('.upload-doc-title')?.value.trim();
+        const category = card.querySelector('.upload-doc-category')?.value || (isCompanyDoc ? 'company_document' : 'certificate');
+        const fileInput = card.querySelector('.upload-doc-file');
+
+        if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+          missingFile = true;
+          return;
+        }
+
+        const file = fileInput.files[0];
+        formData.append('files', file);
+        metadata.push({ title: title || file.name, category, docType });
+      });
+
+      if (missingFile) {
+        showToast('Please select a file for each document row', 'error');
+        return;
+      }
+
+      formData.append('metadata', JSON.stringify(metadata));
 
       const submitBtn = document.getElementById('btnSubmitUpload');
       submitBtn.disabled = true;
+      const originalText = submitBtn.textContent;
       submitBtn.textContent = 'Uploading...';
 
       try {
-        await apiRequest('/api/portal/ops/documents/upload', {
+        const res = await apiRequest('/api/portal/ops/documents/upload', {
           method: 'POST',
           body: formData
         });
-        showToast('Document uploaded and delivered to client!', 'success');
+        showToast(res.message || `${metadata.length} document(s) uploaded and delivered to client!`, 'success');
         closeModal();
         formUploadDoc.reset();
+        resetUploadDocRows();
         loadDocuments();
         loadCases();
         loadStats();
+        if (activeEditingClientId === clientId) {
+          loadAndRenderClientDocs(clientId);
+        }
       } catch (err) {
         showToast(err.message, 'error');
       } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Upload & Deliver to Client';
+        submitBtn.textContent = originalText;
+      }
+    });
+  }
+
+  // --- Dedicated Company Documents Engine (Post-Onboarding) ---
+  const companyDocItemsContainer = document.getElementById('companyDocItemsContainer');
+  const btnAddMoreCompanyDoc = document.getElementById('btnAddMoreCompanyDoc');
+  const companyDocCountBadge = document.getElementById('companyDocCountBadge');
+  const btnSubmitCompanyDocs = document.getElementById('btnSubmitCompanyDocs');
+  const formAddCompanyDocs = document.getElementById('formAddCompanyDocs');
+  const companyDocsClientSelect = document.getElementById('companyDocsClientSelect');
+  const openAddCompanyDocsModalBtn = document.getElementById('openAddCompanyDocsModalBtn');
+
+  function populateCompanyDocsClientSelect(selectedId = '') {
+    if (!companyDocsClientSelect) return;
+    const optionsHtml = '<option value="">-- Choose Client --</option>' +
+      cachedClients
+        .map((c) => `<option value="${c.id}" ${c.id === selectedId ? 'selected' : ''}>${escapeHtml(c.companyName || c.name)} (${escapeHtml(c.name)})</option>`)
+        .join('');
+    companyDocsClientSelect.innerHTML = optionsHtml;
+  }
+
+  function createCompanyDocUploadRow(index = 0) {
+    const card = document.createElement('div');
+    card.className = 'ops-company-doc-item-card';
+    card.dataset.index = index;
+    card.style.cssText = 'border:1px solid var(--ops-border, #e2e8f0); border-radius:10px; padding:14px; position:relative; background:var(--ops-bg-card, #f8fafc);';
+
+    card.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span class="ops-company-doc-item-num" style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--ops-primary, #2563eb);">Company Document #${index + 1}</span>
+        <button type="button" class="ops-btn-remove-company-doc" style="display:none; background:transparent; border:none; color:#ef4444; cursor:pointer; font-size:12px; font-weight:600; padding:2px 6px; border-radius:4px;">✕ Remove</button>
+      </div>
+      <div class="ops-form-row">
+        <div class="ops-form-group" style="flex:1;">
+          <label>Document Title *</label>
+          <input type="text" class="ops-input company-doc-title" placeholder="e.g. Director PAN, Aadhaar, MoA, Electricity Bill" required>
+        </div>
+        <div class="ops-form-group" style="flex:1;">
+          <label>Category</label>
+          <select class="ops-select company-doc-category">
+            <option value="company_document" selected>Company / Entity Document</option>
+            <option value="client_kyc">Client / Director KYC</option>
+            <option value="filing">Tax & Financial Document</option>
+            <option value="certificate">Registration / Legal Deed</option>
+            <option value="other">Other Company Document</option>
+          </select>
+        </div>
+      </div>
+      <div class="ops-form-group" style="margin-bottom:0;">
+        <label>Choose File (PDF, Images, Word, ZIP up to 25MB) *</label>
+        <input type="file" class="ops-input-file company-doc-file" accept=".pdf,.png,.jpg,.jpeg,.zip,.doc,.docx" required>
+      </div>
+    `;
+
+    const titleInput = card.querySelector('.company-doc-title');
+    const fileInput = card.querySelector('.company-doc-file');
+    const removeBtn = card.querySelector('.ops-btn-remove-company-doc');
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files && fileInput.files[0]) {
+        const file = fileInput.files[0];
+        const rawName = file.name;
+        const lastDot = rawName.lastIndexOf('.');
+        const baseName = lastDot > 0 ? rawName.substring(0, lastDot) : rawName;
+        if (!titleInput.value.trim()) {
+          const prettyTitle = baseName
+            .replace(/[_-]+/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .replace(/\b\w/g, c => c.toUpperCase());
+          titleInput.value = prettyTitle || rawName;
+        }
+      }
+    });
+
+    removeBtn.addEventListener('click', () => {
+      card.remove();
+      updateCompanyDocRowsUI();
+    });
+
+    return card;
+  }
+
+  function updateCompanyDocRowsUI() {
+    if (!companyDocItemsContainer) return;
+    const cards = companyDocItemsContainer.querySelectorAll('.ops-company-doc-item-card');
+    cards.forEach((card, idx) => {
+      const numSpan = card.querySelector('.ops-company-doc-item-num');
+      if (numSpan) numSpan.textContent = `Company Document #${idx + 1}`;
+      const removeBtn = card.querySelector('.ops-btn-remove-company-doc');
+      if (removeBtn) {
+        removeBtn.style.display = cards.length > 1 ? 'inline-block' : 'none';
+      }
+    });
+
+    const count = cards.length;
+    if (companyDocCountBadge) {
+      companyDocCountBadge.textContent = `${count} Document${count > 1 ? 's' : ''}`;
+    }
+    if (btnSubmitCompanyDocs) {
+      btnSubmitCompanyDocs.textContent = count > 1 ? `Upload ${count} Documents to Company Vault` : 'Upload to Company Vault';
+    }
+  }
+
+  function resetCompanyDocRows() {
+    if (!companyDocItemsContainer) return;
+    companyDocItemsContainer.innerHTML = '';
+    const initialRow = createCompanyDocUploadRow(0);
+    companyDocItemsContainer.appendChild(initialRow);
+    updateCompanyDocRowsUI();
+  }
+
+  function openAddCompanyDocsModal(clientId = null) {
+    populateCompanyDocsClientSelect(clientId);
+    resetCompanyDocRows();
+    const titleEl = document.getElementById('companyDocsModalTitle');
+    const subEl = document.getElementById('companyDocsModalSub');
+    if (clientId) {
+      const client = cachedClients.find(c => c.id === clientId);
+      if (client) {
+        if (titleEl) titleEl.textContent = `Add Company Documents: ${client.companyName || client.name}`;
+        if (subEl) subEl.textContent = `Director: ${client.name} • Documents will be stored directly in this client's Company Vault`;
+      }
+    } else {
+      if (titleEl) titleEl.textContent = 'Add Company Documents for Client';
+      if (subEl) subEl.textContent = 'Upload KYC, PAN, Aadhaar, MoA, or registration records directly to client\'s Company Vault';
+    }
+    openModal('modalAddCompanyDocs');
+  }
+
+  // Expose openAddCompanyDocsModal globally within operations
+  window.openAddCompanyDocsModal = openAddCompanyDocsModal;
+
+  if (btnAddMoreCompanyDoc) {
+    btnAddMoreCompanyDoc.addEventListener('click', () => {
+      if (!companyDocItemsContainer) return;
+      const count = companyDocItemsContainer.querySelectorAll('.ops-company-doc-item-card').length;
+      const newRow = createCompanyDocUploadRow(count);
+      companyDocItemsContainer.appendChild(newRow);
+      updateCompanyDocRowsUI();
+      newRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  }
+
+  if (openAddCompanyDocsModalBtn) {
+    openAddCompanyDocsModalBtn.addEventListener('click', () => {
+      openAddCompanyDocsModal();
+    });
+  }
+
+  if (formAddCompanyDocs) {
+    formAddCompanyDocs.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const clientId = companyDocsClientSelect ? companyDocsClientSelect.value : '';
+      if (!clientId) {
+        showToast('Please select a client', 'error');
+        return;
+      }
+
+      const cards = companyDocItemsContainer ? companyDocItemsContainer.querySelectorAll('.ops-company-doc-item-card') : [];
+      if (cards.length === 0) {
+        showToast('Please add at least one company document to upload', 'error');
+        return;
+      }
+
+      const client = cachedClients.find((c) => c.id === clientId);
+      const companyName = client ? (client.companyName || client.name) : '';
+
+      const formData = new FormData();
+      formData.append('clientId', clientId);
+      formData.append('companyName', companyName);
+      formData.append('caseId', '');
+      formData.append('autoApprove', 'false');
+      formData.append('docType', 'company');
+
+      const metadata = [];
+      let missingFile = false;
+
+      cards.forEach((card) => {
+        const title = card.querySelector('.company-doc-title')?.value.trim();
+        const category = card.querySelector('.company-doc-category')?.value || 'company_document';
+        const fileInput = card.querySelector('.company-doc-file');
+
+        if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+          missingFile = true;
+          return;
+        }
+
+        const file = fileInput.files[0];
+        formData.append('files', file);
+        metadata.push({ title: title || file.name, category, docType: 'company' });
+      });
+
+      if (missingFile) {
+        showToast('Please select a file for each document row', 'error');
+        return;
+      }
+
+      formData.append('metadata', JSON.stringify(metadata));
+
+      if (btnSubmitCompanyDocs) {
+        btnSubmitCompanyDocs.disabled = true;
+        btnSubmitCompanyDocs.textContent = 'Uploading to Company Vault...';
+      }
+
+      try {
+        const res = await apiRequest('/api/portal/ops/documents/upload', {
+          method: 'POST',
+          body: formData
+        });
+        showToast(res.message || `${metadata.length} company document(s) uploaded to Company Vault!`, 'success');
+        closeModal();
+        formAddCompanyDocs.reset();
+        resetCompanyDocRows();
+        loadDocuments();
+        loadStats();
+        if (activeEditingClientId === clientId) {
+          loadAndRenderClientDocs(clientId);
+        }
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        if (btnSubmitCompanyDocs) {
+          btnSubmitCompanyDocs.disabled = false;
+          btnSubmitCompanyDocs.textContent = 'Upload to Company Vault';
+        }
       }
     });
   }
@@ -1603,12 +2227,20 @@
     const btnOpenUploadForThisClient = document.getElementById('btnOpenUploadForThisClient');
     if (btnOpenUploadForThisClient) {
       btnOpenUploadForThisClient.addEventListener('click', () => {
+        const targetClientId = activeEditingClientId || document.getElementById('updateClientId')?.value;
+        const modalUpdateClient = document.getElementById('modalUpdateClient');
+        if (modalUpdateClient) {
+          closeModal(modalUpdateClient);
+        }
+        closeAllModals();
+
+        populateClientSelects();
         const uploadSelect = document.getElementById('uploadClientSelect');
-        if (uploadSelect && activeEditingClientId) {
-          uploadSelect.value = activeEditingClientId;
+        if (uploadSelect && targetClientId) {
+          uploadSelect.value = targetClientId;
           uploadSelect.dispatchEvent(new Event('change'));
         }
-        closeModal();
+        resetUploadDocRows();
         openModal('modalUploadDoc');
       });
     }
@@ -1648,6 +2280,7 @@
   // 7. INITIALIZATION
   // ==========================================
   initTheme();
+  ensureOpsServicePickers();
   initMobileMenu();
   initPwa();
   initUpdateClientSuite();

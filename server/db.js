@@ -47,10 +47,19 @@ async function initMongo() {
       });
     }
     await mongoPromise;
-    isMongoConnected = true;
-    console.log('✔ [DB] Successfully connected to MongoDB Atlas!');
-    seedMongoPortalDefaults().catch(() => {});
-    return true;
+    if (mongoose.connection.readyState === 2) {
+      await new Promise((resolve) => {
+        const timer = setTimeout(resolve, 5000);
+        mongoose.connection.once('open', () => { clearTimeout(timer); resolve(); });
+        mongoose.connection.once('error', () => { clearTimeout(timer); resolve(); });
+      });
+    }
+    isMongoConnected = mongoose.connection.readyState === 1;
+    if (isMongoConnected) {
+      console.log('✔ [DB] Successfully connected to MongoDB Atlas!');
+      return true;
+    }
+    return false;
   } catch (err) {
     mongoPromise = null;
     isMongoConnected = false;
@@ -59,93 +68,22 @@ async function initMongo() {
   }
 }
 
-async function seedMongoPortalDefaults() {
-  try {
-    const casesCount = await PortalCase.countDocuments();
-    if (casesCount === 0) {
-      await PortalCase.create([
-        {
-          caseId: 'CAS-1001',
-          clientId: 'usr_client_abc',
-          clientName: 'Rajesh Sharma',
-          companyName: 'ABC PRIVATE LIMITED',
-          serviceName: 'Company Registration',
-          status: 'approved',
-          statusNote: 'Certificate of Incorporation issued with CIN & PAN.',
-          documentsCount: 1,
-          timeline: [
-            { stage: 'Name Approval', status: 'approved', note: 'RUN name approved by ROC.', date: new Date(Date.now() - 15 * 86400000) },
-            { stage: 'SPICe+ Incorporation', status: 'approved', note: 'MCA approval granted & COI delivered.', date: new Date(Date.now() - 10 * 86400000) }
-          ]
-        },
-        {
-          caseId: 'CAS-1002',
-          clientId: 'usr_client_abc',
-          clientName: 'Rajesh Sharma',
-          companyName: 'ABC PRIVATE LIMITED',
-          serviceName: 'GST Registration',
-          status: 'in_review',
-          statusNote: 'Application submitted on GST Portal. Awaiting ARN verification.',
-          documentsCount: 0,
-          timeline: [
-            { stage: 'Document Verification', status: 'approved', note: 'Electricity bill & rent agreement verified.', date: new Date(Date.now() - 5 * 86400000) },
-            { stage: 'ARN Generation', status: 'in_review', note: 'Submitted on GST common portal.', date: new Date(Date.now() - 2 * 86400000) }
-          ]
-        }
-      ]);
-    }
-
-    const orderCount = await PortalOrder.countDocuments();
-    if (orderCount === 0) {
-      await PortalOrder.create({
-        orderId: 'ORD-2026-101',
-        clientId: 'usr_client_abc',
-        clientName: 'Rajesh Sharma',
-        companyName: 'ABC PRIVATE LIMITED',
-        email: 'client@abc.com',
-        phone: '+919811223344',
-        planName: 'BUSINESS GROWTH PLAN',
-        services: ['Company Registration', 'GST Registration', 'Trademark', 'MSME Registration', 'Basic Compliance'],
-        notes: 'Need priority trademark search and MSME certificate.',
-        status: 'pending_review'
-      });
-    }
-
-    const ticketCount = await PortalTicket.countDocuments();
-    if (ticketCount === 0) {
-      await PortalTicket.create({
-        ticketId: 'CM-10231',
-        clientId: 'usr_client_abc',
-        clientName: 'Rajesh Sharma',
-        companyName: 'ABC PRIVATE LIMITED',
-        subject: 'DSC Token Installation Guidance',
-        category: 'dsc',
-        priority: 'medium',
-        status: 'open',
-        messages: [
-          {
-            sender: 'client',
-            senderName: 'Rajesh Sharma',
-            text: 'We received the ePass 2003 DSC token. Could your team help us install the driver on Windows 11?',
-            date: new Date(Date.now() - 4 * 3600000)
-          }
-        ]
-      });
-    }
-  } catch (err) {
-    console.warn('Error seeding Mongo portal defaults:', err.message);
-  }
-}
-
 async function ensureMongoConnected() {
-  if (mongoose.connection && mongoose.connection.readyState >= 1) {
+  if (mongoose.connection && mongoose.connection.readyState === 1) {
     isMongoConnected = true;
     return true;
   }
   if (mongoPromise) {
     try {
       await mongoPromise;
-      if (mongoose.connection && mongoose.connection.readyState >= 1) {
+      if (mongoose.connection.readyState === 2) {
+        await new Promise((resolve) => {
+          const timer = setTimeout(resolve, 5000);
+          mongoose.connection.once('open', () => { clearTimeout(timer); resolve(); });
+          mongoose.connection.once('error', () => { clearTimeout(timer); resolve(); });
+        });
+      }
+      if (mongoose.connection && mongoose.connection.readyState === 1) {
         isMongoConnected = true;
         return true;
       }
@@ -207,151 +145,6 @@ function seedDefaultAdmin(data) {
   }
   if (!Array.isArray(data.portal_tickets)) {
     data.portal_tickets = [];
-    modified = true;
-  }
-
-  // Ensure initial sample client exists
-  const clientExists = data.users.find(u => u.email && u.email.toLowerCase() === 'client@abc.com');
-  if (!clientExists) {
-    const { salt: cSalt, hash: cHash } = hashPassword('Client@123');
-    data.users.push({
-      id: 'usr_client_abc',
-      name: 'Rajesh Sharma',
-      companyName: 'ABC PRIVATE LIMITED',
-      email: 'client@abc.com',
-      phone: '+919811223344',
-      salt: cSalt,
-      passwordHash: cHash,
-      role: 'client',
-      plan: 'free',
-      isSubscribed: false,
-      subscriptionExpiresAt: null,
-      createdAt: new Date().toISOString()
-    });
-    modified = true;
-  }
-
-  // Seed sample cases if empty
-  if (data.portal_cases.length === 0) {
-    data.portal_cases.push(
-      {
-        id: 'case_1',
-        caseId: 'CAS-1001',
-        clientId: 'usr_client_abc',
-        clientName: 'Rajesh Sharma',
-        companyName: 'ABC PRIVATE LIMITED',
-        serviceName: 'Company Registration',
-        status: 'approved',
-        statusNote: 'Certificate of Incorporation issued with CIN & PAN.',
-        documentsCount: 1,
-        timeline: [
-          { stage: 'Name Approval', status: 'approved', note: 'RUN name approved by ROC.', date: new Date(Date.now() - 15 * 86400000).toISOString() },
-          { stage: 'SPICe+ Incorporation', status: 'approved', note: 'MCA approval granted & COI delivered.', date: new Date(Date.now() - 10 * 86400000).toISOString() }
-        ],
-        createdAt: new Date(Date.now() - 20 * 86400000).toISOString(),
-        updatedAt: new Date(Date.now() - 10 * 86400000).toISOString()
-      },
-      {
-        id: 'case_2',
-        caseId: 'CAS-1002',
-        clientId: 'usr_client_abc',
-        clientName: 'Rajesh Sharma',
-        companyName: 'ABC PRIVATE LIMITED',
-        serviceName: 'GST Registration',
-        status: 'in_review',
-        statusNote: 'Application submitted on GST Portal. Awaiting ARN verification.',
-        documentsCount: 0,
-        timeline: [
-          { stage: 'Document Verification', status: 'approved', note: 'Electricity bill & rent agreement verified.', date: new Date(Date.now() - 5 * 86400000).toISOString() },
-          { stage: 'ARN Generation', status: 'in_review', note: 'Submitted on GST common portal.', date: new Date(Date.now() - 2 * 86400000).toISOString() }
-        ],
-        createdAt: new Date(Date.now() - 6 * 86400000).toISOString(),
-        updatedAt: new Date(Date.now() - 2 * 86400000).toISOString()
-      },
-      {
-        id: 'case_3',
-        caseId: 'CAS-1003',
-        clientId: 'usr_client_abc',
-        clientName: 'Rajesh Sharma',
-        companyName: 'ABC PRIVATE LIMITED',
-        serviceName: 'Trademark Registration',
-        status: 'rejected',
-        statusNote: 'Objection raised by Trademark Registry under Section 9(1)(b).',
-        documentsCount: 0,
-        timeline: [
-          { stage: 'Application Filing', status: 'approved', note: 'TM-A filed with Registry.', date: new Date(Date.now() - 12 * 86400000).toISOString() },
-          { stage: 'Formalities Check', status: 'rejected', note: 'Objection issued; examination report received.', date: new Date(Date.now() - 3 * 86400000).toISOString() }
-        ],
-        createdAt: new Date(Date.now() - 15 * 86400000).toISOString(),
-        updatedAt: new Date(Date.now() - 3 * 86400000).toISOString()
-      }
-    );
-    modified = true;
-  }
-
-  // Seed sample document if empty
-  if (data.portal_documents.length === 0) {
-    data.portal_documents.push({
-      id: 'doc_1',
-      docId: 'DOC-1001',
-      caseId: 'CAS-1001',
-      clientId: 'usr_client_abc',
-      companyName: 'ABC PRIVATE LIMITED',
-      title: 'Certificate of Incorporation (COI)',
-      fileName: 'coi_abc_private_limited.pdf',
-      fileUrl: '/uploads/documents/sample_coi.pdf',
-      fileSize: '1.2 MB',
-      fileType: 'application/pdf',
-      category: 'certificate',
-      uploadedBy: 'operations',
-      status: 'approved',
-      createdAt: new Date(Date.now() - 10 * 86400000).toISOString()
-    });
-    modified = true;
-  }
-
-  // Seed sample order if empty
-  if (data.portal_orders.length === 0) {
-    data.portal_orders.push({
-      id: 'ord_1',
-      orderId: 'ORD-2026-101',
-      clientId: 'usr_client_abc',
-      clientName: 'Rajesh Sharma',
-      companyName: 'ABC PRIVATE LIMITED',
-      email: 'client@abc.com',
-      phone: '+919811223344',
-      planName: 'BUSINESS GROWTH PLAN',
-      services: ['Company Registration', 'GST Registration', 'Trademark', 'MSME Registration', 'Basic Compliance'],
-      notes: 'Need priority trademark search and MSME certificate.',
-      status: 'pending_review',
-      createdAt: new Date(Date.now() - 1 * 86400000).toISOString()
-    });
-    modified = true;
-  }
-
-  // Seed sample ticket if empty
-  if (data.portal_tickets.length === 0) {
-    data.portal_tickets.push({
-      id: 'tkt_1',
-      ticketId: 'CM-10231',
-      clientId: 'usr_client_abc',
-      clientName: 'Rajesh Sharma',
-      companyName: 'ABC PRIVATE LIMITED',
-      subject: 'DSC Token Installation Guidance',
-      category: 'dsc',
-      priority: 'medium',
-      status: 'open',
-      messages: [
-        {
-          sender: 'client',
-          senderName: 'Rajesh Sharma',
-          text: 'We received the ePass 2003 DSC token. Could your team help us install the driver on Windows 11?',
-          date: new Date(Date.now() - 4 * 3600000).toISOString()
-        }
-      ],
-      createdAt: new Date(Date.now() - 4 * 3600000).toISOString(),
-      updatedAt: new Date(Date.now() - 4 * 3600000).toISOString()
-    });
     modified = true;
   }
 
@@ -1261,7 +1054,22 @@ async function getPortalCases(filter = {}) {
       const q = {};
       if (filter.clientId) q.clientId = filter.clientId;
       if (filter.status) q.status = filter.status;
-      return await PortalCase.find(q).sort({ updatedAt: -1 }).lean();
+      const cases = await PortalCase.find(q).sort({ updatedAt: -1 }).lean();
+
+      // Ensure live, synchronized documentsCount for every returned case
+      const caseIds = cases.map(c => c.caseId).filter(Boolean);
+      if (caseIds.length > 0) {
+        const docCounts = await PortalDocument.aggregate([
+          { $match: { caseId: { $in: caseIds }, status: { $ne: 'revoked' } } },
+          { $group: { _id: '$caseId', count: { $sum: 1 } } }
+        ]);
+        const countMap = {};
+        docCounts.forEach(dc => { countMap[dc._id] = dc.count; });
+        cases.forEach(c => {
+          c.documentsCount = countMap[c.caseId] || 0;
+        });
+      }
+      return cases;
     } catch (e) {
       console.warn('Mongo cases error, falling back:', e.message);
     }
@@ -1271,6 +1079,10 @@ async function getPortalCases(filter = {}) {
   let cases = local.portal_cases || [];
   if (filter.clientId) cases = cases.filter(c => c.clientId === filter.clientId);
   if (filter.status) cases = cases.filter(c => c.status === filter.status);
+  const docs = local.portal_documents || [];
+  cases.forEach(c => {
+    c.documentsCount = docs.filter(d => (d.caseId === c.caseId || d.caseId === c.id) && d.status !== 'revoked').length;
+  });
   return cases.sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
 }
 
@@ -1359,6 +1171,51 @@ async function updatePortalCaseStatus(caseId, status, note = '') {
   return item;
 }
 
+async function deletePortalCase(caseIdentifier) {
+  await ensureMongoConnected();
+  let deletedCase = null;
+
+  if (mongoose.connection && mongoose.connection.readyState === 1) {
+    try {
+      const isObjectId = mongoose.Types.ObjectId.isValid(caseIdentifier);
+      const q = isObjectId
+        ? { $or: [{ _id: caseIdentifier }, { caseId: caseIdentifier }, { id: caseIdentifier }] }
+        : { $or: [{ caseId: caseIdentifier }, { id: caseIdentifier }] };
+
+      deletedCase = await PortalCase.findOneAndDelete(q).lean();
+
+      // If documents were associated with this case, unlink them so they remain accessible as general client documents
+      if (deletedCase && deletedCase.caseId) {
+        await PortalDocument.updateMany(
+          { caseId: deletedCase.caseId },
+          { $set: { caseId: '' } }
+        );
+      }
+    } catch (e) {
+      console.warn('Mongo delete case error, falling back:', e.message);
+    }
+  }
+
+  const local = readDB();
+  local.portal_cases = local.portal_cases || [];
+  const idx = local.portal_cases.findIndex(
+    c => c.id === caseIdentifier || c.caseId === caseIdentifier || (c._id && c._id.toString() === caseIdentifier)
+  );
+
+  if (idx !== -1) {
+    if (!deletedCase) deletedCase = local.portal_cases[idx];
+    local.portal_cases.splice(idx, 1);
+    if (deletedCase && deletedCase.caseId && local.portal_documents) {
+      local.portal_documents.forEach(d => {
+        if (d.caseId === deletedCase.caseId) d.caseId = '';
+      });
+    }
+    writeDB(local);
+  }
+
+  return { success: true, caseId: caseIdentifier, deleted: Boolean(deletedCase) };
+}
+
 async function getPortalDocuments(filter = {}) {
   await ensureMongoConnected();
   if (mongoose.connection && mongoose.connection.readyState === 1) {
@@ -1382,10 +1239,14 @@ async function getPortalDocuments(filter = {}) {
 async function createPortalDocument(data) {
   const docId = 'DOC-' + Math.floor(1000 + Math.random() * 9000);
   const now = new Date().toISOString();
+  const resolvedDocType = data.docType || (data.category === 'client_kyc' || data.category === 'company_document' ? 'company' : 'issued');
+  const isCompanyDoc = resolvedDocType === 'company' || data.category === 'company_document' || data.category === 'client_kyc';
+  const effectiveCaseId = isCompanyDoc ? '' : (data.caseId || '');
+
   const docObj = {
     id: 'doc_' + Date.now(),
     docId,
-    caseId: data.caseId || '',
+    caseId: effectiveCaseId,
     clientId: data.clientId || '',
     companyName: data.companyName || '',
     title: String(data.title || 'Official Document').trim(),
@@ -1393,7 +1254,8 @@ async function createPortalDocument(data) {
     fileUrl: data.fileUrl || '/uploads/documents/sample_coi.pdf',
     fileSize: data.fileSize || '1.0 MB',
     fileType: data.fileType || 'application/pdf',
-    category: data.category || 'certificate',
+    category: data.category || (isCompanyDoc ? 'company_document' : 'certificate'),
+    docType: resolvedDocType,
     uploadedBy: data.uploadedBy || 'operations',
     status: data.status || 'approved',
     createdAt: now
@@ -1403,16 +1265,20 @@ async function createPortalDocument(data) {
   if (mongoose.connection && mongoose.connection.readyState === 1) {
     try {
       const created = await PortalDocument.create(docObj);
-      if (data.caseId) {
-        const isObjectId = mongoose.Types.ObjectId.isValid(data.caseId);
-        const q = isObjectId ? { $or: [{ caseId: data.caseId }, { _id: data.caseId }] } : { caseId: data.caseId };
-        const updateFields = { $inc: { documentsCount: 1 } };
+      if (effectiveCaseId && !isCompanyDoc) {
+        const realCount = await PortalDocument.countDocuments({
+          caseId: effectiveCaseId,
+          docType: { $ne: 'company' },
+          category: { $nin: ['company_document', 'client_kyc'] },
+          status: { $ne: 'revoked' }
+        });
+        const isObjectId = mongoose.Types.ObjectId.isValid(effectiveCaseId);
+        const q = isObjectId ? { $or: [{ caseId: effectiveCaseId }, { _id: effectiveCaseId }] } : { caseId: effectiveCaseId };
+        const updateFields = { $set: { documentsCount: realCount } };
         if (data.autoApprove !== false) {
-          updateFields.$set = {
-            status: 'approved',
-            statusNote: `Approved: ${docObj.title} has been uploaded and is ready for download.`,
-            updatedAt: now
-          };
+          updateFields.$set.status = 'approved';
+          updateFields.$set.statusNote = `Approved: ${docObj.title} has been uploaded and is ready for download.`;
+          updateFields.$set.updatedAt = now;
         }
         await PortalCase.updateOne(q, updateFields);
       }
@@ -1425,10 +1291,10 @@ async function createPortalDocument(data) {
   const local = readDB();
   local.portal_documents = local.portal_documents || [];
   local.portal_documents.unshift(docObj);
-  if (data.caseId) {
-    const c = (local.portal_cases || []).find(item => item.caseId === data.caseId || item.id === data.caseId);
+  if (effectiveCaseId && !isCompanyDoc) {
+    const c = (local.portal_cases || []).find(item => item.caseId === effectiveCaseId || item.id === effectiveCaseId);
     if (c) {
-      c.documentsCount = (c.documentsCount || 0) + 1;
+      c.documentsCount = local.portal_documents.filter(d => (d.caseId === effectiveCaseId || d.caseId === c.id) && d.docType !== 'company' && d.category !== 'company_document' && d.category !== 'client_kyc' && d.status !== 'revoked').length;
       if (data.autoApprove !== false) {
         c.status = 'approved';
         c.statusNote = `Approved: ${docObj.title} has been uploaded and is ready for download.`;
@@ -1448,6 +1314,15 @@ async function revokePortalDocument(docIdentifier, reason = 'Revoked by Operatio
       const isObjectId = mongoose.Types.ObjectId.isValid(docIdentifier);
       const q = isObjectId ? { $or: [{ _id: docIdentifier }, { docId: docIdentifier }, { id: docIdentifier }] } : { $or: [{ docId: docIdentifier }, { id: docIdentifier }] };
       updated = await PortalDocument.findOneAndUpdate(q, { $set: { status: 'revoked' } }, { new: true }).lean();
+      if (updated && updated.caseId) {
+        const remainingCount = await PortalDocument.countDocuments({
+          caseId: updated.caseId,
+          status: { $ne: 'revoked' }
+        });
+        const isCaseObjectId = mongoose.Types.ObjectId.isValid(updated.caseId);
+        const qCase = isCaseObjectId ? { $or: [{ caseId: updated.caseId }, { _id: updated.caseId }] } : { caseId: updated.caseId };
+        await PortalCase.updateOne(qCase, { $set: { documentsCount: remainingCount } });
+      }
     } catch (e) {
       console.warn('Mongo revoke document error, falling back:', e.message);
     }
@@ -1459,6 +1334,12 @@ async function revokePortalDocument(docIdentifier, reason = 'Revoked by Operatio
   if (doc) {
     doc.status = 'revoked';
     doc.revokedReason = reason;
+    if (doc.caseId) {
+      const c = (local.portal_cases || []).find(item => item.caseId === doc.caseId || item.id === doc.caseId);
+      if (c) {
+        c.documentsCount = local.portal_documents.filter(d => (d.caseId === doc.caseId || d.caseId === c.id) && d.status !== 'revoked').length;
+      }
+    }
     writeDB(local);
     if (!updated) updated = doc;
   }
@@ -1478,6 +1359,15 @@ async function deletePortalDocument(docIdentifier) {
       const isObjectId = mongoose.Types.ObjectId.isValid(docIdentifier);
       const q = isObjectId ? { $or: [{ _id: docIdentifier }, { docId: docIdentifier }, { id: docIdentifier }] } : { $or: [{ docId: docIdentifier }, { id: docIdentifier }] };
       deletedDoc = await PortalDocument.findOneAndDelete(q).lean();
+      if (deletedDoc && deletedDoc.caseId) {
+        const remainingCount = await PortalDocument.countDocuments({
+          caseId: deletedDoc.caseId,
+          status: { $ne: 'revoked' }
+        });
+        const isCaseObjectId = mongoose.Types.ObjectId.isValid(deletedDoc.caseId);
+        const qCase = isCaseObjectId ? { $or: [{ caseId: deletedDoc.caseId }, { _id: deletedDoc.caseId }] } : { caseId: deletedDoc.caseId };
+        await PortalCase.updateOne(qCase, { $set: { documentsCount: remainingCount } });
+      }
     } catch (e) {
       console.warn('Mongo delete document error, falling back:', e.message);
     }
@@ -1489,6 +1379,12 @@ async function deletePortalDocument(docIdentifier) {
   if (idx !== -1) {
     if (!deletedDoc) deletedDoc = local.portal_documents[idx];
     local.portal_documents.splice(idx, 1);
+    if (deletedDoc && deletedDoc.caseId) {
+      const c = (local.portal_cases || []).find(item => item.caseId === deletedDoc.caseId || item.id === deletedDoc.caseId);
+      if (c) {
+        c.documentsCount = local.portal_documents.filter(d => (d.caseId === deletedDoc.caseId || d.caseId === c.id) && d.status !== 'revoked').length;
+      }
+    }
     writeDB(local);
   }
 
@@ -1839,6 +1735,7 @@ module.exports = {
   getPortalCases,
   createPortalCase,
   updatePortalCaseStatus,
+  deletePortalCase,
   getPortalDocuments,
   createPortalDocument,
   revokePortalDocument,
