@@ -6,7 +6,6 @@
 (function () {
   "use strict";
 
-  const WEB3FORMS_ACCESS_KEY = "f9e8e977-8a5c-4979-8cf0-e303edbcac00";
   const HELPLINE_PHONE = "7041554148";
   const WHATSAPP_PHONE = "917041554148";
   const ASSISTANT_AVATAR_IMG = "images/ai_female_assistant.jpg";
@@ -399,47 +398,25 @@
         localStorage.setItem("corporateMart_leadService", leadData.service);
       } catch (e) {}
 
-      // Submit to Web3Forms API
+      // Submit to Secure Backend Relay (Zero API keys in client-side code)
       try {
         const payload = {
-          access_key: WEB3FORMS_ACCESS_KEY,
-          subject: `🤖 New Virtual Assistant Chat Lead: ${leadData.name} (${leadData.service})`,
-          from_name: "Corporate Mart Virtual Assistant",
           name: leadData.name,
           phone: leadData.phone,
           email: leadData.email,
           service: leadData.service,
-          details_or_city: leadData.details || "Not specified",
+          details: leadData.details || "Not specified",
           source: "Floating Virtual Assistant Chatbot"
         };
 
-        fetch("https://api.web3forms.com/submit", {
+        fetch("/api/leads", {
           method: "POST",
           headers: { "Content-Type": "application/json", Accept: "application/json" },
           body: JSON.stringify(payload)
-        }).catch((err) => console.warn("Chatbot Web3Forms submit error:", err));
+        }).catch((err) => console.warn("Chatbot lead submit error:", err));
       } catch (err) {
         console.warn("Submit error:", err);
       }
-
-      // Also try submitting to local backend if available
-      try {
-        fetch("/api/portal/ops/orders", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            clientName: leadData.name,
-            companyName: leadData.details || leadData.name,
-            email: leadData.email,
-            phone: leadData.phone,
-            serviceName: leadData.service,
-            planName: "Chatbot Inquiry",
-            amount: 0,
-            status: "pending_review",
-            paymentStatus: "inquiry"
-          })
-        }).catch(() => {});
-      } catch (e) {}
 
       const cleanService = encodeURIComponent(leadData.service || "Legal & Compliance Services");
       const cleanName = encodeURIComponent(leadData.name || "Client");

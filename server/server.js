@@ -456,6 +456,62 @@ app.delete('/api/admin/schemes/:id', requireAdmin, (req, res) => {
 });
 
 // ==========================================
+// PUBLIC LEADS & CHATBOT INQUIRIES (SECURE PROXY)
+// Keeps Web3Forms Access Key private on the server
+// ==========================================
+app.post('/api/leads', async (req, res) => {
+  try {
+    const { name, phone, email, service, details, source } = req.body || {};
+    const web3Key = (process.env.WEB3FORMS_ACCESS_KEY || '').trim();
+
+    // 1. Forward to Web3Forms server-to-server (hiding secret from client code)
+    if (web3Key) {
+      try {
+        await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({
+            access_key: web3Key,
+            subject: `🤖 New Virtual Assistant Chat Lead: ${name || 'Client'} (${service || 'Inquiry'})`,
+            from_name: 'Corporate Mart Virtual Assistant',
+            name: name || '',
+            phone: phone || '',
+            email: email || '',
+            service: service || '',
+            details_or_city: details || 'Not specified',
+            source: source || 'Floating Virtual Assistant Chatbot'
+          })
+        });
+      } catch (wfErr) {
+        console.warn('Web3Forms backend relay warning:', wfErr.message);
+      }
+    }
+
+    // 2. Also register lead directly into Operations Portal Orders/Inquiries
+    try {
+      await db.createPortalOrder({
+        clientName: name || 'Chat Lead',
+        companyName: details || name || 'Corporate Lead',
+        email: email || '',
+        phone: phone || '',
+        serviceName: service || 'General Legal Consultation',
+        planName: 'Chatbot Inquiry',
+        amount: 0,
+        status: 'pending_review',
+        paymentStatus: 'inquiry'
+      });
+    } catch (dbErr) {
+      console.warn('Portal inquiry DB save warning:', dbErr.message);
+    }
+
+    return res.status(200).json({ success: true, message: 'Inquiry registered successfully' });
+  } catch (err) {
+    console.error('Lead proxy submission error:', err);
+    return res.status(500).json({ error: 'Failed to record lead' });
+  }
+});
+
+// ==========================================
 // 2. AUTHENTICATION APIS
 // ==========================================
 app.post('/api/auth/register', async (req, res) => {
