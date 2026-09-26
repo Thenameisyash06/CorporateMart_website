@@ -114,8 +114,10 @@
       const res = await fetch(endpoint, { ...options, headers });
       const data = await res.json();
       if (!res.ok) {
-        if (res.status === 401 || res.status === 403) {
+        if (res.status === 401) {
           handleAuthFailure(data.error || 'Session expired. Please log in.');
+        } else if (res.status === 403) {
+          showToast(data.error || 'Access denied: Staff privileges required', 'error');
         }
         throw new Error(data.error || `HTTP error ${res.status}`);
       }

@@ -1529,7 +1529,6 @@
                 <div class="cp-service-doc-title">${escapeHtml(doc.title || 'Document')}</div>
                 <div class="cp-service-doc-sub">
                   <span class="cp-badge cp-badge-purple">${escapeHtml(doc.category || 'Certificate')}</span>
-                  <span>${escapeHtml(doc.fileName || 'file')}</span>
                   ${doc.fileSize ? `<span>• ${escapeHtml(doc.fileSize)}</span>` : ''}
                   <span>• Uploaded: ${dateStr}</span>
                 </div>
@@ -1670,12 +1669,12 @@
       const sizeStr = d.fileSize ? ` • ${d.fileSize}` : '';
       const meta = `${ext.toUpperCase()}${sizeStr}`;
       return `
-        <div class="company-doc-card btn-client-preview-doc" data-doc-id="${escapeHtml(d.docId)}" title="Click to view ${escapeHtml(d.title || d.fileName)}">
+        <div class="company-doc-card btn-client-preview-doc" data-doc-id="${escapeHtml(d.docId)}" title="Click to view ${escapeHtml(d.title || 'Document')}">
           <div class="company-doc-icon-container">
             ${getCompanyDocIcon(d.title, d.fileName, d.category)}
           </div>
           <div class="company-doc-info">
-            <h4 class="company-doc-title" title="${escapeHtml(d.title || d.fileName)}">${escapeHtml(d.title || d.fileName)}</h4>
+            <h4 class="company-doc-title" title="${escapeHtml(d.title || 'Document')}">${escapeHtml(d.title || 'Document')}</h4>
             <span class="company-doc-meta">${escapeHtml(meta)}</span>
           </div>
         </div>
@@ -1699,7 +1698,7 @@
     if (!tbody) return;
 
     if (issuedDocs.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" class="cp-td-empty">No issued documents or certificates uploaded yet. Once issued by the department, your certificates will be available here for instant download.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" class="cp-td-empty">No issued documents or certificates uploaded yet. Once issued by the department, your certificates will be available here for instant download.</td></tr>';
       return;
     }
 
@@ -1710,7 +1709,6 @@
           <td><code>${escapeHtml(d.docId)}</code></td>
           <td><strong>${escapeHtml(d.title)}</strong></td>
           <td><span class="cp-badge cp-badge-purple">${escapeHtml(d.category)}</span></td>
-          <td style="font-size:12px; color:var(--cp-text-muted);">${escapeHtml(d.fileName)}</td>
           <td>${escapeHtml(d.fileSize)}</td>
           <td>${dateStr}</td>
           <td>
@@ -1744,14 +1742,12 @@
   function openClientDocPreview(doc) {
     const titleEl = document.getElementById('clientDocPreviewTitle');
     const catEl = document.getElementById('clientDocPreviewCategory');
-    const nameEl = document.getElementById('clientDocPreviewFileName');
     const newTabEl = document.getElementById('clientDocPreviewNewTab');
     const dlEl = document.getElementById('clientDocPreviewDownload');
     const bodyEl = document.getElementById('clientDocPreviewBody');
 
     if (titleEl) titleEl.textContent = doc.title || 'Document Preview';
-    if (catEl) catEl.textContent = doc.category || 'certificate';
-    if (nameEl) nameEl.textContent = `${doc.fileName || 'file'} (${doc.fileSize || ''})`;
+    if (catEl) catEl.textContent = doc.fileSize ? `${doc.category || 'Certificate'} • ${doc.fileSize}` : (doc.category || 'Certificate');
     if (newTabEl) newTabEl.href = doc.fileUrl;
     const downloadUrl = doc.fileUrl ? (doc.fileUrl.includes('?') ? `${doc.fileUrl}&download=1` : `${doc.fileUrl}?download=1`) : '#';
     if (dlEl) {
@@ -1780,7 +1776,7 @@
       bodyEl.innerHTML = `
         <div class="cp-preview-fallback">
           <div class="cp-preview-fallback-icon" style="font-size:56px;">📘</div>
-          <h4 style="font-size:17px; font-weight:700; margin-bottom:6px;">${escapeHtml(doc.fileName || 'Word Document')}</h4>
+          <h4 style="font-size:17px; font-weight:700; margin-bottom:6px;">${escapeHtml(doc.title || 'Word Document')}</h4>
           <p style="font-size:13px; color:var(--cp-text-muted); max-width:420px; margin:0 auto 16px;">
             Microsoft Word document (${escapeHtml(doc.fileSize || 'Standard Document')}). You can open or download the document directly to view.
           </p>
@@ -1794,7 +1790,7 @@
       bodyEl.innerHTML = `
         <div class="cp-preview-fallback">
           <div class="cp-preview-fallback-icon" style="font-size:56px;">📙</div>
-          <h4 style="font-size:17px; font-weight:700; margin-bottom:6px;">${escapeHtml(doc.fileName || 'PowerPoint Presentation')}</h4>
+          <h4 style="font-size:17px; font-weight:700; margin-bottom:6px;">${escapeHtml(doc.title || 'PowerPoint Presentation')}</h4>
           <p style="font-size:13px; color:var(--cp-text-muted); max-width:420px; margin:0 auto 16px;">
             Microsoft PowerPoint presentation (${escapeHtml(doc.fileSize || 'Presentation')}). You can open or download the presentation slides directly.
           </p>
@@ -1808,7 +1804,7 @@
       bodyEl.innerHTML = `
         <div class="cp-preview-fallback">
           <div class="cp-preview-fallback-icon">📄</div>
-          <h4 style="font-size:16px; margin-bottom:8px;">${escapeHtml(doc.fileName || 'File Preview')}</h4>
+          <h4 style="font-size:16px; margin-bottom:8px;">${escapeHtml(doc.title || 'File Preview')}</h4>
           <p style="font-size:13px; color:#94a3b8; max-width:400px; margin:0 auto 18px;">
             Inline preview is not supported for .${escapeHtml(ext)} files. You can open or download the file directly.
           </p>
