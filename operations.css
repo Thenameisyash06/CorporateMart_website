@@ -1219,6 +1219,136 @@ body.dark-mode .theme-icon-dark { display: none; }
   margin-bottom: 12px;
 }
 
+/* --- Interactive Mobile & Desktop PDF Canvas Viewer --- */
+.ops-pdf-viewer-wrap {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #0f172a;
+  overflow: hidden;
+  position: relative;
+}
+
+.ops-pdf-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(15, 23, 42, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+  font-size: 13px;
+  gap: 8px;
+  flex-wrap: wrap;
+  z-index: 10;
+  backdrop-filter: blur(8px);
+}
+
+.ops-pdf-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ops-pdf-btn {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.ops-pdf-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.ops-pdf-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ops-pdf-page-indicator {
+  font-size: 12px;
+  font-weight: 600;
+  color: #cbd5e1;
+  padding: 0 4px;
+  min-width: 70px;
+  text-align: center;
+}
+
+.ops-pdf-canvas-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 8px;
+  gap: 14px;
+  background: #1e293b;
+}
+
+.ops-pdf-canvas-container canvas {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  border-radius: 4px;
+  background: #ffffff;
+  max-width: 100%;
+  height: auto !important;
+  display: block;
+}
+
+.ops-pdf-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #94a3b8;
+  font-size: 13.5px;
+  padding: 50px 20px;
+}
+
+.ops-pdf-spinner {
+  width: 34px;
+  height: 34px;
+  border: 3px solid rgba(255, 255, 255, 0.15);
+  border-top-color: #38bdf8;
+  border-radius: 50%;
+  animation: opsPdfSpin 0.75s linear infinite;
+}
+
+@keyframes opsPdfSpin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 640px) {
+  .ops-pdf-toolbar {
+    padding: 6px 8px;
+    gap: 4px;
+  }
+  .ops-pdf-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+  .ops-pdf-page-indicator {
+    font-size: 11px;
+    min-width: 60px;
+  }
+  .ops-pdf-canvas-container {
+    padding: 8px 4px;
+  }
+}
+
 /* ==========================================================================
    RESPONSIVE
    ========================================================================== */

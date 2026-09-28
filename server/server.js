@@ -1459,12 +1459,18 @@ async function streamDocumentHandler(req, res) {
     const fileName = doc.fileName || req.params.filename || 'document.pdf';
     const mimeType = doc.fileType || getMimeType(fileName);
     const isDownload = req.query.download === '1' || req.query.download === 'true';
+    const cleanFileName = fileName.replace(/[^\w\d\.\-]/g, '_');
+    const safeEncodedName = encodeURIComponent(fileName);
 
     res.setHeader('Content-Type', mimeType);
     res.setHeader(
       'Content-Disposition',
-      `${isDownload ? 'attachment' : 'inline'}; filename="${encodeURIComponent(fileName)}"`
+      `${isDownload ? 'attachment' : 'inline'}; filename="${cleanFileName}"; filename*=UTF-8''${safeEncodedName}`
     );
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    if (isDownload) {
+      res.setHeader('Content-Transfer-Encoding', 'binary');
+    }
     res.setHeader('Cache-Control', 'public, max-age=86400');
 
     // 1. Attempt streaming directly from MongoDB Atlas GridFS
@@ -1520,9 +1526,12 @@ app.get('/uploads/documents/:filename', async (req, res) => {
     const doc = await db.getPortalDocumentByFileName(filename);
     const mimeType = (doc && doc.fileType) || getMimeType(filename);
     const displayName = (doc && doc.fileName) || filename;
+    const cleanDisplayName = displayName.replace(/[^\w\d\.\-]/g, '_');
+    const safeEncodedDisplayName = encodeURIComponent(displayName);
 
     res.setHeader('Content-Type', mimeType);
-    res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(displayName)}"`);
+    res.setHeader('Content-Disposition', `inline; filename="${cleanDisplayName}"; filename*=UTF-8''${safeEncodedDisplayName}`);
+    res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Cache-Control', 'public, max-age=86400');
 
     if (doc && doc.gridFsFileId) {

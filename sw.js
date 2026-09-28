@@ -1,5 +1,5 @@
 // Service Worker for Corporate Mart Client & Operations Portals PWA
-const CACHE_NAME = 'cm-portal-v2';
+const CACHE_NAME = 'cm-portal-v3';
 const ASSETS_TO_CACHE = [
   '/client',
   '/client.html',
@@ -41,8 +41,24 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
 
-  // For API and uploads, always network-first
-  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/uploads/')) {
+  // 1. Direct pass-through for file downloads & document binary streams:
+  // Must NOT call event.respondWith() so Android DownloadManager and mobile OS can save directly to device internal storage
+  if (
+    url.searchParams.get('download') === '1' ||
+    url.searchParams.get('download') === 'true' ||
+    url.pathname.includes('/documents/') ||
+    url.pathname.startsWith('/uploads/') ||
+    url.pathname.endsWith('.pdf') ||
+    url.pathname.endsWith('.docx') ||
+    url.pathname.endsWith('.pptx') ||
+    url.pathname.endsWith('.xlsx') ||
+    url.pathname.endsWith('.zip')
+  ) {
+    return; // Pass through to native browser download manager
+  }
+
+  // For other API calls, always network-first
+  if (url.pathname.startsWith('/api/')) {
     event.respondWith(
       fetch(event.request).catch(() => caches.match(event.request))
     );

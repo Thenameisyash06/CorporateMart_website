@@ -1351,9 +1351,9 @@
                 <button type="button" class="ops-btn ops-btn-secondary ops-btn-sm btn-preview-doc" data-doc-id="${escapeHtml(d.docId)}" title="Preview document">
                   👁 Preview
                 </button>
-                <a href="${escapeHtml(d.fileUrl)}" target="_blank" download class="ops-btn ops-btn-outline ops-btn-sm" title="Download to device" style="text-decoration:none;">
+                <button type="button" class="ops-btn ops-btn-outline ops-btn-sm btn-trigger-download" data-file-url="${escapeHtml(d.fileUrl)}" data-file-name="${escapeHtml(d.fileName || 'document.pdf')}" title="Download to device">
                   ⬇ Download
-                </a>
+                </button>
               </div>
             </td>
           </tr>
@@ -1371,6 +1371,237 @@
     });
   }
 
+  // Universal Download Helper: Ensures file is downloaded and physically saved to device internal storage
+  async function downloadFileToDevice(url, fileName = 'document.pdf') {
+    if (!url || url === '#' || url === '') {
+      showToast('No document file URL available for download', 'error');
+      return;
+    }
+
+    const downloadUrl = url.includes('?') ? `${url}&download=1` : `${url}?download=1`;
+    showToast('Saving document to device...', 'info');
+
+    try {
+      // 1. Fetch file as blob directly to bypass service worker interception and navigation traps
+      const res = await fetch(downloadUrl);
+      if (!res.ok) throw new Error(`Download failed with status ${res.status}`);
+      const blob = await res.blob();
+
+      // 2. Mobile Native Save / Share Sheet if user is on mobile
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (isMobile && navigator.canShare) {
+        try {
+          const file = new File([blob], fileName, { type: blob.type || 'application/pdf' });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: fileName,
+              text: `Corporate Mart Official Document: ${fileName}`
+            });
+            showToast('Document saved successfully!', 'success');
+            return;
+          }
+        } catch (shareErr) {
+          if (shareErr.name === 'AbortError') return;
+        }
+      }
+
+      // 3. Native Blob URL Download (Forces Android/iOS browser to write file to internal Downloads folder)
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = blobUrl;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+
+      setTimeout(() => {
+        if (document.body.contains(a)) document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+      }, 3500);
+
+      showToast(`Saved "${fileName}" to Downloads folder!`, 'success');
+    } catch (err) {
+      console.warn('Blob download fallback to direct anchor:', err.message);
+      // Fallback: Direct download trigger
+      const directA = document.createElement('a');
+      directA.style.display = 'none';
+      directA.href = downloadUrl;
+      directA.download = fileName;
+      directA.target = '_blank';
+      document.body.appendChild(directA);
+      directA.click();
+      setTimeout(() => {
+        if (document.body.contains(directA)) document.body.removeChild(directA);
+      }, 2000);
+      showToast(`Starting download: ${fileName}`, 'info');
+    }
+  }
+
+  // PDF.js Canvas Renderer with mobile touch & high-DPI retina rendering
+  async function renderPdfPreview(url, container, doc) {
+    if (!container) return;
+    const isMobile = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    if (window.pdfjsLib) {
+      container.innerHTML = `
+        <div class="ops-pdf-viewer-wrap">
+          <div class="ops-pdf-toolbar">
+            <div class="ops-pdf-toolbar-group">
+              <button type="button" class="ops-pdf-btn" id="opsPdfPrevPage" disabled>‹ Prev</button>
+              <span class="ops-pdf-page-indicator" id="opsPdfPageNum">Page 1 / ?</span>
+              <button type="button" class="ops-pdf-btn" id="opsPdfNextPage" disabled>Next ›</button>
+            </div>
+            <div class="ops-pdf-toolbar-group">
+              <button type="button" class="ops-pdf-btn" id="opsPdfZoomOut" title="Zoom Out">−</button>
+              <button type="button" class="ops-pdf-btn" id="opsPdfZoomFit" title="Fit to Screen">Fit</button>
+              <button type="button" class="ops-pdf-btn" id="opsPdfZoomIn" title="Zoom In">+</button>
+            </div>
+          </div>
+          <div class="ops-pdf-canvas-container" id="opsPdfCanvasContainer">
+            <div class="ops-pdf-loading">
+              <div class="ops-pdf-spinner"></div>
+              <span>Rendering official document...</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const canvasContainer = container.querySelector('#opsPdfCanvasContainer');
+      const prevBtn = container.querySelector('#opsPdfPrevPage');
+      const nextBtn = container.querySelector('#opsPdfNextPage');
+      const pageIndicator = container.querySelector('#opsPdfPageNum');
+      const zoomOutBtn = container.querySelector('#opsPdfZoomOut');
+      const zoomInBtn = container.querySelector('#opsPdfZoomIn');
+      const zoomFitBtn = container.querySelector('#opsPdfZoomFit');
+
+      try {
+        if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+
+        const loadingTask = pdfjsLib.getDocument({
+          url,
+          withCredentials: false
+        });
+
+        const pdf = await loadingTask.promise;
+        const totalPages = pdf.numPages;
+        let currentPageNum = 1;
+        let currentScale = 1.0;
+
+        async function renderPage(pageNum) {
+          canvasContainer.innerHTML = '';
+          const page = await pdf.getPage(pageNum);
+          const viewport = page.getViewport({ scale: 1.0 });
+
+          const containerWidth = Math.max(canvasContainer.clientWidth - 24, 280);
+          const desiredScale = Math.min(Math.max((containerWidth / viewport.width) * currentScale, 0.4), 3.0);
+          const scaledViewport = page.getViewport({ scale: desiredScale });
+
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+
+          const pixelRatio = window.devicePixelRatio || 1;
+          canvas.width = Math.floor(scaledViewport.width * pixelRatio);
+          canvas.height = Math.floor(scaledViewport.height * pixelRatio);
+          canvas.style.width = Math.floor(scaledViewport.width) + 'px';
+          canvas.style.height = Math.floor(scaledViewport.height) + 'px';
+
+          context.scale(pixelRatio, pixelRatio);
+
+          await page.render({
+            canvasContext: context,
+            viewport: scaledViewport
+          }).promise;
+
+          canvasContainer.appendChild(canvas);
+
+          if (pageIndicator) pageIndicator.textContent = `Page ${pageNum} / ${totalPages}`;
+          if (prevBtn) prevBtn.disabled = pageNum <= 1;
+          if (nextBtn) nextBtn.disabled = pageNum >= totalPages;
+        }
+
+        await renderPage(currentPageNum);
+
+        if (prevBtn) {
+          prevBtn.addEventListener('click', () => {
+            if (currentPageNum > 1) {
+              currentPageNum--;
+              renderPage(currentPageNum);
+            }
+          });
+        }
+
+        if (nextBtn) {
+          nextBtn.addEventListener('click', () => {
+            if (currentPageNum < totalPages) {
+              currentPageNum++;
+              renderPage(currentPageNum);
+            }
+          });
+        }
+
+        if (zoomInBtn) {
+          zoomInBtn.addEventListener('click', () => {
+            currentScale = Math.min(currentScale + 0.25, 2.5);
+            renderPage(currentPageNum);
+          });
+        }
+
+        if (zoomOutBtn) {
+          zoomOutBtn.addEventListener('click', () => {
+            currentScale = Math.max(currentScale - 0.25, 0.6);
+            renderPage(currentPageNum);
+          });
+        }
+
+        if (zoomFitBtn) {
+          zoomFitBtn.addEventListener('click', () => {
+            currentScale = 1.0;
+            renderPage(currentPageNum);
+          });
+        }
+
+        return;
+      } catch (pdfErr) {
+        console.warn('PDF.js render failed in operations, falling back:', pdfErr);
+      }
+    }
+
+    if (!isMobile) {
+      container.innerHTML = `
+        <iframe src="${escapeHtml(url)}#toolbar=1" type="application/pdf" title="PDF Document Viewer">
+          <p class="ops-preview-fallback">Your browser cannot render this PDF inline. <a href="${escapeHtml(url)}" target="_blank" style="color:#60a5fa;">Click here to open or download</a>.</p>
+        </iframe>
+      `;
+    } else {
+      container.innerHTML = `
+        <div class="ops-preview-fallback" style="padding:32px 18px; max-width:440px; margin:0 auto; text-align:center;">
+          <div class="ops-preview-fallback-icon" style="font-size:64px; margin-bottom:12px;">📄</div>
+          <h4 style="font-size:17px; font-weight:700; margin-bottom:6px; color:#ffffff;">${escapeHtml(doc.title || doc.fileName || 'Official Document')}</h4>
+          <p style="font-size:13px; color:#94a3b8; margin:0 auto 20px; line-height:1.5;">
+            PDF document (${escapeHtml(doc.fileSize || 'Standard Record')}). Tap below to view fullscreen or save directly to mobile internal storage.
+          </p>
+          <div style="display:flex; flex-direction:column; gap:10px; width:100%;">
+            <a href="${escapeHtml(url)}" target="_blank" class="ops-btn ops-btn-secondary" style="text-decoration:none; justify-content:center; padding:10px 16px; font-size:13.5px;">
+              ↗ Open in Fullscreen Viewer
+            </a>
+            <button type="button" class="ops-btn ops-btn-primary btn-direct-download-action" style="justify-content:center; padding:10px 16px; font-size:13.5px;">
+              ⬇ Save to Internal Storage
+            </button>
+          </div>
+        </div>
+      `;
+      const directDlBtn = container.querySelector('.btn-direct-download-action');
+      if (directDlBtn) {
+        directDlBtn.addEventListener('click', () => {
+          downloadFileToDevice(url, doc.fileName || 'document.pdf');
+        });
+      }
+    }
+  }
+
   function openDocPreview(doc) {
     const titleEl = document.getElementById('docPreviewTitle');
     const catEl = document.getElementById('docPreviewCategory');
@@ -1383,10 +1614,17 @@
     if (catEl) catEl.textContent = doc.category || 'document';
     if (nameEl) nameEl.textContent = `${doc.fileName || 'file'} (${doc.fileSize || ''})`;
     if (newTabEl) newTabEl.href = doc.fileUrl;
+
     const downloadUrl = doc.fileUrl ? (doc.fileUrl.includes('?') ? `${doc.fileUrl}&download=1` : `${doc.fileUrl}?download=1`) : '#';
+    const fileName = doc.fileName || 'document.pdf';
+
     if (dlEl) {
       dlEl.href = downloadUrl;
-      dlEl.setAttribute('download', doc.fileName || 'download');
+      dlEl.setAttribute('download', fileName);
+      dlEl.onclick = (e) => {
+        e.preventDefault();
+        downloadFileToDevice(downloadUrl, fileName);
+      };
     }
 
     if (!bodyEl) return;
@@ -1397,11 +1635,7 @@
     const mime = (doc.fileType || '').toLowerCase();
 
     if (ext === 'pdf' || mime.includes('pdf')) {
-      bodyEl.innerHTML = `
-        <iframe src="${escapeHtml(url)}#toolbar=1" type="application/pdf" title="PDF Document Viewer">
-          <p class="ops-preview-fallback">Your browser cannot render this PDF inline. <a href="${escapeHtml(url)}" target="_blank" style="color:#60a5fa;">Click here to open or download</a>.</p>
-        </iframe>
-      `;
+      renderPdfPreview(url, bodyEl, doc);
     } else if (['jpg', 'jpeg', 'png', 'webp', 'svg', 'gif'].includes(ext) || mime.startsWith('image/')) {
       bodyEl.innerHTML = `
         <img src="${escapeHtml(url)}" alt="${escapeHtml(doc.title || 'Document Preview')}" />
@@ -1416,7 +1650,7 @@
           </p>
           <div style="display:flex; justify-content:center; gap:12px;">
             <a href="${escapeHtml(url)}" target="_blank" class="ops-btn ops-btn-secondary ops-btn-sm" style="text-decoration:none;">↗ Open Document</a>
-            <a href="${escapeHtml(url)}" download="${escapeHtml(doc.fileName || 'document.docx')}" class="ops-btn ops-btn-primary ops-btn-sm" style="text-decoration:none;">⬇ Download Word (.${escapeHtml(ext || 'docx')})</a>
+            <button type="button" class="ops-btn ops-btn-primary ops-btn-sm btn-trigger-download" data-file-url="${escapeHtml(url)}" data-file-name="${escapeHtml(doc.fileName || 'document.docx')}">⬇ Download Word (.${escapeHtml(ext || 'docx')})</button>
           </div>
         </div>
       `;
@@ -1430,7 +1664,7 @@
           </p>
           <div style="display:flex; justify-content:center; gap:12px;">
             <a href="${escapeHtml(url)}" target="_blank" class="ops-btn ops-btn-secondary ops-btn-sm" style="text-decoration:none;">↗ Open Presentation</a>
-            <a href="${escapeHtml(url)}" download="${escapeHtml(doc.fileName || 'presentation.pptx')}" class="ops-btn ops-btn-primary ops-btn-sm" style="text-decoration:none;">⬇ Download PPT (.${escapeHtml(ext || 'pptx')})</a>
+            <button type="button" class="ops-btn ops-btn-primary ops-btn-sm btn-trigger-download" data-file-url="${escapeHtml(url)}" data-file-name="${escapeHtml(doc.fileName || 'presentation.pptx')}">⬇ Download PPT (.${escapeHtml(ext || 'pptx')})</button>
           </div>
         </div>
       `;
@@ -1444,7 +1678,7 @@
           </p>
           <div style="display:flex; justify-content:center; gap:12px;">
             <a href="${escapeHtml(url)}" target="_blank" class="ops-btn ops-btn-secondary ops-btn-sm" style="text-decoration:none;">↗ Open File</a>
-            <a href="${escapeHtml(url)}" download class="ops-btn ops-btn-primary ops-btn-sm" style="text-decoration:none;">⬇ Download File</a>
+            <button type="button" class="ops-btn ops-btn-primary ops-btn-sm btn-trigger-download" data-file-url="${escapeHtml(url)}" data-file-name="${escapeHtml(doc.fileName || 'file')}">⬇ Download File</button>
           </div>
         </div>
       `;
@@ -2244,6 +2478,11 @@
           uploadSelect.dispatchEvent(new Event('change'));
         }
         resetUploadDocRows();
+        const companyRadio = document.querySelector('input[name="uploadDocType"][value="company"]');
+        if (companyRadio) {
+          companyRadio.checked = true;
+          syncUploadDocTypeUI();
+        }
         openModal('modalUploadDoc');
       });
     }
@@ -2278,6 +2517,17 @@
       });
     }
   }
+
+  // Delegated Global Download Handler for Device Storage
+  document.addEventListener('click', (e) => {
+    const dlBtn = e.target.closest('.btn-trigger-download');
+    if (dlBtn) {
+      e.preventDefault();
+      const fileUrl = dlBtn.dataset.fileUrl || dlBtn.getAttribute('href');
+      const fileName = dlBtn.dataset.fileName || dlBtn.getAttribute('download') || 'document.pdf';
+      downloadFileToDevice(fileUrl, fileName);
+    }
+  });
 
   // ==========================================
   // 7. INITIALIZATION
