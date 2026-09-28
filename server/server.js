@@ -1462,7 +1462,13 @@ async function streamDocumentHandler(req, res) {
     const cleanFileName = fileName.replace(/[^\w\d\.\-]/g, '_');
     const safeEncodedName = encodeURIComponent(fileName);
 
-    res.setHeader('Content-Type', mimeType);
+    // CRITICAL FOR MOBILE INTERNAL STORAGE:
+    // When downloading on mobile, application/octet-stream forces Android DownloadManager
+    // and mobile OS to write directly to /storage/emulated/0/Download/,
+    // instead of launching the mobile browser's in-app PDF previewer!
+    const effectiveMimeType = isDownload ? 'application/octet-stream' : mimeType;
+
+    res.setHeader('Content-Type', effectiveMimeType);
     res.setHeader(
       'Content-Disposition',
       `${isDownload ? 'attachment' : 'inline'}; filename="${cleanFileName}"; filename*=UTF-8''${safeEncodedName}`
@@ -1470,8 +1476,22 @@ async function streamDocumentHandler(req, res) {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     if (isDownload) {
       res.setHeader('Content-Transfer-Encoding', 'binary');
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=86400');
     }
-    res.setHeader('Cache-Control', 'public, max-age=86400');
+
+    // Set Content-Length if GridFS metadata exists so mobile DownloadManager displays accurate progress and finishes cleanly
+    try {
+      const gridInfo = doc.gridFsFileId
+        ? await db.getGridFSFileInfo(doc.gridFsFileId)
+        : await db.getGridFSFileInfo(fileName);
+      if (gridInfo && gridInfo.length) {
+        res.setHeader('Content-Length', gridInfo.length);
+      }
+    } catch (infoErr) {}
 
     // 1. Attempt streaming directly from MongoDB Atlas GridFS
     if (doc.gridFsFileId) {
@@ -1528,11 +1548,17 @@ app.get('/uploads/documents/:filename', async (req, res) => {
     const displayName = (doc && doc.fileName) || filename;
     const cleanDisplayName = displayName.replace(/[^\w\d\.\-]/g, '_');
     const safeEncodedDisplayName = encodeURIComponent(displayName);
+    const isDownload = req.query.download === '1' || req.query.download === 'true';
 
-    res.setHeader('Content-Type', mimeType);
-    res.setHeader('Content-Disposition', `inline; filename="${cleanDisplayName}"; filename*=UTF-8''${safeEncodedDisplayName}`);
+    res.setHeader('Content-Type', isDownload ? 'application/octet-stream' : mimeType);
+    res.setHeader('Content-Disposition', `${isDownload ? 'attachment' : 'inline'}; filename="${cleanDisplayName}"; filename*=UTF-8''${safeEncodedDisplayName}`);
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('Cache-Control', 'public, max-age=86400');
+    if (isDownload) {
+      res.setHeader('Content-Transfer-Encoding', 'binary');
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+    }
 
     if (doc && doc.gridFsFileId) {
       try {

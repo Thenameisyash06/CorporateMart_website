@@ -1371,71 +1371,28 @@
     });
   }
 
-  // Universal Download Helper: Ensures file is downloaded and physically saved to device internal storage
-  async function downloadFileToDevice(url, fileName = 'document.pdf') {
+  // Universal Download Helper: Directly triggers native browser file download into device storage
+  function downloadFileToDevice(url, fileName = 'document.pdf') {
     if (!url || url === '#' || url === '') {
       showToast('No document file URL available for download', 'error');
       return;
     }
 
     const downloadUrl = url.includes('?') ? `${url}&download=1` : `${url}?download=1`;
-    showToast('Saving document to device...', 'info');
+    showToast(`Downloading "${fileName}" to device storage...`, 'info');
 
-    try {
-      // 1. Fetch file as blob directly to bypass service worker interception and navigation traps
-      const res = await fetch(downloadUrl);
-      if (!res.ok) throw new Error(`Download failed with status ${res.status}`);
-      const blob = await res.blob();
-
-      // 2. Mobile Native Save / Share Sheet if user is on mobile
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-      if (isMobile && navigator.canShare) {
-        try {
-          const file = new File([blob], fileName, { type: blob.type || 'application/pdf' });
-          if (navigator.canShare({ files: [file] })) {
-            await navigator.share({
-              files: [file],
-              title: fileName,
-              text: `Corporate Mart Official Document: ${fileName}`
-            });
-            showToast('Document saved successfully!', 'success');
-            return;
-          }
-        } catch (shareErr) {
-          if (shareErr.name === 'AbortError') return;
-        }
-      }
-
-      // 3. Native Blob URL Download (Forces Android/iOS browser to write file to internal Downloads folder)
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = blobUrl;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-
-      setTimeout(() => {
-        if (document.body.contains(a)) document.body.removeChild(a);
-        URL.revokeObjectURL(blobUrl);
-      }, 3500);
-
-      showToast(`Saved "${fileName}" to Downloads folder!`, 'success');
-    } catch (err) {
-      console.warn('Blob download fallback to direct anchor:', err.message);
-      // Fallback: Direct download trigger
-      const directA = document.createElement('a');
-      directA.style.display = 'none';
-      directA.href = downloadUrl;
-      directA.download = fileName;
-      directA.target = '_blank';
-      document.body.appendChild(directA);
-      directA.click();
-      setTimeout(() => {
-        if (document.body.contains(directA)) document.body.removeChild(directA);
-      }, 2000);
-      showToast(`Starting download: ${fileName}`, 'info');
-    }
+    // Direct synchronous anchor trigger:
+    // With target='_self' and server returning Content-Type: application/octet-stream + Content-Disposition: attachment,
+    // Android OS & iOS native DownloadManager immediately captures the stream and saves it to internal storage (/Download folder)
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = fileName;
+    a.target = '_self';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      if (document.body.contains(a)) document.body.removeChild(a);
+    }, 2000);
   }
 
   // PDF.js Canvas Renderer with mobile touch & high-DPI retina rendering
@@ -1621,9 +1578,9 @@
     if (dlEl) {
       dlEl.href = downloadUrl;
       dlEl.setAttribute('download', fileName);
-      dlEl.onclick = (e) => {
-        e.preventDefault();
-        downloadFileToDevice(downloadUrl, fileName);
+      dlEl.setAttribute('target', '_self');
+      dlEl.onclick = () => {
+        showToast(`Downloading "${fileName}" to device storage...`, 'info');
       };
     }
 
