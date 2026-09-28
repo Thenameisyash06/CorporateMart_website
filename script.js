@@ -2164,15 +2164,41 @@ window.addEventListener("resize", () => {
     });
   }
 
-  // Switch to lead form from poster
-  var switchBtn = document.getElementById("switchToLeadModalBtn");
-  if (switchBtn) {
-    switchBtn.addEventListener("click", function (e) {
-      e.preventDefault();
-      var nameInput = document.getElementById("leadName");
-      if (nameInput) {
-        nameInput.focus();
-        nameInput.scrollIntoView({ behavior: "smooth", block: "center" });
+
+
+  // Home CTA Consultation Form Handler (Section after Process)
+  var homeCtaForm = document.getElementById("homeCtaLeadForm");
+  if (homeCtaForm) {
+    homeCtaForm.addEventListener("submit", async function (e) {
+      if (!homeCtaForm.checkValidity()) {
+        homeCtaForm.reportValidity();
+        return;
+      }
+
+      var nameInput = document.getElementById("homeLeadName");
+      var phoneInput = document.getElementById("homeLeadPhone");
+      var emailInput = document.getElementById("homeLeadEmail");
+      var serviceInput = document.getElementById("homeLeadService");
+
+      var submittedName = nameInput ? nameInput.value.trim() : "";
+      var submittedPhone = phoneInput ? phoneInput.value.trim() : "";
+      var submittedEmail = emailInput ? emailInput.value.trim() : "";
+      var submittedService = serviceInput ? serviceInput.value : "";
+
+      try {
+        localStorage.setItem("corporateMart_leadSubmitted", "true");
+        if (submittedName) localStorage.setItem("corporateMart_leadName", submittedName);
+        if (submittedPhone) localStorage.setItem("corporateMart_leadPhone", submittedPhone);
+        if (submittedEmail) localStorage.setItem("corporateMart_leadEmail", submittedEmail);
+        if (submittedService) localStorage.setItem("corporateMart_leadService", submittedService);
+      } catch (err) {
+        console.warn("Storage error:", err);
+      }
+
+      var successEl = homeCtaForm.querySelector(".cr-form-success") || document.getElementById("homeCtaSuccess");
+
+      if (typeof handleWeb3FormsSubmit === "function") {
+        await handleWeb3FormsSubmit(e, homeCtaForm, successEl);
       }
     });
   }
@@ -2673,17 +2699,7 @@ window.addEventListener("resize", () => {
   });
 })();
 
-/* Floating social links toggle */
-(function () {
-  var root = document.getElementById("socialFloat");
-  var btn = document.getElementById("socialFloatToggle");
-  if (!root || !btn) return;
 
-  btn.addEventListener("click", function () {
-    var closed = root.classList.toggle("is-closed");
-    btn.setAttribute("aria-expanded", closed ? "false" : "true");
-  });
-})();
 
 /* ISO certificate lightbox */
 (function () {

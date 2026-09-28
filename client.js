@@ -45,16 +45,30 @@
   // ==========================================
   // 2. THEME & MOBILE MENU
   // ==========================================
+  function updatePortalLogo(isDark) {
+    const logoImg = document.getElementById('cpHeaderLogo');
+    if (logoImg) {
+      logoImg.src = isDark 
+        ? 'icons/Your_paragraph_text__9_-removebg-preview.png' 
+        : 'icons/Your_paragraph_text__8_-removebg-preview.png';
+    }
+  }
+
   function initTheme() {
     const savedTheme = localStorage.getItem('cp_theme');
-    if (savedTheme === 'dark') {
+    const isDark = (savedTheme === 'dark');
+    if (isDark) {
       document.body.classList.add('dark-mode');
     }
-    cpThemeToggle.addEventListener('click', () => {
-      document.body.classList.toggle('dark-mode');
-      const isDark = document.body.classList.contains('dark-mode');
-      localStorage.setItem('cp_theme', isDark ? 'dark' : 'light');
-    });
+    updatePortalLogo(isDark);
+    if (cpThemeToggle) {
+      cpThemeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const nowDark = document.body.classList.contains('dark-mode');
+        localStorage.setItem('cp_theme', nowDark ? 'dark' : 'light');
+        updatePortalLogo(nowDark);
+      });
+    }
   }
 
   function initMobileMenu() {
@@ -363,6 +377,25 @@
       avatarEl.textContent = initials || 'CM';
     }
 
+    // Populate Menu Section Profile Card
+    const menuCompanyEl = document.getElementById('menuClientCompanyName');
+    const menuDirectorEl = document.getElementById('menuClientDirectorName');
+    const menuAvatarEl = document.getElementById('menuClientAvatar');
+    const menuEmailEl = document.getElementById('menuClientEmailBadge');
+
+    if (menuCompanyEl) menuCompanyEl.textContent = companyName;
+    if (menuDirectorEl) menuDirectorEl.textContent = directorName;
+    if (menuEmailEl) menuEmailEl.textContent = currentUser.email || 'director@company.com';
+    if (menuAvatarEl) {
+      const initials = companyName
+        .split(' ')
+        .map((w) => w[0])
+        .join('')
+        .substring(0, 2)
+        .toUpperCase();
+      menuAvatarEl.textContent = initials || 'CM';
+    }
+
     // Pre-fill request service modal
     const reqCompany = document.getElementById('reqCompanyName');
     const reqContact = document.getElementById('reqContactName');
@@ -610,6 +643,8 @@
   if (clientTopSettingsBtn) clientTopSettingsBtn.addEventListener('click', () => openProfileModal('profile'));
   if (tabBtnClientProfile) tabBtnClientProfile.addEventListener('click', () => switchProfileTab('profile'));
   if (tabBtnClientSecurity) tabBtnClientSecurity.addEventListener('click', () => switchProfileTab('security'));
+  const menuBtnChangePassword = document.getElementById('menuBtnChangePassword');
+  if (menuBtnChangePassword) menuBtnChangePassword.addEventListener('click', () => openProfileModal('security'));
 
   document.querySelectorAll('.btn-client-modal-logout').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -725,11 +760,15 @@
     dashboard: { title: 'Dashboard', sub: 'Track company services, status & certificates' },
     services: { title: 'My Services', sub: 'Real-time progress and filings for your business' },
     buy: { title: 'Buy & Explore', sub: 'Combo packages, 100+ business services & funding schemes' },
-    documents: { title: 'My Documents', sub: 'Official certificates and downloadable papers' },
-    support: { title: 'Help & Support Desk', sub: 'Ask questions and review messages from operations' }
+    documents: { title: 'Menu & Account Hub', sub: 'Your profile details, live push notification alerts, and document vault' },
+    support: { title: 'Help & Support Desk', sub: 'Ask questions and review messages from operations' },
+    menu: { title: 'Menu & Account Hub', sub: 'Your profile details, live push notification alerts, and document vault' }
   };
 
   function switchSection(sectionId) {
+    if (sectionId === 'documents') {
+      sectionId = 'menu';
+    }
     const targetSec = document.getElementById(`sec-${sectionId}`);
     if (!targetSec) return;
 
@@ -737,7 +776,7 @@
     targetSec.classList.add('active');
 
     document.querySelectorAll('.cp-nav-link, .portal-bottom-nav-item').forEach((link) => {
-      link.classList.toggle('active', link.dataset.nav === sectionId);
+      link.classList.toggle('active', link.dataset.nav === sectionId || (sectionId === 'menu' && link.dataset.nav === 'documents'));
     });
 
     if (pageHeaders[sectionId]) {
@@ -1168,7 +1207,6 @@
             <div class="cp-carousel-empty-card" style="background:#ffffff; border-radius:20px; border:none; padding:32px 20px;">
               <span style="font-size:32px;">📁</span>
               <strong style="color:#1e293b;">No issued documents yet</strong>
-              <p style="color:#64748b;">Official registration certificates, GST documents, and DSC files will appear here.</p>
             </div>
           </div>
         `;
@@ -1191,7 +1229,6 @@
                   </div>
                   <div class="cp-hero-doc-main-info">
                     <h4 class="cp-hero-doc-title" title="${escapeHtml(d.title)}">${escapeHtml(d.title)}</h4>
-                    <span class="cp-hero-doc-id">${escapeHtml(identifier)}</span>
                   </div>
                 </div>
                 <div class="cp-hero-doc-authority" title="${escapeHtml(auth)}">
@@ -1656,9 +1693,6 @@
         <div class="company-docs-empty">
           <span class="company-docs-empty-icon">📁</span>
           <p>No company documents on record yet</p>
-          <div style="font-size:12px; margin-top:4px; opacity:0.8;">
-            Documents provided during onboarding (PAN, Aadhaar, MoA, Address Proof) will appear here.
-          </div>
         </div>
       `;
       return;

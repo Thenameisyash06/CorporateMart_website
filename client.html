@@ -179,12 +179,14 @@
           <span class="cp-nav-badge cp-badge-hot" style="background:#2563eb; color:#ffffff;">New</span>
         </a>
 
-        <a href="#documents" class="cp-nav-link" data-nav="documents">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+        <a href="#menu" class="cp-nav-link" data-nav="menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
-          <span>My Documents</span>
-          <span class="cp-nav-badge" id="navDocsBadge">0</span>
+          <span>Menu</span>
+          <span class="cp-nav-badge" id="navDocsBadge" style="display:none;">0</span>
         </a>
 
         <a href="#support" class="cp-nav-link" data-nav="support">
@@ -208,8 +210,8 @@
           </div>
           <button type="button" class="cp-logout-btn" id="clientSettingsBtn" title="Profile & Password Settings" style="margin-right:2px;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="3"></circle>
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             </svg>
           </button>
           <button type="button" class="cp-logout-btn" id="clientLogoutBtn" title="Sign Out">
@@ -226,6 +228,32 @@
     <!-- MAIN WRAPPER -->
     <div class="cp-main-wrapper">
       
+      <!-- Flow Shaped Background at Top -->
+      <div class="cp-flow-top-bg" aria-hidden="true">
+        <svg class="cp-flow-svg" viewBox="0 0 1440 320" fill="none" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="flowGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#1e3a8a" stop-opacity="0.85" />
+              <stop offset="45%" stop-color="#2563eb" stop-opacity="0.75" />
+              <stop offset="100%" stop-color="#0284c7" stop-opacity="0.45" />
+            </linearGradient>
+            <linearGradient id="flowGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.4" />
+              <stop offset="50%" stop-color="#6366f1" stop-opacity="0.3" />
+              <stop offset="100%" stop-color="#1e40af" stop-opacity="0" />
+            </linearGradient>
+            <linearGradient id="flowGrad3" x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.35" />
+              <stop offset="60%" stop-color="#3b82f6" stop-opacity="0.15" />
+              <stop offset="100%" stop-color="#1d4ed8" stop-opacity="0" />
+            </linearGradient>
+          </defs>
+          <path d="M0,0 L1440,0 L1440,160 C1260,240 1020,110 780,210 C540,310 280,180 0,250 Z" fill="url(#flowGrad1)"/>
+          <path d="M0,0 L1440,0 L1440,210 C1200,140 960,290 680,190 C420,100 180,270 0,170 Z" fill="url(#flowGrad2)"/>
+          <path d="M0,0 L1440,0 L1440,110 C1080,260 640,40 0,210 Z" fill="url(#flowGrad3)"/>
+        </svg>
+      </div>
+
       <!-- TOP BAR -->
       <header class="cp-topbar">
         <div class="cp-topbar-left">
@@ -236,35 +264,24 @@
               <line x1="3" y1="18" x2="21" y2="18"></line>
             </svg>
           </button>
-          <div class="cp-page-heading">
-            <h1 id="cpPageTitle">Dashboard</h1>
-            <p id="cpPageSubtitle" style="display:none;">Track company services, status & certificates</p>
-          </div>
+          
+          <!-- Company Logo replacing section name in header for both Dark and Light theme -->
+          <a href="index.html" class="cp-header-brand" aria-label="CorporateMart Home">
+            <img src="icons/Your_paragraph_text__8_-removebg-preview.png" alt="CorporateMart" class="cp-header-logo" id="cpHeaderLogo">
+          </a>
+          <span id="cpPageTitle" style="display:none;">Dashboard</span>
+          <span id="cpPageSubtitle" style="display:none;"></span>
         </div>
 
         <div class="cp-topbar-right">
-          <!-- Profile / Settings Button -->
-          <button type="button" class="cp-theme-toggle" id="clientTopSettingsBtn" title="Profile & Account">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-          </button>
-
-          <!-- In-Phone Push Notifications Bell Button -->
-          <button type="button" class="cp-theme-toggle" id="btnEnableNotifications" title="In-Phone Notifications" style="position:relative;">
-            <span id="notifBellIcon">🔔</span>
-            <span id="notifBadgeDot" style="display:none; position:absolute; top:6px; right:6px; width:8px; height:8px; background:#10b981; border-radius:50%;"></span>
-          </button>
-
           <!-- Theme Toggle -->
           <button type="button" class="cp-theme-toggle" id="cpThemeToggle" title="Toggle Light/Dark Theme">
             <span class="theme-icon-dark">🌙</span>
             <span class="theme-icon-light">☀️</span>
           </button>
 
-          <!-- Request a Service Button -->
-          <button type="button" class="cp-btn cp-btn-primary" id="topRequestServiceBtn">
+          <!-- Highlighted Request a Service Button -->
+          <button type="button" class="cp-btn cp-btn-primary cp-btn-highlight" id="topRequestServiceBtn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -340,36 +357,18 @@
                 <div class="cp-carousel-indicators" id="dashDocsDots"></div>
               </div>
             </div>
+          </div>
 
-            <!-- 2. Ongoing Services Carousel (DigiLocker Hero Style) -->
-            <div class="cp-hero-carousel-card cp-services-carousel-theme">
-              <div class="cp-hero-carousel-header">
-                <div class="cp-hero-carousel-title-group">
-                  <h3 class="cp-hero-carousel-title">Ongoing Services</h3>
-                </div>
-                <div class="cp-hero-carousel-actions">
-                  <a href="#services" class="cp-hero-see-all-pill">See All</a>
-                  <div class="cp-carousel-nav-arrows">
-                    <button type="button" class="cp-carousel-arrow-btn cp-arrow-white" id="btnPrevDashService" aria-label="Previous Service" title="Previous Service">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                    </button>
-                    <button type="button" class="cp-carousel-arrow-btn cp-arrow-white" id="btnNextDashService" aria-label="Next Service" title="Next Service">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                    </button>
-                  </div>
-                </div>
+          <!-- Service Category Cards (Explore Business Services) -->
+          <div class="cp-dashboard-section" style="margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+              <div>
+                <h3 style="font-size: 18px; font-weight: 800; color: var(--cp-text-main); margin: 0 0 4px 0;">Business Services &amp; Solutions</h3>
               </div>
-              <div class="cp-carousel-wrapper">
-                <div class="cp-carousel-track" id="dashServicesCarousel">
-                  <div class="cp-carousel-card-item">
-                    <div class="cp-carousel-empty-card">
-                      <span style="font-size:28px;">📋</span>
-                      <strong>Loading services...</strong>
-                    </div>
-                  </div>
-                </div>
-                <div class="cp-carousel-indicators" id="dashServicesDots"></div>
-              </div>
+              <a href="#buy" class="cp-link" onclick="if (typeof switchSection === 'function') switchSection('buy');">View All Packages &rarr;</a>
+            </div>
+            <div class="cp-category-cards-grid" id="dashCategoryCardsContainer">
+              <!-- Rendered dynamically by client.js with same form functionality -->
             </div>
           </div>
 
@@ -378,26 +377,11 @@
             <div class="cp-card-header">
               <div class="cp-card-title">
                 <h3>Company Documents</h3>
-                <p>Documents provided during onboarding (PAN, Aadhaar, MoA, Address Proof, etc.)</p>
-              </div>
+               </div>
               <a href="#documents" class="cp-link">View All →</a>
             </div>
             <div class="company-docs-grid" id="dashCompanyDocsGrid">
               <!-- Rendered by client.js -->
-            </div>
-          </div>
-
-          <!-- Service Category Cards (Explore Business Services) -->
-          <div class="cp-dashboard-section" style="margin-bottom: 24px;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
-              <div>
-                <h3 style="font-size: 18px; font-weight: 800; color: var(--cp-text-main); margin: 0 0 4px 0;">Business Services &amp; Solutions</h3>
-                <p style="font-size: 13px; color: var(--cp-text-muted); margin: 0;">Explore corporate registrations, tax compliance, IP, licenses, and digital services</p>
-              </div>
-              <a href="#buy" class="cp-link" onclick="if (typeof switchSection === 'function') switchSection('buy');">View All Packages &rarr;</a>
-            </div>
-            <div class="cp-category-cards-grid" id="dashCategoryCardsContainer">
-              <!-- Rendered dynamically by client.js with same form functionality -->
             </div>
           </div>
 
@@ -407,21 +391,18 @@
               <div class="cp-action-icon">🚀</div>
               <div class="cp-action-text">
                 <strong>Request a Service</strong>
-                <span>Apply for company incorporation, GST, trademark, or filing</span>
               </div>
             </button>
             <button type="button" class="cp-action-card" id="qaAskSupportBtn">
               <div class="cp-action-icon">💬</div>
               <div class="cp-action-text">
                 <strong>Ask a Question</strong>
-                <span>Send a message directly to your operations manager</span>
               </div>
             </button>
             <button type="button" class="cp-action-card" id="qaViewDocsBtn">
               <div class="cp-action-icon">📥</div>
               <div class="cp-action-text">
                 <strong>Download Certificates</strong>
-                <span>Instant access to COI, GST certificate, and DSC files</span>
               </div>
             </button>
           </div>
@@ -477,53 +458,132 @@
         </section>
 
         <!-- ========================================== -->
-        <!-- 3. MY DOCUMENTS SECTION                    -->
+        <!-- 3. MENU & ACCOUNT HUB SECTION (INCL. DOCS) -->
         <!-- ========================================== -->
-        <section id="sec-documents" class="cp-view-section">
+        <section id="sec-menu" class="cp-view-section">
           <div class="cp-section-header">
             <div>
-              <h2>My Documents &amp; Certificates</h2>
-              <p>Official company records, onboarding KYC proofs, and issued certificates</p>
+              <h2>Menu &amp; Account Hub</h2>
+              <p>Your profile details, live push notification alerts, and document vault</p>
             </div>
           </div>
 
-          <!-- A. Company Documents (DigiLocker Card Grid) -->
-          <div class="cp-card" style="margin-bottom: 24px;">
-            <div class="cp-card-header">
-              <div class="cp-card-title">
-                <h3>Company Documents</h3>
-                <p>Identity proofs, incorporation records, and credentials provided during onboarding</p>
+          <!-- Quick Two-Column Grid: Profile Card & Push Notifications Card -->
+          <div class="cp-menu-cards-grid">
+            <!-- A. PROFILE & DIRECTOR ACCOUNT CARD -->
+            <div class="cp-card cp-menu-card">
+              <div class="cp-card-header">
+                <div class="cp-card-title">
+                  <h3>Director &amp; Company Profile</h3>
+                  <p>Your registered company credentials and account settings</p>
+                </div>
+                <button type="button" class="cp-btn cp-btn-primary cp-btn-sm" id="clientTopSettingsBtn">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                  <span>Edit Profile</span>
+                </button>
+              </div>
+              <div class="cp-menu-profile-body">
+                <div class="cp-menu-profile-avatar-wrap">
+                  <div class="cp-avatar cp-avatar-lg" id="menuClientAvatar">CM</div>
+                  <div class="cp-menu-profile-info">
+                    <h4 id="menuClientCompanyName">Corporate Mart Client</h4>
+                    <p id="menuClientDirectorName">Director</p>
+                    <div class="cp-menu-profile-badges">
+                      <span class="cp-badge-pill cp-badge-active">Active Member</span>
+                      <span class="cp-badge-pill" id="menuClientEmailBadge">director@company.com</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="cp-menu-actions-row">
+                  <button type="button" class="cp-btn cp-btn-secondary cp-btn-sm" id="menuBtnChangePassword">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    <span>Change Password</span>
+                  </button>
+                  <button type="button" class="cp-btn cp-btn-secondary cp-btn-sm btn-client-modal-logout" style="color:#ef4444; border-color:rgba(239, 68, 68, 0.3);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    <span>Sign Out</span>
+                  </button>
+                </div>
               </div>
             </div>
-            <div class="company-docs-grid" id="pageCompanyDocsGrid">
-              <!-- Rendered by client.js -->
+
+            <!-- B. IN-PHONE PUSH NOTIFICATIONS CARD -->
+            <div class="cp-card cp-menu-card">
+              <div class="cp-card-header">
+                <div class="cp-card-title">
+                  <h3>Push &amp; In-Phone Alerts</h3>
+                  <p>Real-time lock-screen updates for certificates and compliance filings</p>
+                </div>
+              </div>
+              <div class="cp-menu-notif-body">
+                <div class="cp-menu-notif-desc">
+                  <div class="cp-notif-big-icon">🔔</div>
+                  <div>
+                    <h4>Lock-Screen Live Alerts</h4>
+                    <p>Receive instant notifications on your phone or PC when filings are updated, certificates are issued, or queries are answered.</p>
+                  </div>
+                </div>
+                <div class="cp-menu-notif-action">
+                  <button type="button" class="cp-btn cp-btn-primary" id="btnEnableNotifications">
+                    <span id="notifBellIcon">🔔</span>
+                    <span id="menuNotifBtnText">Enable Notifications</span>
+                    <span id="notifBadgeDot" style="display:none; width:8px; height:8px; background:#10b981; border-radius:50%; margin-left:4px;"></span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
-          <!-- B. Issued Documents & Certificates Table -->
-          <div class="cp-card">
-            <div class="cp-card-header">
-              <div class="cp-card-title">
-                <h3>Issued Certificates &amp; Filings</h3>
-                <p>Official registration certificates, filings, and approvals prepared &amp; issued by Corporate Mart</p>
+          <!-- C. MY DOCUMENTS & CERTIFICATES (INSIDE MENU SECTION) -->
+          <div class="cp-menu-docs-section" id="menuDocsSection" style="margin-top: 24px;">
+            <div class="cp-section-header" style="margin-bottom: 16px;">
+              <div>
+                <h2>My Documents &amp; Certificates</h2>
+                <p>Official company records, onboarding KYC proofs, and issued certificates</p>
               </div>
             </div>
-            <div class="cp-table-responsive">
-              <table class="cp-table">
-                <thead>
-                  <tr>
-                    <th>Doc ID</th>
-                    <th>Document Title</th>
-                    <th>Category</th>
-                    <th>Size</th>
-                    <th>Date Issued</th>
-                    <th>Download</th>
-                  </tr>
-                </thead>
-                <tbody id="clientDocsTableBody">
-                  <tr><td colspan="6" class="cp-td-empty">Loading documents...</td></tr>
-                </tbody>
-              </table>
+
+            <!-- Company Documents (DigiLocker Card Grid) -->
+            <div class="cp-card" style="margin-bottom: 24px;">
+              <div class="cp-card-header">
+                <div class="cp-card-title">
+                  <h3>Company Documents</h3>
+                  <p>Identity proofs, incorporation records, and credentials provided during onboarding</p>
+                </div>
+              </div>
+              <div class="company-docs-grid" id="pageCompanyDocsGrid">
+                <!-- Rendered by client.js -->
+              </div>
+            </div>
+
+            <!-- Issued Certificates & Filings Table -->
+            <div class="cp-card">
+              <div class="cp-card-header">
+                <div class="cp-card-title">
+                  <h3>Issued Certificates &amp; Filings</h3>
+                  <p>Official registration certificates, filings, and approvals prepared &amp; issued by Corporate Mart</p>
+                </div>
+              </div>
+              <div class="cp-table-responsive">
+                <table class="cp-table">
+                  <thead>
+                    <tr>
+                      <th>Doc ID</th>
+                      <th>Document Title</th>
+                      <th>Category</th>
+                      <th>Size</th>
+                      <th>Date Issued</th>
+                      <th>Download</th>
+                    </tr>
+                  </thead>
+                  <tbody id="clientDocsTableBody">
+                    <tr><td colspan="6" class="cp-td-empty">Loading documents...</td></tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </section>
@@ -1302,14 +1362,16 @@
       </div>
       <span class="bottom-nav-label">Buy</span>
     </a>
-    <a href="#documents" class="portal-bottom-nav-item" data-nav="documents">
+    <a href="#menu" class="portal-bottom-nav-item" data-nav="menu">
       <div class="bottom-nav-icon-wrap">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
         </svg>
         <span class="bottom-nav-badge" id="bottomNavDocsBadge" style="display:none;">0</span>
       </div>
-      <span class="bottom-nav-label">Docs</span>
+      <span class="bottom-nav-label">Menu</span>
     </a>
     <a href="#support" class="portal-bottom-nav-item" data-nav="support">
       <div class="bottom-nav-icon-wrap">
