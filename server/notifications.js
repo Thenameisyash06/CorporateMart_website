@@ -405,9 +405,69 @@ async function sendPasswordChangedConfirmationEmail({ email, name }) {
   }
 }
 
+/**
+ * Send new lead/inquiry notification email to admin
+ */
+async function sendLeadNotificationToAdmin({ name, phone, email, service, details, source }) {
+  const adminEmail = SMTP_USER || 'yashd9404@gmail.com';
+  const subject = `🤖 New Lead from Chatbot: ${name || 'Prospective Client'} (${service || 'Inquiry'})`;
+  const text = `
+New Lead Received from CorporateMart Virtual Assistant Chatbot:
+
+Name: ${name || 'Not provided'}
+Phone: ${phone || 'Not provided'}
+Email: ${email || 'Not provided'}
+Service: ${service || 'General Inquiry'}
+Location / Business: ${details || 'Not specified'}
+Source: ${source || 'Floating Virtual Assistant Chatbot'}
+Timestamp: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
+  `.trim();
+
+  const bodyHtml = `
+    <p><strong>A new lead has been captured via the Virtual Assistant Chatbot:</strong></p>
+    <table style="width:100%; border-collapse:collapse; margin:16px 0; font-size:14px;">
+      <tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:8px 0; color:#64748b; width:140px;"><strong>Client Name:</strong></td><td style="padding:8px 0; color:#0f172a; font-weight:700;">${name || 'Not provided'}</td></tr>
+      <tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:8px 0; color:#64748b;"><strong>Mobile Number:</strong></td><td style="padding:8px 0; color:#0f172a; font-weight:700;"><a href="tel:${phone}" style="color:#2563eb;">${phone || 'Not provided'}</a></td></tr>
+      <tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:8px 0; color:#64748b;"><strong>Email:</strong></td><td style="padding:8px 0; color:#0f172a;"><a href="mailto:${email}" style="color:#2563eb;">${email || 'Not provided'}</a></td></tr>
+      <tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:8px 0; color:#64748b;"><strong>Service Requested:</strong></td><td style="padding:8px 0; color:#0f172a; font-weight:700;">${service || 'General Inquiry'}</td></tr>
+      <tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:8px 0; color:#64748b;"><strong>City / Details:</strong></td><td style="padding:8px 0; color:#0f172a;">${details || 'Not specified'}</td></tr>
+      <tr><td style="padding:8px 0; color:#64748b;"><strong>Lead Source:</strong></td><td style="padding:8px 0; color:#0f172a;">${source || 'Floating Virtual Assistant Chatbot'}</td></tr>
+    </table>
+  `;
+
+  const html = buildEmailTemplate({
+    heading: 'New Chatbot Lead Notification',
+    title: 'New Client Inquiry Received',
+    bodyHtml,
+    buttonText: 'Open Operations Portal',
+    buttonUrl: `${APP_URL}/operations.html`,
+    note: 'Lead has also been queued in the Operations Portal inquiries desk.'
+  });
+
+  if (transporter) {
+    try {
+      await transporter.sendMail({
+        from: senderEmail,
+        to: adminEmail,
+        replyTo: email || adminEmail,
+        subject,
+        text,
+        html
+      });
+      console.log(`✉️ [EMAIL] Lead notification email sent to admin (${adminEmail}) for ${name}`);
+      return true;
+    } catch (err) {
+      console.warn(`⚠️ [EMAIL] Failed sending lead notification email to ${adminEmail}:`, err.message);
+      return false;
+    }
+  }
+  return true;
+}
+
 module.exports = {
   notifyClient,
   sendPasswordResetOtpEmail,
   sendPasswordChangedConfirmationEmail,
+  sendLeadNotificationToAdmin,
   VAPID_PUBLIC_KEY
 };

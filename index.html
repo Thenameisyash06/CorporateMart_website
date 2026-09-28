@@ -2515,7 +2515,19 @@
     <!-- Single Unified Close Button for Both Popups -->
     <button type="button" class="dual-popup-close" data-close-lead aria-label="Close dialog">&times;</button>
 
-    <div class="dual-popup-grid">
+    <!-- Mobile Segmented Tab Switcher (Visible only on mobile <= 880px) -->
+    <div class="dual-popup-tabs" role="tablist" aria-label="Modal options">
+      <button type="button" class="dual-tab-btn active" role="tab" id="dualTabPoster" aria-selected="true" data-tab-target="poster">
+        <span class="dual-tab-icon">🎁</span>
+        <span>Govt Funding 2026</span>
+      </button>
+      <button type="button" class="dual-tab-btn" role="tab" id="dualTabLead" aria-selected="false" data-tab-target="lead">
+        <span class="dual-tab-icon">📞</span>
+        <span>Free Consultation</span>
+      </button>
+    </div>
+
+    <div class="dual-popup-grid" data-active-tab="poster">
       <!-- 1. FUNDING POSTER (Portrait Orientation) -->
       <div class="funding-poster-dialog portrait-poster" id="fundingPosterModal">
         <div>
@@ -2556,6 +2568,12 @@
               <polyline points="12 5 19 12 12 19"></polyline>
             </svg>
           </a>
+
+          <!-- Mobile Switch Link to Consultation -->
+          <div class="poster-mobile-switch-hint">
+            <span>Need 1-on-1 guidance?</span>
+            <button type="button" class="poster-switch-link" data-switch-to="lead">Speak with an Expert &rarr;</button>
+          </div>
         </div>
       </div>
 
@@ -2617,6 +2635,13 @@
               <polyline points="12 5 19 12 12 19"></polyline>
             </svg>
           </button>
+
+          <!-- Mobile Switch Link back to Funding Poster -->
+          <div class="lead-mobile-switch-hint">
+            <span>Explore startup grants &amp; credit?</span>
+            <button type="button" class="poster-switch-link" data-switch-to="poster">&larr; View Funding Schemes</button>
+          </div>
+
           <!-- <p class="lead-note">100% confidential · Mon to Sat, 10 AM to 7 PM</p> -->
           <div class="cr-form-success" id="leadFormSuccess" style="display:none;">Thanks! Your consultation request has been received. Our expert will contact you shortly.</div>
         </form>

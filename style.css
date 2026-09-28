@@ -7289,6 +7289,16 @@ body.dark-mode .dual-popup-grid .lead-modal-dialog {
   margin-top: 10px;
 }
 
+/* Dual Popup Tabs (Mobile Segmented Switcher) - Hidden by default on Desktop */
+.dual-popup-tabs {
+  display: none !important;
+}
+
+.poster-mobile-switch-hint,
+.lead-mobile-switch-hint {
+  display: none !important;
+}
+
 /* Mode: Lead Only (e.g. Chat Trigger, Quotation, Floating Lead Button) */
 .lead-modal.lead-only .dual-popup-wrapper {
   max-width: 440px;
@@ -7307,38 +7317,247 @@ body.dark-mode .dual-popup-grid .lead-modal-dialog {
   max-width: 100%;
 }
 
-/* Mobile & Tablet Responsiveness */
+.lead-modal.lead-only .dual-popup-tabs {
+  display: none !important;
+}
+
+/* Mobile & Tablet Responsiveness (< 881px) */
 @media (max-width: 880px) {
   .dual-popup-wrapper {
-    max-width: 440px;
+    width: 92vw;
+    max-width: 430px;
+    margin: auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
   }
+
   .dual-popup-close {
-    top: -14px;
+    top: -12px;
     right: -4px;
-    width: 36px;
-    height: 36px;
-    font-size: 20px;
+    width: 34px;
+    height: 34px;
+    font-size: 19px;
+    z-index: 25;
   }
+
+  /* Segmented iOS / Glass Pill Tab Switcher */
+  .dual-popup-tabs {
+    display: flex !important;
+    align-items: center;
+    justify-content: stretch;
+    background: rgba(10, 25, 47, 0.88);
+    border: 1px solid rgba(147, 197, 253, 0.28);
+    border-radius: 999px;
+    padding: 4px;
+    margin: 0 0 10px 0;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    z-index: 10;
+  }
+
+  .dual-tab-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 999px;
+    color: #94a3b8;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 750;
+    cursor: pointer;
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .dual-tab-btn .dual-tab-icon {
+    font-size: 13px;
+    line-height: 1;
+  }
+
+  .dual-tab-btn.active {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: #ffffff;
+    box-shadow: 0 3px 12px rgba(37, 99, 235, 0.45);
+  }
+
+  .dual-tab-btn:not(.active):hover {
+    color: #e2e8f0;
+    background: rgba(255, 255, 255, 0.05);
+  }
+
   .dual-popup-grid {
     flex-direction: column;
     align-items: stretch;
     gap: 0;
-    max-height: 88vh;
-    padding-bottom: 0;
+    max-height: calc(88vh - 54px);
+    border-radius: 20px;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
+
+  /* Mobile Tab Display Switching */
+  .dual-popup-grid:not([data-active-tab="lead"]) #fundingPosterModal {
+    display: flex !important;
+  }
+
+  .dual-popup-grid:not([data-active-tab="lead"]) #leadModalCard {
+    display: none !important;
+  }
+
+  .dual-popup-grid[data-active-tab="lead"] #fundingPosterModal {
+    display: none !important;
+  }
+
+  .dual-popup-grid[data-active-tab="lead"] #leadModalCard {
+    display: flex !important;
+  }
+
+  /* When lead-only mode is active (e.g. quote / chat consultation) */
+  .lead-modal.lead-only .dual-popup-tabs {
+    display: none !important;
+  }
+
+  .lead-modal.lead-only #fundingPosterModal {
+    display: none !important;
+  }
+
+  .lead-modal.lead-only #leadModalCard {
+    display: flex !important;
+  }
+
+  /* Mobile Card Internal Dimensions & Padding */
   .dual-popup-grid .funding-poster-dialog.portrait-poster,
   .dual-popup-grid .lead-modal-dialog {
-    max-width: 100%;
-    flex: none;
-    width: 100%;
+    max-width: 100% !important;
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    padding: 22px 18px 18px 18px !important;
+    border: none !important;
+    box-sizing: border-box;
+    animation: fadeInDualTab 0.22s ease-out;
   }
-  .dual-popup-grid .funding-poster-dialog.portrait-poster {
-    border-right: none !important;
-    border-bottom: 1px solid rgba(147, 197, 253, 0.18) !important;
-    padding: 24px 20px 20px 20px;
+
+  @keyframes fadeInDualTab {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
-  .dual-popup-grid .lead-modal-dialog {
-    padding: 20px 20px 24px 20px;
+
+  /* Streamlined Poster Elements on Mobile */
+  .funding-poster-badge,
+  .dual-popup-grid .lead-eyebrow {
+    font-size: 10.5px;
+    padding: 3px 10px;
+    margin-bottom: 8px;
+    gap: 5px;
+  }
+
+  .funding-poster-title,
+  .dual-popup-grid .lead-modal-header h2 {
+    font-size: 17.5px;
+    line-height: 1.32;
+    margin-bottom: 6px;
+  }
+
+  .funding-poster-desc,
+  .dual-popup-grid .lead-modal-header p {
+    font-size: 12px;
+    line-height: 1.45;
+    margin-bottom: 12px;
+    color: #94a3b8;
+  }
+
+  .portrait-poster .funding-poster-highlights {
+    gap: 7px;
+    margin-bottom: 16px;
+  }
+
+  .portrait-poster .funding-highlight-card {
+    padding: 7px 11px;
+    gap: 10px;
+    border-radius: 10px;
+  }
+
+  .portrait-poster .fhc-value {
+    font-size: 14.5px;
+    min-width: 78px;
+  }
+
+  .portrait-poster .fhc-label {
+    font-size: 11px;
+    line-height: 1.3;
+  }
+
+  .funding-poster-cta,
+  .dual-popup-grid .lead-submit {
+    height: 44px;
+    font-size: 13.5px;
+    border-radius: 10px;
+  }
+
+  .dual-popup-grid .lead-submit {
+    margin-top: 6px;
+  }
+
+  /* Streamlined Form Fields on Mobile */
+  .dual-popup-grid .lead-field {
+    margin-bottom: 8px;
+  }
+
+  .dual-popup-grid .lead-field label {
+    font-size: 11px;
+    margin-bottom: 3px;
+  }
+
+  .dual-popup-grid .lead-field input,
+  .dual-popup-grid .lead-field select {
+    padding: 8px 11px;
+    font-size: 13px;
+    border-radius: 9px;
+  }
+
+  /* Mobile Interactive Switch Links Between Tabs */
+  .poster-mobile-switch-hint,
+  .lead-mobile-switch-hint {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 10px;
+    font-size: 11.5px;
+    color: #94a3b8;
+  }
+
+  .poster-switch-link {
+    background: none;
+    border: none;
+    color: #38bdf8;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .poster-switch-link:hover,
+  .poster-switch-link:focus {
+    color: #7dd3fc;
   }
 }
 

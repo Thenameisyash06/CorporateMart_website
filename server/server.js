@@ -483,7 +483,7 @@ app.post('/api/leads', async (req, res) => {
           })
         });
       } catch (wfErr) {
-        console.warn('Web3Forms backend relay warning:', wfErr.message);
+        console.warn('Web3Forms backend relay notice:', wfErr.message);
       }
     }
 
@@ -502,6 +502,15 @@ app.post('/api/leads', async (req, res) => {
       });
     } catch (dbErr) {
       console.warn('Portal inquiry DB save warning:', dbErr.message);
+    }
+
+    // 3. Dispatch instant notification email to admin
+    try {
+      if (typeof notifications.sendLeadNotificationToAdmin === 'function') {
+        notifications.sendLeadNotificationToAdmin({ name, phone, email, service, details, source }).catch(() => {});
+      }
+    } catch (notifErr) {
+      console.warn('Admin notification email warning:', notifErr.message);
     }
 
     return res.status(200).json({ success: true, message: 'Inquiry registered successfully' });

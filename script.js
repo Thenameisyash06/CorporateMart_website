@@ -1,4 +1,7 @@
 const WEB3FORMS_ACCESS_KEY = "f9e8e977-8a5c-4979-8cf0-e303edbcac00";
+if (typeof window !== "undefined") {
+    window.WEB3FORMS_ACCESS_KEY = WEB3FORMS_ACCESS_KEY;
+}
 
 async function handleWeb3FormsSubmit(event, form, successElement) {
     event.preventDefault();
@@ -57,9 +60,53 @@ async function handleWeb3FormsSubmit(event, form, successElement) {
         }
         return result;
     } catch (error) {
-        console.error("Submission failed:", error);
-        alert("Failed to submit form. Please check your internet connection.");
-        return { success: false, error: error };
+        console.warn("Direct fetch submission had issue, attempting reliable iframe fallback:", error);
+        try {
+            let iframe = document.getElementById("cmWeb3Iframe");
+            if (!iframe) {
+                iframe = document.createElement("iframe");
+                iframe.id = "cmWeb3Iframe";
+                iframe.name = "cmWeb3Iframe";
+                iframe.style.display = "none";
+                document.body.appendChild(iframe);
+            }
+
+            const fallbackForm = form.cloneNode(true);
+            fallbackForm.action = "https://api.web3forms.com/submit";
+            fallbackForm.method = "POST";
+            fallbackForm.target = "cmWeb3Iframe";
+            fallbackForm.style.display = "none";
+
+            const fKey = fallbackForm.querySelector("input[name='access_key']");
+            if (fKey) {
+                fKey.value = WEB3FORMS_ACCESS_KEY;
+            } else {
+                const hiddenKey = document.createElement("input");
+                hiddenKey.type = "hidden";
+                hiddenKey.name = "access_key";
+                hiddenKey.value = WEB3FORMS_ACCESS_KEY;
+                fallbackForm.appendChild(hiddenKey);
+            }
+
+            document.body.appendChild(fallbackForm);
+            fallbackForm.submit();
+            setTimeout(() => fallbackForm.remove(), 2500);
+
+            form.reset();
+            if (successElement) {
+                successElement.style.display = "block";
+                successElement.classList.add("show");
+                setTimeout(() => {
+                    successElement.classList.remove("show");
+                    successElement.style.display = "none";
+                }, 6000);
+            }
+            return { success: true, message: "Submitted via fallback" };
+        } catch (fbErr) {
+            console.error("Fallback submission failed:", fbErr);
+            alert("Failed to submit form. Please check your internet connection.");
+            return { success: false, error: fbErr };
+        }
     } finally {
         if (button) {
             button.disabled = false;
@@ -2013,9 +2060,41 @@ window.addEventListener("resize", () => {
 
   var eyebrow = modal.querySelector(".lead-eyebrow");
   var desc = modal.querySelector(".lead-modal-header p");
+  var popupGrid = modal.querySelector(".dual-popup-grid");
+  var tabButtons = modal.querySelectorAll(".dual-tab-btn");
+
+  function setPopupTab(targetTab) {
+    if (!popupGrid) return;
+    popupGrid.setAttribute("data-active-tab", targetTab);
+    if (tabButtons) {
+      tabButtons.forEach(function (btn) {
+        var isTarget = btn.getAttribute("data-tab-target") === targetTab;
+        btn.classList.toggle("active", isTarget);
+        btn.setAttribute("aria-selected", isTarget ? "true" : "false");
+      });
+    }
+  }
+
+  if (tabButtons) {
+    tabButtons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var target = btn.getAttribute("data-tab-target");
+        if (target) setPopupTab(target);
+      });
+    });
+  }
+
+  modal.querySelectorAll("[data-switch-to]").forEach(function (btn) {
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      var target = btn.getAttribute("data-switch-to");
+      if (target) setPopupTab(target);
+    });
+  });
 
   function openDualPopup() {
     modal.classList.remove("lead-only");
+    setPopupTab("poster");
     modal.classList.add("is-open");
     modal.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
@@ -2025,6 +2104,7 @@ window.addEventListener("resize", () => {
     var forQuotation = (isForQuotation === true);
     window.pendingQuotationAfterLead = forQuotation;
     modal.setAttribute("data-for-quotation", forQuotation ? "true" : "false");
+    setPopupTab("lead");
 
     if (forQuotation) {
       if (eyebrow) eyebrow.textContent = "GET QUOTATION";
