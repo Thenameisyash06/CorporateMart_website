@@ -7408,7 +7408,8 @@ body.dark-mode .dual-popup-grid .lead-modal-dialog {
     display: flex !important;
   }
 
-  .dual-popup-grid:not([data-active-tab="lead"]) #leadModalCard {
+  .dual-popup-grid:not([data-active-tab="lead"]) #leadModalCard,
+  .dual-popup-grid:not([data-active-tab="lead"]) #onLoadLeadModalCard {
     display: none !important;
   }
 
@@ -7416,7 +7417,8 @@ body.dark-mode .dual-popup-grid .lead-modal-dialog {
     display: none !important;
   }
 
-  .dual-popup-grid[data-active-tab="lead"] #leadModalCard {
+  .dual-popup-grid[data-active-tab="lead"] #leadModalCard,
+  .dual-popup-grid[data-active-tab="lead"] #onLoadLeadModalCard {
     display: flex !important;
   }
 
@@ -7429,7 +7431,8 @@ body.dark-mode .dual-popup-grid .lead-modal-dialog {
     display: none !important;
   }
 
-  .lead-modal.lead-only #leadModalCard {
+  .lead-modal.lead-only #leadModalCard,
+  .lead-modal.lead-only #onLoadLeadModalCard {
     display: flex !important;
   }
 

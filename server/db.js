@@ -25,9 +25,26 @@ const INITIAL_VISITOR_COUNT = parseInt(process.env.INITIAL_VISITOR_COUNT, 10) ||
 let isMongoConnected = false;
 let mongoPromise = null;
 
+// Attach Mongoose lifecycle listeners to clear stale promises when disconnected
+if (mongoose.connection) {
+  mongoose.connection.on('connected', () => {
+    isMongoConnected = true;
+  });
+  mongoose.connection.on('disconnected', () => {
+    isMongoConnected = false;
+    mongoPromise = null;
+    console.warn('⚠️ [DB] MongoDB Atlas connection disconnected. Cached promise cleared.');
+  });
+  mongoose.connection.on('error', (err) => {
+    isMongoConnected = false;
+    mongoPromise = null;
+    console.warn('⚠️ [DB] MongoDB Atlas connection error:', err.message);
+  });
+}
+
 // Connect to MongoDB Atlas if URI is provided in .env or environment variables
 async function initMongo() {
-  if (mongoose.connection && mongoose.connection.readyState >= 1) {
+  if (mongoose.connection && mongoose.connection.readyState === 1) {
     isMongoConnected = true;
     return true;
   }
@@ -41,24 +58,33 @@ async function initMongo() {
   }
 
   try {
-    if (!mongoPromise) {
+    // If disconnected (0) or disconnecting (3), discard any stale promise so we can reconnect
+    if (!mongoPromise || mongoose.connection.readyState === 0 || mongoose.connection.readyState === 3) {
       mongoPromise = mongoose.connect(uri, {
-        serverSelectionTimeoutMS: 5000
+        serverSelectionTimeoutMS: 8000,
+        connectTimeoutMS: 10000,
+        socketTimeoutMS: 45000,
+        maxPoolSize: 10
       });
     }
+
     await mongoPromise;
+
     if (mongoose.connection.readyState === 2) {
       await new Promise((resolve) => {
-        const timer = setTimeout(resolve, 5000);
+        const timer = setTimeout(resolve, 6000);
         mongoose.connection.once('open', () => { clearTimeout(timer); resolve(); });
         mongoose.connection.once('error', () => { clearTimeout(timer); resolve(); });
       });
     }
+
     isMongoConnected = mongoose.connection.readyState === 1;
     if (isMongoConnected) {
       console.log('✔ [DB] Successfully connected to MongoDB Atlas!');
       return true;
     }
+
+    mongoPromise = null;
     return false;
   } catch (err) {
     mongoPromise = null;
@@ -73,22 +99,26 @@ async function ensureMongoConnected() {
     isMongoConnected = true;
     return true;
   }
-  if (mongoPromise) {
-    try {
-      await mongoPromise;
-      if (mongoose.connection.readyState === 2) {
-        await new Promise((resolve) => {
-          const timer = setTimeout(resolve, 5000);
-          mongoose.connection.once('open', () => { clearTimeout(timer); resolve(); });
-          mongoose.connection.once('error', () => { clearTimeout(timer); resolve(); });
-        });
-      }
-      if (mongoose.connection && mongoose.connection.readyState === 1) {
-        isMongoConnected = true;
-        return true;
-      }
-    } catch (e) {}
+
+  // If disconnected or disconnecting, reset stale promise
+  if (!mongoose.connection || mongoose.connection.readyState === 0 || mongoose.connection.readyState === 3) {
+    mongoPromise = null;
+    isMongoConnected = false;
   }
+
+  // If connecting (readyState 2), wait for it to transition
+  if (mongoose.connection && mongoose.connection.readyState === 2) {
+    await new Promise((resolve) => {
+      const timer = setTimeout(resolve, 6000);
+      mongoose.connection.once('open', () => { clearTimeout(timer); resolve(); });
+      mongoose.connection.once('error', () => { clearTimeout(timer); resolve(); });
+    });
+    if (mongoose.connection.readyState === 1) {
+      isMongoConnected = true;
+      return true;
+    }
+  }
+
   return await initMongo();
 }
 
@@ -1764,7 +1794,11 @@ async function replyClientTicket(ticketId, clientId, messageText, clientName = '
 async function uploadToGridFS(filename, buffer, contentType = 'application/pdf', metadata = {}) {
   await ensureMongoConnected();
   if (!mongoose.connection || mongoose.connection.readyState !== 1) {
-    throw new Error('MongoDB Atlas is not connected');
+    await initMongo();
+  }
+  if (!mongoose.connection || mongoose.connection.readyState !== 1) {
+    const state = mongoose.connection ? mongoose.connection.readyState : 'none';
+    throw new Error(`MongoDB Atlas is not connected (readyState=${state}). Please check Atlas IP Access List (0.0.0.0/0) and MONGODB_URI.`);
   }
   const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
     bucketName: 'portal_documents'

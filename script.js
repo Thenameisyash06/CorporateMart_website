@@ -2054,69 +2054,29 @@ window.addEventListener("resize", () => {
 })();
 
 (function () {
+  // 1. STANDALONE LEAD / QUOTATION MODAL (#leadModal)
   var modal = document.getElementById("leadModal");
   var form = document.getElementById("leadModalForm");
-  if (!modal) return;
-
-  var eyebrow = modal.querySelector(".lead-eyebrow");
-  var desc = modal.querySelector(".lead-modal-header p");
-  var popupGrid = modal.querySelector(".dual-popup-grid");
-  var tabButtons = modal.querySelectorAll(".dual-tab-btn");
-
-  function setPopupTab(targetTab) {
-    if (!popupGrid) return;
-    popupGrid.setAttribute("data-active-tab", targetTab);
-    if (tabButtons) {
-      tabButtons.forEach(function (btn) {
-        var isTarget = btn.getAttribute("data-tab-target") === targetTab;
-        btn.classList.toggle("active", isTarget);
-        btn.setAttribute("aria-selected", isTarget ? "true" : "false");
-      });
-    }
-  }
-
-  if (tabButtons) {
-    tabButtons.forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        var target = btn.getAttribute("data-tab-target");
-        if (target) setPopupTab(target);
-      });
-    });
-  }
-
-  modal.querySelectorAll("[data-switch-to]").forEach(function (btn) {
-    btn.addEventListener("click", function (e) {
-      e.preventDefault();
-      var target = btn.getAttribute("data-switch-to");
-      if (target) setPopupTab(target);
-    });
-  });
-
-  function openDualPopup() {
-    modal.classList.remove("lead-only");
-    setPopupTab("poster");
-    modal.classList.add("is-open");
-    modal.setAttribute("aria-hidden", "false");
-    document.body.style.overflow = "hidden";
-  }
+  var eyebrow = modal ? modal.querySelector(".lead-eyebrow") : null;
+  var titleEl = modal ? modal.querySelector("#leadModalTitle") : null;
+  var desc = modal ? modal.querySelector(".lead-modal-header p") : null;
 
   function openLeadModal(isForQuotation) {
+    if (!modal) return;
     var forQuotation = (isForQuotation === true);
     window.pendingQuotationAfterLead = forQuotation;
     modal.setAttribute("data-for-quotation", forQuotation ? "true" : "false");
-    setPopupTab("lead");
 
     if (forQuotation) {
       if (eyebrow) eyebrow.textContent = "GET QUOTATION";
+      if (titleEl) titleEl.textContent = "Tell us what you need";
       if (desc) desc.textContent = "Please share your details to proceed with generating your quotation.";
-      modal.classList.add("lead-only");
     } else {
       if (eyebrow) eyebrow.textContent = "FREE CONSULTATION";
-      if (desc) desc.textContent = "Share your details and we will get back during business hours.";
-      modal.classList.add("lead-only");
+      if (titleEl) titleEl.textContent = "Tell us what you need";
+      if (desc) desc.textContent = "Share your details and our expert will contact you shortly.";
     }
 
-    // Ensure any previous success message is hidden on fresh open
     var successMsg = modal.querySelector(".cr-form-success");
     if (successMsg) {
       successMsg.classList.remove("show");
@@ -2131,16 +2091,17 @@ window.addEventListener("resize", () => {
   }
 
   function closeLeadModal() {
+    if (!modal) return;
     modal.classList.remove("is-open");
     modal.setAttribute("aria-hidden", "true");
     modal.setAttribute("data-for-quotation", "false");
     window.pendingQuotationAfterLead = false;
-    var otherOpen = document.querySelector(".plan-modal.is-open, .quotation-modal.is-open, .custom-plan-modal.is-open");
+    var otherOpen = document.querySelector(".plan-modal.is-open, .quotation-modal.is-open, .custom-plan-modal.is-open, .dual-popup-modal.is-open");
     if (!otherOpen) {
       document.body.style.overflow = "";
     }
     if (eyebrow) eyebrow.textContent = "FREE CONSULTATION";
-    if (desc) desc.textContent = "Share your details and we will get back during business hours.";
+    if (desc) desc.textContent = "Share your details and our expert will contact you shortly.";
 
     var successMsg = modal.querySelector(".cr-form-success");
     if (successMsg) {
@@ -2149,40 +2110,11 @@ window.addEventListener("resize", () => {
     }
   }
 
-  window.openLeadModal = openLeadModal;
-  window.closeLeadModal = closeLeadModal;
-  window.openDualPopup = openDualPopup;
-  window.openFundingPosterModal = openDualPopup;
-  window.closeFundingPosterModal = closeLeadModal;
-
-  // Wire "Click here" in chat (id="chatBtn")
-  function bindTrigger() {
-    var btn = document.getElementById("chatBtn");
-    if (btn && !btn.dataset.leadBound) {
-      btn.dataset.leadBound = "1";
-      btn.addEventListener("click", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        openLeadModal(false);
-      });
-    }
-  }
-
-  bindTrigger();
-  var observer = new MutationObserver(bindTrigger);
-  observer.observe(document.body, { childList: true, subtree: true });
-
-  modal.querySelectorAll("[data-close-lead], [data-close-funding-poster]").forEach(function (el) {
-    el.addEventListener("click", function () {
-      closeLeadModal();
+  if (modal) {
+    modal.querySelectorAll("[data-close-lead]").forEach(function (el) {
+      el.addEventListener("click", closeLeadModal);
     });
-  });
-
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && modal.classList.contains("is-open")) {
-      closeLeadModal();
-    }
-  });
+  }
 
   if (form) {
     form.addEventListener("submit", async function (e) {
@@ -2235,6 +2167,146 @@ window.addEventListener("resize", () => {
     });
   }
 
+  // 2. DUAL ON-LOAD POPUP (#onLoadDualModal)
+  var dualModal = document.getElementById("onLoadDualModal");
+  var dualForm = document.getElementById("onLoadLeadModalForm");
+  var popupGrid = dualModal ? dualModal.querySelector(".dual-popup-grid") : null;
+  var tabButtons = dualModal ? dualModal.querySelectorAll(".dual-tab-btn") : null;
+
+  function setPopupTab(targetTab) {
+    if (!popupGrid) return;
+    popupGrid.setAttribute("data-active-tab", targetTab);
+    if (tabButtons) {
+      tabButtons.forEach(function (btn) {
+        var isTarget = btn.getAttribute("data-tab-target") === targetTab;
+        btn.classList.toggle("active", isTarget);
+        btn.setAttribute("aria-selected", isTarget ? "true" : "false");
+      });
+    }
+  }
+
+  if (tabButtons) {
+    tabButtons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var target = btn.getAttribute("data-tab-target");
+        if (target) setPopupTab(target);
+      });
+    });
+  }
+
+  if (dualModal) {
+    dualModal.querySelectorAll("[data-switch-to]").forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        var target = btn.getAttribute("data-switch-to");
+        if (target) setPopupTab(target);
+      });
+    });
+
+    dualModal.querySelectorAll("[data-close-dual], [data-close-funding-poster]").forEach(function (el) {
+      el.addEventListener("click", closeDualPopup);
+    });
+  }
+
+  function openDualPopup() {
+    if (!dualModal) return;
+    setPopupTab("poster");
+    dualModal.classList.add("is-open");
+    dualModal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeDualPopup() {
+    if (!dualModal) return;
+    dualModal.classList.remove("is-open");
+    dualModal.setAttribute("aria-hidden", "true");
+    var otherOpen = document.querySelector(".plan-modal.is-open, .quotation-modal.is-open, .custom-plan-modal.is-open, .lead-modal.is-open:not(.dual-popup-modal)");
+    if (!otherOpen) {
+      document.body.style.overflow = "";
+    }
+    var successMsg = dualModal.querySelector(".cr-form-success");
+    if (successMsg) {
+      successMsg.classList.remove("show");
+      successMsg.style.display = "none";
+    }
+  }
+
+  if (dualForm) {
+    dualForm.addEventListener("submit", async function (e) {
+      if (!dualForm.checkValidity()) {
+        dualForm.reportValidity();
+        return;
+      }
+
+      var nameInput = document.getElementById("onLoadLeadName");
+      var phoneInput = document.getElementById("onLoadLeadPhone");
+      var emailInput = document.getElementById("onLoadLeadEmail");
+      var serviceInput = document.getElementById("onLoadLeadService");
+
+      var submittedName = nameInput ? nameInput.value.trim() : "";
+      var submittedPhone = phoneInput ? phoneInput.value.trim() : "";
+      var submittedEmail = emailInput ? emailInput.value.trim() : "";
+      var submittedService = serviceInput ? serviceInput.value : "";
+
+      try {
+        localStorage.setItem("corporateMart_leadSubmitted", "true");
+        if (submittedName) localStorage.setItem("corporateMart_leadName", submittedName);
+        if (submittedPhone) localStorage.setItem("corporateMart_leadPhone", submittedPhone);
+        if (submittedEmail) localStorage.setItem("corporateMart_leadEmail", submittedEmail);
+        if (submittedService) localStorage.setItem("corporateMart_leadService", submittedService);
+      } catch (err) {
+        console.warn("Storage error:", err);
+      }
+
+      var successEl = dualForm.querySelector(".cr-form-success") || document.getElementById("onLoadLeadFormSuccess");
+
+      if (typeof handleWeb3FormsSubmit === "function") {
+        var res = await handleWeb3FormsSubmit(e, dualForm, successEl);
+        if (res && res.success) {
+          setTimeout(function () {
+            closeDualPopup();
+          }, 3500);
+        }
+      }
+    });
+  }
+
+  window.openLeadModal = openLeadModal;
+  window.closeLeadModal = closeLeadModal;
+  window.openDualPopup = openDualPopup;
+  window.closeDualPopup = closeDualPopup;
+  window.openFundingPosterModal = openDualPopup;
+  window.closeFundingPosterModal = closeDualPopup;
+
+  // Global ESC key handling
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      if (modal && modal.classList.contains("is-open")) {
+        closeLeadModal();
+      }
+      if (dualModal && dualModal.classList.contains("is-open")) {
+        closeDualPopup();
+      }
+    }
+  });
+
+  // Wire "Click here" in chat (id="chatBtn")
+  function bindTrigger() {
+    var btn = document.getElementById("chatBtn");
+    if (btn && !btn.dataset.leadBound) {
+      btn.dataset.leadBound = "1";
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        openLeadModal(false);
+      });
+    }
+  }
+
+  bindTrigger();
+  var observer = new MutationObserver(bindTrigger);
+  observer.observe(document.body, { childList: true, subtree: true });
+
   // Floating Lead Button Handler
   var floatBtn = document.getElementById("floatingLeadBtn");
   if (floatBtn) {
@@ -2243,8 +2315,6 @@ window.addEventListener("resize", () => {
       openLeadModal(false);
     });
   }
-
-
 
   // Home CTA Consultation Form Handler (Section after Process)
   var homeCtaForm = document.getElementById("homeCtaLeadForm");
@@ -2285,9 +2355,8 @@ window.addEventListener("resize", () => {
 
   // 5-Second Automatic Popup Timer on Index Page
   setTimeout(function () {
-    var otherModalOpen = document.querySelector(".plan-modal.is-open, .quotation-modal.is-open, .custom-plan-modal.is-open");
+    var otherModalOpen = document.querySelector(".plan-modal.is-open, .quotation-modal.is-open, .custom-plan-modal.is-open, .lead-modal.is-open");
     if (!otherModalOpen) {
-      // Both lead modal and funding poster modal appear side-by-side on index page
       openDualPopup();
     }
   }, 5000);
@@ -2915,7 +2984,7 @@ window.addEventListener("resize", () => {
                 { name: "One Person Company (OPC) Registration", price: 5999 },
                 { name: "Sole Proprietorship Registration", price: 1999 },
                 { name: "Partnership Firm Registration", price: 2999 },
-                { name: "Startup India Registration", price: 3499 },
+                { name: "Startup India Registration", price: 4000 },
                 { name: "Public Limited Company Registration", price: 14999 },
                 { name: "Partnership Firm Annual Compliance", price: 1999 }
             ]
@@ -3088,7 +3157,7 @@ window.addEventListener("resize", () => {
                 { name: "Financial Model & Valuation Projections", price: 14999 },
                 { name: "Shareholders Agreement (SHA) & Term Sheet Drafting", price: 7999 },
                 { name: "Investor Due Diligence Readiness Support", price: 19999 },
-                { name: "Global impact fund", price:5000}
+                { name: "Global impact fund", price:12000}
             ]
         }
     ];
@@ -3100,7 +3169,7 @@ window.addEventListener("resize", () => {
         { name: "Private Limited Company Registration", price: 6999, category: "Company Registration & Incorporation" },
         { name: "Limited Liability Partnership (LLP) Registration", price: 4999, category: "Company Registration & Incorporation" },
         { name: "One Person Company (OPC) Registration", price: 5999, category: "Company Registration & Incorporation" },
-        { name: "Startup India Registration", price: 3499, category: "Company Registration & Incorporation" },
+        { name: "Startup India Registration", price: 4000, category: "Company Registration & Incorporation" },
         { name: "GST Registration", price: 1499, category: "Goods & Services Tax (GST)" },
         { name: "Monthly / Quarterly GST Return Filing", price: 999, category: "Goods & Services Tax (GST)" },
         { name: "Income Tax Return (ITR) E-Filing", price: 999, category: "Income Tax & Direct Tax" },

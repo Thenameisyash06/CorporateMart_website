@@ -5,6 +5,7 @@ const cors = require('cors');
 const fs = require('fs');
 const crypto = require('crypto');
 const multer = require('multer');
+const mongoose = require('mongoose');
 const db = require('./db');
 const notifications = require('./notifications');
 
@@ -137,10 +138,22 @@ async function requireStaff(req, res, next) {
 }
 
 // Healthcheck / Root API endpoint
-app.get('/api', (req, res) => {
+app.get(['/api', '/api/health'], async (req, res) => {
+  try {
+    await db.ensureMongoConnected();
+  } catch (e) {}
+  const readyState = mongoose.connection ? mongoose.connection.readyState : 0;
+  const states = ['Disconnected', 'Connected', 'Connecting', 'Disconnecting'];
+  const isConnected = readyState === 1;
+  const dbStatus = isConnected ? 'MongoDB Atlas (Connected)' : `Local File Database (Atlas ${states[readyState] || 'Disconnected'})`;
   res.json({
     status: 'ok',
     message: 'CorporateMart API is running',
+    database: dbStatus,
+    isAtlasConnected: isConnected,
+    mongoReadyState: readyState,
+    mongoStateName: states[readyState] || 'Disconnected',
+    envUriConfigured: Boolean(process.env.MONGODB_URI || process.env.MONGO_DB_URI),
     timestamp: new Date().toISOString()
   });
 });

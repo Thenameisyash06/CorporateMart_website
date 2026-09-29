@@ -2509,11 +2509,11 @@
 
     <div class="theme-transition-overlay" id="themeOverlay" aria-hidden="true"></div>
 <!-- ========== DUAL ON-LOAD POPUP (FUNDING POSTER + FREE CONSULTATION LEAD FORM) ========== -->
-<div class="lead-modal dual-popup-modal" id="leadModal" aria-hidden="true">
-  <div class="lead-modal-backdrop" data-close-lead></div>
-  <div class="dual-popup-wrapper" role="dialog" aria-modal="true" aria-labelledby="leadModalTitle">
+<div class="lead-modal dual-popup-modal" id="onLoadDualModal" aria-hidden="true">
+  <div class="lead-modal-backdrop" data-close-dual></div>
+  <div class="dual-popup-wrapper" role="dialog" aria-modal="true" aria-labelledby="dualPosterTitle">
     <!-- Single Unified Close Button for Both Popups -->
-    <button type="button" class="dual-popup-close" data-close-lead aria-label="Close dialog">&times;</button>
+    <button type="button" class="dual-popup-close" data-close-dual aria-label="Close dialog">&times;</button>
 
     <!-- Mobile Segmented Tab Switcher (Visible only on mobile <= 880px) -->
     <div class="dual-popup-tabs" role="tablist" aria-label="Modal options">
@@ -2578,42 +2578,43 @@
       </div>
 
       <!-- 2. LEAD CONSULTATION FORM (Right Column of Single Unified Card) -->
-      <div class="lead-modal-dialog" id="leadModalCard">
+      <div class="lead-modal-dialog" id="onLoadLeadModalCard">
         <div class="lead-modal-header">
           <div class="lead-eyebrow">
             <span class="funding-badge-dot"></span>
             FREE EXPERT CONSULTATION
           </div>
-          <h2 id="leadModalTitle">Speak With Our Business Experts</h2>
+          <h2 id="dualPosterLeadTitle">Speak With Our Business Experts</h2>
           <p>Share your details and our specialist will assist you within hours.</p>
         </div>
 
-        <form id="leadModalForm" class="lead-modal-form" novalidate method="POST">
-          <!-- Web3Forms Configuration: Replace YOUR_ACCESS_KEY_HERE with your Web3Forms Access Key -->
-          <input type="hidden" name="access_key" value="YOUR_ACCESS_KEY_HERE">
-          <input type="hidden" name="subject" value="New Submission: Business Services Header">
+        <form id="onLoadLeadModalForm" class="lead-modal-form" novalidate method="POST" action="https://api.web3forms.com/submit">
+          <!-- Web3Forms Configuration -->
+          <input type="hidden" name="access_key" value="f9e8e977-8a5c-4979-8cf0-e303edbcac00">
+          <input type="hidden" name="subject" value="New Submission: Funding Poster Lead Form">
           <input type="hidden" name="from_name" value="Corporate Mart Website">
           <input type="checkbox" name="botcheck" class="hidden" style="display:none">
 
           <div class="lead-field">
-            <label for="leadName">Full name</label>
-            <input id="leadName" name="name" type="text" placeholder="Your name" required autocomplete="name">
+            <label for="onLoadLeadName">Full name</label>
+            <input id="onLoadLeadName" name="name" type="text" placeholder="Your name" required autocomplete="name">
           </div>
 
           <div class="lead-field">
-            <label for="leadPhone">Mobile number</label>
-            <input id="leadPhone" name="phone" type="tel" placeholder="10-digit mobile" pattern="[0-9]{10}" maxlength="10" required autocomplete="tel">
+            <label for="onLoadLeadPhone">Mobile number</label>
+            <input id="onLoadLeadPhone" name="phone" type="tel" placeholder="10-digit mobile" pattern="[0-9]{10}" maxlength="10" required autocomplete="tel">
           </div>
 
           <div class="lead-field">
-            <label for="leadEmail">Email</label>
-            <input id="leadEmail" name="email" type="email" placeholder="you@example.com" required autocomplete="email">
+            <label for="onLoadLeadEmail">Email</label>
+            <input id="onLoadLeadEmail" name="email" type="email" placeholder="you@example.com" required autocomplete="email">
           </div>
 
           <div class="lead-field">
-            <label for="leadService">Service you want</label>
-            <select id="leadService" name="service" required>
+            <label for="onLoadLeadService">Service you want</label>
+            <select id="onLoadLeadService" name="service" required>
               <option value="" disabled selected>Select a service</option>
+              <option value="Fundraising & Government Grants">Fundraising &amp; Government Grants</option>
               <option value="Private Limited Company">Private Limited Company</option>
               <option value="LLP Registration">LLP Registration</option>
               <option value="OPC Registration">OPC Registration</option>
@@ -2642,11 +2643,70 @@
             <button type="button" class="poster-switch-link" data-switch-to="poster">&larr; View Funding Schemes</button>
           </div>
 
-          <!-- <p class="lead-note">100% confidential · Mon to Sat, 10 AM to 7 PM</p> -->
-          <div class="cr-form-success" id="leadFormSuccess" style="display:none;">Thanks! Your consultation request has been received. Our expert will contact you shortly.</div>
+          <div class="cr-form-success" id="onLoadLeadFormSuccess" style="display:none;">Thanks! Your consultation request has been received. Our expert will contact you shortly.</div>
         </form>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ========== CLEAN STANDALONE LEAD / QUOTATION MODAL (Matching Other Pages) ========== -->
+<div class="lead-modal" id="leadModal" aria-hidden="true">
+  <div class="lead-modal-backdrop" data-close-lead></div>
+  <div class="lead-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="leadModalTitle">
+    <button type="button" class="lead-modal-close" data-close-lead aria-label="Close">&times;</button>
+    <div class="lead-modal-header">
+      <span class="lead-eyebrow">FREE CONSULTATION</span>
+      <h2 id="leadModalTitle">Tell us what you need</h2>
+      <p>Share your details and our expert will contact you shortly.</p>
+    </div>
+    <form id="leadModalForm" class="lead-modal-form" novalidate method="POST" action="https://api.web3forms.com/submit">
+      <input type="hidden" name="access_key" value="f9e8e977-8a5c-4979-8cf0-e303edbcac00">
+      <input type="hidden" name="subject" value="New Consultation Lead: Service Page">
+      <input type="hidden" name="from_name" value="Corporate Mart Website">
+      <input type="checkbox" name="botcheck" class="hidden" style="display:none">
+      <div class="lead-field">
+        <label for="leadName">Full name</label>
+        <input id="leadName" name="name" type="text" placeholder="Your name" required autocomplete="name">
+      </div>
+      <div class="lead-field">
+        <label for="leadPhone">Mobile number</label>
+        <input id="leadPhone" name="phone" type="tel" placeholder="10-digit mobile" pattern="[0-9]{10}" maxlength="10" required autocomplete="tel">
+      </div>
+      <div class="lead-field">
+        <label for="leadEmail">Email</label>
+        <input id="leadEmail" name="email" type="email" placeholder="you@example.com" required autocomplete="email">
+      </div>
+      <div class="lead-field">
+        <label for="leadService">Service you want</label>
+        <select id="leadService" name="service" required>
+          <option value="" disabled selected>Select a service</option>
+          <option value="Private Limited Company">Private Limited Company</option>
+          <option value="LLP Registration">Limited Liability Partnership (LLP)</option>
+          <option value="One Person Company (OPC)">One Person Company (OPC)</option>
+          <option value="Sole Proprietorship">Sole Proprietorship</option>
+          <option value="Partnership Firm">Partnership Firm</option>
+          <option value="Startup India Registration">Startup India Registration</option>
+          <option value="GST Registration">GST Registration</option>
+          <option value="GST Return Filing">GST Return Filing</option>
+          <option value="Income Tax Filing">Income Tax Filing</option>
+          <option value="Corporate Compliance & ROC">Corporate Compliance & ROC</option>
+          <option value="Trademark Registration">Trademark Registration</option>
+          <option value="FSSAI License">FSSAI Food License</option>
+          <option value="MSME / Udyam Registration">MSME / Udyam Registration</option>
+          <option value="IEC Registration">Import Export Code (IEC)</option>
+          <option value="ISO Certification">ISO Certification</option>
+          <option value="Environmental & Pollution NOC">Environmental & Pollution NOC</option>
+          <option value="Business Closure / Strike Off">Business Closure / Strike Off</option>
+          <option value="Web Solutions & Digital Marketing">Web Solutions & Digital Marketing</option>
+          <option value="Fundraising & Government Grants">Fundraising & Government Grants</option>
+          <option value="Other">Other Services</option>
+        </select>
+      </div>
+      <button type="submit" class="lead-submit">Submit request <span>&rsaquo;</span></button>
+      <p class="lead-note">100% confidential &middot; Mon to Sat, 9:30 AM to 6:30 PM</p>
+      <div class="cr-form-success" id="leadFormSuccess" style="display:none;">Thanks! Your consultation request has been received. Our expert will contact you shortly.</div>
+    </form>
   </div>
 </div>
 
