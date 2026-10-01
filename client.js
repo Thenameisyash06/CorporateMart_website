@@ -183,8 +183,10 @@
     const notifBadgeDot = document.getElementById('notifBadgeDot');
     const dismissed = localStorage.getItem('cm_notif_prompt_dismissed');
 
+    const notifBtnText = document.getElementById('menuNotifBtnText');
     if (Notification.permission === 'granted') {
-      if (notifBadgeDot) notifBadgeDot.style.display = 'block';
+      if (notifBadgeDot) notifBadgeDot.style.display = 'inline-block';
+      if (notifBtnText) notifBtnText.textContent = 'Notifications Active (Test)';
       if (notifPromptCard) notifPromptCard.style.display = 'none';
       if (clientToken) {
         ensurePushSubscribed();
@@ -192,9 +194,11 @@
     } else if (Notification.permission === 'default' && !dismissed) {
       if (notifPromptCard) notifPromptCard.style.display = 'flex';
       if (notifBadgeDot) notifBadgeDot.style.display = 'none';
+      if (notifBtnText) notifBtnText.textContent = 'Enable Notifications';
     } else {
       if (notifBadgeDot) notifBadgeDot.style.display = 'none';
       if (notifPromptCard) notifPromptCard.style.display = 'none';
+      if (notifBtnText) notifBtnText.textContent = 'Enable Notifications';
     }
   }
 
@@ -383,9 +387,19 @@
     const menuAvatarEl = document.getElementById('menuClientAvatar');
     const menuEmailEl = document.getElementById('menuClientEmailBadge');
 
+    const profDirector = document.getElementById('profileDetailDirector');
+    const profCompany = document.getElementById('profileDetailCompany');
+    const profEmail = document.getElementById('profileDetailEmail');
+    const profPhone = document.getElementById('profileDetailPhone');
+
     if (menuCompanyEl) menuCompanyEl.textContent = companyName;
     if (menuDirectorEl) menuDirectorEl.textContent = directorName;
     if (menuEmailEl) menuEmailEl.textContent = currentUser.email || 'director@company.com';
+    if (profDirector) profDirector.textContent = directorName;
+    if (profCompany) profCompany.textContent = companyName;
+    if (profEmail) profEmail.textContent = currentUser.email || '—';
+    if (profPhone) profPhone.textContent = currentUser.phone || '—';
+
     if (menuAvatarEl) {
       const initials = companyName
         .split(' ')
@@ -760,15 +774,70 @@
     dashboard: { title: 'Dashboard', sub: 'Track company services, status & certificates' },
     services: { title: 'My Services', sub: 'Real-time progress and filings for your business' },
     buy: { title: 'Buy & Explore', sub: 'Combo packages, 100+ business services & funding schemes' },
-    documents: { title: 'Menu & Account Hub', sub: 'Your profile details, live push notification alerts, and document vault' },
-    support: { title: 'Help & Support Desk', sub: 'Ask questions and review messages from operations' },
-    menu: { title: 'Menu & Account Hub', sub: 'Your profile details, live push notification alerts, and document vault' }
+    menu: { title: 'Menu & Account Hub', sub: 'Profile details, document vault, and help & support' },
+    profile: { title: 'Profile & Settings', sub: 'Director profile details, live push alerts, and account security' },
+    documents: { title: 'Document Vault', sub: 'Company incorporation files and issued certificates' },
+    support: { title: 'Help & Support Desk', sub: 'Ask questions and review messages from operations' }
   };
 
+  function switchMenuSubTab(tabName) {
+    if (!tabName) tabName = 'profile';
+    const subNavBtns = document.querySelectorAll('.cp-menu-subnav-btn');
+    const panes = document.querySelectorAll('.cp-menu-tab-pane');
+
+    subNavBtns.forEach((btn) => {
+      const isMatch = btn.dataset.menuTab === tabName;
+      btn.classList.toggle('active', isMatch);
+      btn.setAttribute('aria-selected', isMatch ? 'true' : 'false');
+    });
+
+    panes.forEach((pane) => {
+      pane.classList.remove('active');
+    });
+
+    const targetPaneId = tabName === 'support' ? 'menuPaneSupport' : tabName === 'documents' ? 'menuPaneDocuments' : 'menuPaneProfile';
+    const targetPane = document.getElementById(targetPaneId);
+    if (targetPane) {
+      targetPane.classList.add('active');
+    }
+
+    if (pageHeaders[tabName] && cpPageSubtitle && document.getElementById('sec-menu')?.classList.contains('active')) {
+      cpPageSubtitle.textContent = pageHeaders[tabName].sub;
+    }
+
+    if (tabName === 'support') {
+      const chatMessages = document.getElementById('chatMessages');
+      if (chatMessages) {
+        setTimeout(() => {
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }, 80);
+      }
+    }
+  }
+
+  window.switchMenuSubTab = switchMenuSubTab;
+
+  // Click listeners for Menu Subnav tabs
+  document.querySelectorAll('.cp-menu-subnav-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.menuTab;
+      switchMenuSubTab(tab);
+    });
+  });
+
   function switchSection(sectionId) {
+    let targetSubTab = null;
     if (sectionId === 'documents') {
       sectionId = 'menu';
+      targetSubTab = 'documents';
+    } else if (sectionId === 'support') {
+      sectionId = 'menu';
+      targetSubTab = 'support';
+    } else if (sectionId === 'profile') {
+      sectionId = 'menu';
+      targetSubTab = 'profile';
     }
+
     const targetSec = document.getElementById(`sec-${sectionId}`);
     if (!targetSec) return;
 
@@ -776,8 +845,19 @@
     targetSec.classList.add('active');
 
     document.querySelectorAll('.cp-nav-link, .portal-bottom-nav-item').forEach((link) => {
-      link.classList.toggle('active', link.dataset.nav === sectionId || (sectionId === 'menu' && link.dataset.nav === 'documents'));
+      link.classList.toggle('active', link.dataset.nav === sectionId || (sectionId === 'menu' && (link.dataset.nav === 'menu' || link.dataset.nav === 'documents' || link.dataset.nav === 'support')));
     });
+
+    if (sectionId === 'menu') {
+      if (targetSubTab) {
+        switchMenuSubTab(targetSubTab);
+      } else {
+        const activeSub = document.querySelector('.cp-menu-subnav-btn.active');
+        if (!activeSub) {
+          switchMenuSubTab('profile');
+        }
+      }
+    }
 
     if (pageHeaders[sectionId]) {
       if (cpPageTitle) cpPageTitle.textContent = pageHeaders[sectionId].title;
@@ -786,6 +866,8 @@
 
     if (cpSidebar) cpSidebar.classList.remove('open');
   }
+
+  window.switchSection = switchSection;
 
   document.querySelectorAll('.cp-nav-link, .portal-bottom-nav-item').forEach((link) => {
     link.addEventListener('click', (e) => {
@@ -1177,6 +1259,9 @@
     const navServicesBadge = document.getElementById('navServicesBadge');
     const navDocsBadge = document.getElementById('navDocsBadge');
     const navTicketsBadge = document.getElementById('navTicketsBadge');
+    const navMenuBadge = document.getElementById('navMenuBadge');
+    const menuDocsBadge = document.getElementById('menuDocsBadge');
+    const menuTicketsBadge = document.getElementById('menuTicketsBadge');
 
     const bServices = document.getElementById('bottomNavServicesBadge');
     const bDocs = document.getElementById('bottomNavDocsBadge');
@@ -1186,8 +1271,25 @@
     if (navDocsBadge) navDocsBadge.textContent = stats.totalDocuments || 0;
     if (navTicketsBadge) navTicketsBadge.textContent = stats.openTickets || 0;
 
+    const totalMenuBadgeCount = (stats.totalDocuments || 0) + (stats.openTickets || 0);
+    if (navMenuBadge) {
+      navMenuBadge.textContent = totalMenuBadgeCount;
+      navMenuBadge.style.display = totalMenuBadgeCount > 0 ? 'inline-flex' : 'none';
+    }
+    if (menuDocsBadge) {
+      menuDocsBadge.textContent = stats.totalDocuments || 0;
+      menuDocsBadge.style.display = stats.totalDocuments > 0 ? 'inline-flex' : 'none';
+    }
+    if (menuTicketsBadge) {
+      menuTicketsBadge.textContent = stats.openTickets || 0;
+      menuTicketsBadge.style.display = stats.openTickets > 0 ? 'inline-flex' : 'none';
+    }
+
     if (bServices) { bServices.textContent = stats.totalServices || 0; bServices.style.display = stats.totalServices > 0 ? 'block' : 'none'; }
-    if (bDocs) { bDocs.textContent = stats.totalDocuments || 0; bDocs.style.display = stats.totalDocuments > 0 ? 'block' : 'none'; }
+    if (bDocs) {
+      bDocs.textContent = totalMenuBadgeCount;
+      bDocs.style.display = totalMenuBadgeCount > 0 ? 'block' : 'none';
+    }
     if (bTickets) { bTickets.textContent = stats.openTickets || 0; bTickets.style.display = stats.openTickets > 0 ? 'block' : 'none'; }
 
     const allDocs = data.documents || [];
@@ -1341,103 +1443,42 @@
     }
 
     container.innerHTML = cases.map((c) => {
-      const isApproved = c.status === 'approved';
-      const isReview = c.status === 'in_review';
-      const isPendingDocs = c.status === 'pending_documents';
-
-      // Step classes
-      const step1Class = 'completed';
-      const step2Class = isApproved ? 'completed' : (isReview ? 'active' : '');
-      const step3Class = isApproved ? 'completed' : '';
+      const updatedDate = c.updatedAt
+        ? new Date(c.updatedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+        : 'Recently';
 
       return `
-        <div class="cp-service-card cp-service-card-clickable" data-case-id="${escapeHtml(c.caseId)}">
+        <div class="cp-service-card cp-service-card-clickable cp-service-compact-row" data-case-id="${escapeHtml(c.caseId)}" tabindex="0" role="button" aria-label="View details for ${escapeHtml(c.serviceName)}">
           <div class="cp-service-card-header">
-            <div>
+            <div class="cp-service-header-left">
               <div class="cp-service-name">${escapeHtml(c.serviceName)}</div>
-              <div class="cp-service-meta">Service ID: <code>${escapeHtml(c.caseId)}</code> • Updated: ${c.updatedAt ? new Date(c.updatedAt).toLocaleDateString('en-IN') : 'Recently'}</div>
+              <div class="cp-service-meta">
+                <span class="cp-service-meta-item">Updated at: <strong>${updatedDate}</strong></span>
+              </div>
             </div>
-            <div style="display:flex; align-items:center; gap:8px;">
+            <div class="cp-service-header-right">
               ${getStatusBadge(c.status)}
               <button type="button" class="cp-btn cp-btn-secondary cp-btn-sm btn-open-case-details" data-case-id="${escapeHtml(c.caseId)}">
-                View Details →
+                View Details &rarr;
               </button>
             </div>
-          </div>
-
-          <!-- Progress Stepper -->
-          <div class="cp-progress-stepper">
-            <div class="cp-step ${step1Class}">
-              <div class="cp-step-circle">1</div>
-              <div class="cp-step-label">KYC & Preparation</div>
-            </div>
-            <div class="cp-step ${step2Class}">
-              <div class="cp-step-circle">2</div>
-              <div class="cp-step-label">Government Review</div>
-            </div>
-            <div class="cp-step ${step3Class}">
-              <div class="cp-step-circle">3</div>
-              <div class="cp-step-label">Certificate Issued</div>
-            </div>
-          </div>
-
-          <!-- Status Note Box -->
-          <div class="cp-service-note-box">
-            <div class="cp-service-note-icon">📢</div>
-            <div class="cp-service-note-text">
-              <strong>Latest Update from Operations Desk</strong>
-              <p>${escapeHtml(c.statusNote || 'Your application is progressing normally.')}</p>
-            </div>
-          </div>
-
-          ${
-            isApproved
-              ? (() => {
-                  const matchDoc = (cachedData.documents || []).find((d) => 
-                    (d.caseId === c.caseId || d.caseId === c.id) &&
-                    d.docType !== 'company' &&
-                    d.category !== 'company_document' &&
-                    d.category !== 'client_kyc'
-                  );
-                  if (matchDoc) {
-                    return `
-                      <div style="margin-top:16px; display:flex; justify-content:flex-end; gap:8px;">
-                        <button type="button" class="cp-btn cp-btn-secondary cp-btn-sm btn-client-preview-doc" data-doc-id="${escapeHtml(matchDoc.docId)}">
-                          👁 Preview Certificate
-                        </button>
-                        <button type="button" class="cp-btn cp-btn-primary cp-btn-sm btn-trigger-download" data-file-url="${escapeHtml(matchDoc.fileUrl)}" data-file-name="${escapeHtml(matchDoc.fileName || 'certificate.pdf')}">
-                          ⬇ Download Certificate
-                        </button>
-                      </div>
-                    `;
-                  }
-                  return `
-                    <div style="margin-top:16px; display:flex; justify-content:flex-end;">
-                      <a href="#documents" class="cp-btn cp-btn-primary cp-btn-sm" style="text-decoration:none;" onclick="document.querySelector('a[data-nav=documents]').click()">
-                        View & Download Certificate →
-                      </a>
-                    </div>
-                  `;
-                })()
-              : ''
-          }
-
-          <div class="cp-service-card-footer" style="margin-top:16px; padding-top:12px; border-top:1px dashed var(--cp-border); display:flex; align-items:center; justify-content:space-between; font-size:12px; color:var(--cp-text-muted);">
-            <span>Click card to inspect full details, remarks & documents</span>
-            <span style="color:var(--cp-primary); font-weight:600;">Open View ↗</span>
           </div>
         </div>
       `;
     }).join('');
 
-    // Wire card click & explicit View Details button
+    // Wire card click & keyboard & explicit View Details button
     container.querySelectorAll('.cp-service-card-clickable').forEach((card) => {
-      card.addEventListener('click', (e) => {
-        if (e.target.closest('.btn-client-preview-doc') || e.target.closest('a')) {
-          return;
-        }
+      const openHandler = () => {
         const caseId = card.dataset.caseId;
         openServiceDetailsModal(caseId);
+      };
+      card.addEventListener('click', openHandler);
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openHandler();
+        }
       });
     });
 
@@ -1448,8 +1489,6 @@
         openServiceDetailsModal(caseId);
       });
     });
-
-    wireDocPreviewButtons(container);
   }
 
   function openServiceDetailsModal(caseId) {
@@ -2197,6 +2236,7 @@
       key: 'incorporation',
       title: 'Incorporation',
       icon: '🏛️',
+      iconSvg: '<svg width="40" height="40" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="12" fill="#EEF2FF"/><path d="M22 9L10 16V18H34V16L22 9Z" fill="#3B82F6"/><rect x="12.5" y="20" width="3.5" height="12" rx="1" fill="#60A5FA"/><rect x="18.5" y="20" width="3.5" height="12" rx="1" fill="#60A5FA"/><rect x="24.5" y="20" width="3.5" height="12" rx="1" fill="#60A5FA"/><rect x="30" y="20" width="3.5" height="12" rx="1" fill="#60A5FA"/><rect x="9.5" y="32" width="25" height="3" rx="1.5" fill="#2563EB"/></svg>',
       desc: 'Company Registration, NGO Registration, Partnership Firm & Startup India.',
       chips: ['Private Limited', 'LLP', 'One Person Company', 'Section 8 Company', 'Trust', 'Startup India']
     },
@@ -2204,6 +2244,7 @@
       key: 'tax',
       title: 'Income Tax & Compliance',
       icon: '📊',
+      iconSvg: '<svg width="40" height="40" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="12" fill="#ECFDF5"/><rect x="11" y="10" width="22" height="24" rx="3" fill="#D1FAE5" stroke="#10B981" stroke-width="2"/><path d="M16 16H28" stroke="#059669" stroke-width="2" stroke-linecap="round"/><rect x="15" y="23" width="3.5" height="7" rx="1" fill="#10B981"/><rect x="20.5" y="20" width="3.5" height="10" rx="1" fill="#059669"/><rect x="26" y="18" width="3.5" height="12" rx="1" fill="#047857"/><circle cx="28" cy="12" r="2.5" fill="#10B981"/></svg>',
       desc: 'Income Tax (ITR 1-7), GST Returns, Corporate ROC Filings & Financial Audits.',
       chips: ['Income Tax E-Filing', 'GST Registration', 'ROC Annual Filing', 'Bookkeeping & Audit', 'TDS Return']
     },
@@ -2211,6 +2252,7 @@
       key: 'ip',
       title: 'Trademark & IP',
       icon: '🛡️',
+      iconSvg: '<svg width="40" height="40" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="12" fill="#F5F3FF"/><path d="M22 9L33 13.5V22C33 28 28.5 33.5 22 35C15.5 33.5 11 28 11 22V13.5L22 9Z" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="2" stroke-linejoin="round"/><path d="M17.5 21.5L20.5 24.5L26.5 18" stroke="#7C3AED" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
       desc: 'Brand Protection, Trademark Hearing, Copyright & Patent Registrations.',
       chips: ['Trademark Registration', 'Hearing & Objection', 'Copyright', 'Patent', 'TM Notice']
     },
@@ -2218,6 +2260,7 @@
       key: 'licenses',
       title: 'Licenses',
       icon: '📜',
+      iconSvg: '<svg width="40" height="40" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="12" fill="#FFFBEB"/><rect x="11" y="10" width="22" height="24" rx="3" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2"/><line x1="16" y1="16" x2="28" y2="16" stroke="#D97706" stroke-width="2" stroke-linecap="round"/><line x1="16" y1="20.5" x2="24" y2="20.5" stroke="#D97706" stroke-width="2" stroke-linecap="round"/><circle cx="26" cy="26" r="4.5" fill="#F59E0B" stroke="#B45309" stroke-width="1.5"/><path d="M24 29.5L23 34L26 32.5L29 34L28 29.5" fill="#D97706"/></svg>',
       desc: 'Business, Food & Health, Import-Export, Workforce & Labour, Environmental Approvals.',
       chips: ['MSME / Udyam', 'FSSAI License', 'IEC (Import Export)', 'ISO Certificate', 'Trade License']
     },
@@ -2225,6 +2268,7 @@
       key: 'digital',
       title: 'Digital',
       icon: '💻',
+      iconSvg: '<svg width="40" height="40" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="12" fill="#F0F9FF"/><rect x="12" y="13" width="20" height="13" rx="2" fill="#E0F2FE" stroke="#0284C7" stroke-width="2"/><circle cx="15.5" cy="16" r="0.75" fill="#0284C7"/><circle cx="18" cy="16" r="0.75" fill="#0284C7"/><path d="M18.5 21.5L17 20L18.5 18.5" stroke="#0284C7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25.5 21.5L27 20L25.5 18.5" stroke="#0284C7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M23 18.5L21 21.5" stroke="#0284C7" stroke-width="1.5" stroke-linecap="round"/><path d="M8 29H36" stroke="#0284C7" stroke-width="2.5" stroke-linecap="round"/></svg>',
       desc: 'Custom Web Applications, High-Converting Websites, SEO & Brand Identity.',
       chips: ['Web Application', 'Dynamic Website', 'E-Commerce', 'SEO & PPC Ads', 'Logo Design']
     },
@@ -2232,8 +2276,18 @@
       key: 'conversion',
       title: 'Business Closure & Conversion',
       icon: '🔄',
+      iconSvg: '<svg width="40" height="40" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="12" fill="#FFF7ED"/><path d="M22 13C26.97 13 31 17.03 31 22C31 24.3 30.13 26.4 28.7 28L25.5 24.8" stroke="#EA580C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M28.7 28H23V22.3" stroke="#EA580C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 31C17.03 31 13 26.97 13 22C13 19.7 13.87 17.6 15.3 16L18.5 19.2" stroke="#F97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M15.3 16H21V21.7" stroke="#F97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
       desc: 'Company Strike-Off, Fast-Track LLP Closure & Entity Type Conversions.',
       chips: ['Pvt Ltd Closure', 'LLP Strike-Off', 'Proprietorship to Pvt Ltd', 'LLP to Pvt Ltd']
+    },
+    {
+      key: 'fundraising',
+      title: 'Fundraising',
+      icon: '🚀',
+      iconSvg: '<svg width="40" height="40" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="44" height="44" rx="12" fill="#F0FDF4"/><circle cx="22" cy="22" r="13" fill="#DCFCE7" stroke="#22C55E" stroke-width="1.5"/><path d="M15 27L21 21L25 25L30 17" stroke="#16A34A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M25 17H30V22" stroke="#16A34A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="16" cy="16" r="2" fill="#EAB308"/></svg>',
+      desc: 'Government Grants, Seed Funding, Venture Capital & Subsidies for Startups.',
+      chips: ['Seed Funding', 'Startup Grants', 'Angel Investment', 'Government Subsidies'],
+      redirectUrl: 'fundraising.html'
     }
   ];
 
@@ -2297,6 +2351,10 @@
   }
 
   function openCategoryServiceForm(categoryKey) {
+    if (categoryKey === 'fundraising') {
+      window.location.href = 'fundraising.html';
+      return;
+    }
     const cat = BUSINESS_SERVICE_CATEGORIES.find((c) => c.key === categoryKey) || {
       key: categoryKey,
       title: getCategoryLabel(categoryKey),
@@ -2323,7 +2381,13 @@
     const bannerTitle = document.getElementById('reqCategoryBannerTitle');
     const bannerSub = document.getElementById('reqCategoryBannerSub');
     if (banner) banner.style.display = 'flex';
-    if (bannerIcon) bannerIcon.textContent = cat.icon;
+    if (bannerIcon) {
+      if (cat.iconSvg) {
+        bannerIcon.innerHTML = cat.iconSvg;
+      } else {
+        bannerIcon.textContent = cat.icon;
+      }
+    }
     if (bannerTitle) bannerTitle.textContent = `Category: ${cat.title}`;
     if (bannerSub) bannerSub.textContent = `${categoryServices.length} associated services available in this category`;
 
@@ -2432,30 +2496,16 @@
     const catalog = window.ALL_SERVICES_CATALOG || [];
 
     const cardsHtml = BUSINESS_SERVICE_CATEGORIES.map((cat) => {
-      const services = catalog.filter((s) => s.cat === cat.key);
-      const countText = `${services.length} Services`;
+      const iconDisplay = cat.iconSvg || `<span style="font-size: 32px;">${cat.icon}</span>`;
+      const isRedirect = Boolean(cat.redirectUrl);
+      const tag = isRedirect ? 'a' : 'div';
+      const hrefAttr = isRedirect ? `href="${escapeHtml(cat.redirectUrl)}"` : '';
 
       return `
-        <div class="cp-category-card" data-category="${escapeHtml(cat.key)}" tabindex="0" role="button" aria-label="Explore ${escapeHtml(cat.title)} services">
-          <div>
-            <div class="cp-cat-card-header">
-              <div class="cp-cat-icon-wrap">${cat.icon}</div>
-              <span class="cp-cat-count-badge">${countText}</span>
-            </div>
-            <h4 class="cp-cat-card-title">${escapeHtml(cat.title)}</h4>
-            <p class="cp-cat-card-desc">${escapeHtml(cat.desc)}</p>
-            <div class="cp-cat-chips-list">
-              ${cat.chips.map((chip) => `<span class="cp-cat-mini-chip">${escapeHtml(chip)}</span>`).join('')}
-            </div>
-          </div>
-          <div class="cp-cat-card-action">
-            <span>Select Service &amp; Inquire</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-          </div>
-        </div>
+        <${tag} ${hrefAttr} class="cp-category-card cp-biz-tile" data-category="${escapeHtml(cat.key)}" tabindex="0" role="button" aria-label="${escapeHtml(cat.title)}">
+          <div class="cp-biz-tile-icon">${iconDisplay}</div>
+          <div class="cp-biz-tile-title">${escapeHtml(cat.title)}</div>
+        </${tag}>
       `;
     }).join('');
 
@@ -2464,15 +2514,20 @@
 
       // Wire card click listeners
       container.querySelectorAll('.cp-category-card').forEach((card) => {
-        const openHandler = () => {
+        const openHandler = (e) => {
           const catKey = card.dataset.category;
+          if (catKey === 'fundraising') {
+            e.preventDefault();
+            window.location.href = 'fundraising.html';
+            return;
+          }
           openCategoryServiceForm(catKey);
         };
         card.addEventListener('click', openHandler);
         card.addEventListener('keydown', (e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            openHandler();
+            openHandler(e);
           }
         });
       });

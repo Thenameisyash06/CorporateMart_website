@@ -7030,7 +7030,7 @@ body.dark-mode .lead-field select {
   align-items: stretch;
   justify-content: center;
   gap: 0; /* Pure single card - zero gap */
-  width: 100%;
+  width: 85%;
   max-width: 890px;
   max-height: min(92vh, 670px);
   overflow-y: auto; /* Single unified scrollbar for the entire card */
@@ -11702,8 +11702,13 @@ section[id] {
 
 .quotation-service-grid {
     display: grid;
-    grid-template-columns: 1fr 140px;
+    grid-template-columns: 1fr 130px 130px;
     gap: 12px;
+}
+
+.item-discount-input {
+    text-align: right;
+    font-weight: 600;
 }
 
 .item-price-display {
@@ -12777,9 +12782,16 @@ body.dark-mode .pdf-export-container .excel-footer-banner {
 
 @media (max-width: 650px) {
 
-    .quotation-form-grid,
-    .quotation-service-grid {
+    .quotation-form-grid {
         grid-template-columns: 1fr;
+    }
+
+    .quotation-service-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .quotation-service-select-field {
+        grid-column: 1 / -1;
     }
 
     .quotation-field.quotation-full {
@@ -13266,5 +13278,743 @@ body.dark-mode .mobile-brochure-icon svg {
     padding: 0 !important;
     flex-shrink: 0 !important;
     justify-content: center !important;
+  }
+}
+
+/* =====================================================
+   CORPORATEMART MOBILE APP PROMOTION SECTION
+   Placed under Pan-India Reach Section
+===================================================== */
+.app-promo-section {
+  position: relative;
+  padding: 84px 0 92px;
+  background: linear-gradient(135deg, #f0f7ff 0%, #e6f1fd 45%, #fffbf2 100%);
+  overflow: hidden;
+  border-top: 1px solid rgba(195, 227, 255, 0.6);
+  border-bottom: 1px solid rgba(195, 227, 255, 0.6);
+}
+
+body.dark-mode .app-promo-section {
+  background: linear-gradient(135deg, #091322 0%, #0d1b32 45%, #141b2a 100%);
+  border-top-color: rgba(30, 58, 138, 0.35);
+  border-bottom-color: rgba(30, 58, 138, 0.35);
+}
+
+.app-promo-container {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 20px;
+  position: relative;
+  z-index: 2;
+}
+
+.app-promo-grid {
+  display: grid;
+  grid-template-columns: 1.12fr 0.88fr;
+  align-items: center;
+  gap: 44px;
+}
+
+/* Eyebrow Badge */
+.app-promo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  color: #1d4ed8;
+  font-size: 11.5px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+body.dark-mode .app-promo-badge {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+}
+
+.app-badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2563eb;
+  box-shadow: 0 0 10px #2563eb;
+  animation: appBadgePulse 2s infinite;
+}
+
+body.dark-mode .app-badge-dot {
+  background: #38bdf8;
+  box-shadow: 0 0 10px #38bdf8;
+}
+
+@keyframes appBadgePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+/* Headings */
+.app-promo-title {
+  font-size: clamp(28px, 3.2vw, 40px);
+  font-weight: 850;
+  line-height: 1.22;
+  color: var(--text, #0f172a);
+  margin: 0 0 14px;
+  letter-spacing: -0.02em;
+}
+
+body.dark-mode .app-promo-title {
+  color: #ffffff;
+}
+
+.app-title-highlight {
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #d97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+body.dark-mode .app-title-highlight {
+  background: linear-gradient(135deg, #60a5fa 0%, #38bdf8 50%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.app-promo-desc {
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--muted, #475569);
+  margin: 0 0 24px;
+  max-width: 560px;
+}
+
+body.dark-mode .app-promo-desc {
+  color: #94a3b8;
+}
+
+/* Feature Highlights */
+.app-promo-features {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.app-feature-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  backdrop-filter: blur(8px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.app-feature-card:hover {
+  transform: translateX(4px);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+
+body.dark-mode .app-feature-card {
+  background: rgba(15, 23, 42, 0.65);
+  border-color: rgba(51, 65, 85, 0.75);
+}
+
+body.dark-mode .app-feature-card:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.app-feature-icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--icon-accent, #2563eb) 12%, transparent);
+  color: var(--icon-accent, #2563eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.app-feature-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.app-feature-text strong {
+  font-size: 14px;
+  font-weight: 750;
+  color: var(--text, #0f172a);
+}
+
+body.dark-mode .app-feature-text strong {
+  color: #f1f5f9;
+}
+
+.app-feature-text span {
+  font-size: 12.5px;
+  color: #64748b;
+}
+
+body.dark-mode .app-feature-text span {
+  color: #94a3b8;
+}
+
+/* CTA Buttons */
+.app-promo-cta-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+.app-promo-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 22px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+  color: #ffffff !important;
+  font-size: 14px;
+  font-weight: 750;
+  text-decoration: none;
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.app-promo-primary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgba(37, 99, 235, 0.45);
+  filter: brightness(1.05);
+}
+
+.app-promo-secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 18px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid #cbd5e1;
+  color: #0f172a !important;
+  font-size: 13.5px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+body.dark-mode .app-promo-secondary-btn {
+  background: rgba(30, 41, 59, 0.7);
+  border-color: #334155;
+  color: #f1f5f9 !important;
+}
+
+.app-promo-secondary-btn:hover {
+  background: #ffffff;
+  border-color: #94a3b8;
+  transform: translateY(-2px);
+}
+
+body.dark-mode .app-promo-secondary-btn:hover {
+  background: #1e293b;
+  border-color: #475569;
+}
+
+/* =====================================================
+   IN-APP STYLE PWA INSTALLATION BANNER (PORTAL PWA)
+===================================================== */
+.portal-pwa-suggest-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(241, 245, 249, 0.95));
+  border: 1px solid rgba(37, 99, 235, 0.3);
+  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.08), 0 2px 6px rgba(15, 23, 42, 0.04);
+  backdrop-filter: blur(10px);
+  margin-top: 10px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.portal-pwa-suggest-banner:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(37, 99, 235, 0.16);
+  border-color: #2563eb;
+}
+
+body.dark-mode .portal-pwa-suggest-banner {
+  background: linear-gradient(135deg, #0e1a30, #142442);
+  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 20px rgba(37, 99, 235, 0.2);
+}
+
+.portal-pwa-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+
+.portal-pwa-suggest-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.portal-pwa-suggest-text strong {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.25;
+  margin-bottom: 2px;
+}
+
+body.dark-mode .portal-pwa-suggest-text strong {
+  color: #38bdf8;
+}
+
+.portal-pwa-suggest-text span {
+  display: block;
+  font-size: 11.5px;
+  color: #64748b;
+  line-height: 1.35;
+}
+
+body.dark-mode .portal-pwa-suggest-text span {
+  color: #94a3b8;
+}
+
+.portal-pwa-suggest-actions {
+  flex-shrink: 0;
+}
+
+.portal-pwa-btn-install {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  padding: 9px 16px;
+  font-size: 12.5px;
+  font-weight: 750;
+  border-radius: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+
+.portal-pwa-btn-install:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.45);
+}
+
+/* Secondary CTA Install Button in Row */
+.app-promo-secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #0f172a;
+  font-weight: 750;
+  font-size: 14px;
+  border: 1px solid #cbd5e1;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+.app-promo-secondary-btn:hover {
+  background: #f8fafc;
+  border-color: #2563eb;
+  color: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.15);
+}
+
+body.dark-mode .app-promo-secondary-btn {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+
+body.dark-mode .app-promo-secondary-btn:hover {
+  background: #283548;
+  border-color: #38bdf8;
+  color: #38bdf8;
+}
+
+/* Toast Notifications for PWA install feedback */
+.cm-toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.cm-toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 650;
+  color: #ffffff;
+  background: #0f172a;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  pointer-events: auto;
+  animation: cmToastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  max-width: 380px;
+}
+
+.cm-toast-success {
+  background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+  border-color: #10b981;
+}
+
+.cm-toast-info {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  border-color: #38bdf8;
+}
+
+.cm-toast-icon {
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.cm-toast.hide {
+  animation: cmToastOut 0.3s ease forwards;
+}
+
+@keyframes cmToastIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes cmToastOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(15px) scale(0.95); }
+}
+
+/* =====================================================
+   RIGHT COLUMN: 3D SMARTPHONE MOCKUP
+===================================================== */
+.app-promo-mockup-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  perspective: 1200px;
+}
+
+.phone-ambient-glow {
+  position: absolute;
+  width: 360px;
+  height: 440px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.3) 0%, rgba(245, 158, 11, 0.15) 50%, transparent 75%);
+  filter: blur(50px);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Floating Accent Badges */
+.phone-floating-pill {
+  position: absolute;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+  backdrop-filter: blur(12px);
+  font-size: 11.5px;
+  font-weight: 750;
+  color: #0f172a;
+  animation: phonePillFloat 3.5s ease-in-out infinite alternate;
+}
+
+body.dark-mode .phone-floating-pill {
+  background: rgba(15, 23, 42, 0.92);
+  border-color: rgba(51, 65, 85, 0.9);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.5);
+  color: #f8fafc;
+}
+
+.float-top-left {
+  top: 40px;
+  left: -20px;
+  animation-delay: 0s;
+}
+
+.float-bottom-right {
+  bottom: 60px;
+  right: -15px;
+  animation-delay: 1.5s;
+}
+
+@keyframes phonePillFloat {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-8px); }
+}
+
+.pill-dot.emerald {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+.pill-icon {
+  font-size: 12px;
+}
+
+/* Phone Device Chassis */
+.phone-device-chassis {
+  position: relative;
+  z-index: 3;
+  width: 310px;
+  height: 615px;
+  border-radius: 44px;
+  background: #0b1320;
+  border: 9px solid #1e293b;
+  box-shadow: 
+    0 24px 60px -10px rgba(15, 23, 42, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.15) inset,
+    0 12px 35px rgba(37, 99, 235, 0.18);
+  overflow: hidden;
+  transform: rotate(1.5deg);
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.app-promo-mockup-wrapper:hover .phone-device-chassis {
+  transform: rotate(0deg) scale(1.02);
+}
+
+/* Screen Display */
+.phone-screen-display {
+  width: 100%;
+  height: 100%;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  user-select: none;
+}
+
+body.dark-mode .phone-screen-display {
+  background: #091220;
+}
+
+/* Status Bar Overlay */
+.phone-status-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 36px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 750;
+  color: #ffffff;
+  z-index: 10;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.05) 75%, transparent 100%);
+}
+
+.phone-dynamic-island {
+  width: 78px;
+  height: 20px;
+  background: #000000;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.island-camera {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #111e38;
+  border: 1px solid #1e293b;
+}
+
+.status-icons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Actual Dashboard Screen Image (Full Screen Fit - No Scroll) */
+.phone-screen-img-wrap {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+.phone-screen-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.phone-screen-img.dark-only {
+  display: none;
+}
+
+body.dark-mode .phone-screen-img.light-only {
+  display: none;
+}
+
+body.dark-mode .phone-screen-img.dark-only {
+  display: block;
+}
+
+/* Home Indicator Bar (iOS Swipe Bar) */
+.phone-home-indicator {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 110px;
+  height: 4.5px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 99px;
+  z-index: 10;
+  pointer-events: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .phone-home-indicator {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+/* Responsive Media Queries */
+@media (max-width: 991px) {
+  .app-promo-grid {
+    grid-template-columns: 1fr;
+    gap: 46px;
+    text-align: center;
+  }
+
+  .app-promo-desc {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .app-promo-features {
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+  }
+
+  .app-promo-cta-row {
+    justify-content: center;
+  }
+
+  .portal-pwa-suggest-banner {
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+  }
+
+  .phone-device-chassis {
+    transform: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-promo-section {
+    padding: 56px 0 64px;
+  }
+
+  .phone-device-chassis {
+    width: 280px;
+    height: 560px;
+    border-width: 8px;
+    border-radius: 38px;
+  }
+
+  .float-top-left {
+    top: 15px;
+    left: 0;
+  }
+
+  .float-bottom-right {
+    bottom: 30px;
+    right: 0;
+  }
+
+  .app-promo-cta-row {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .app-promo-primary-btn,
+  .app-promo-secondary-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .portal-pwa-suggest-banner {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+    padding: 16px 14px;
+  }
+
+  .portal-pwa-suggest-actions,
+  .portal-pwa-btn-install {
+    width: 100%;
+    justify-content: center;
   }
 }

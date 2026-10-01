@@ -2979,185 +2979,206 @@ window.addEventListener("resize", () => {
         {
             category: "Company Registration & Incorporation",
             services: [
-                { name: "Private Limited Company Registration", price: 6999 },
-                { name: "Limited Liability Partnership (LLP) Registration", price: 4999 },
-                { name: "One Person Company (OPC) Registration", price: 5999 },
-                { name: "Sole Proprietorship Registration", price: 1999 },
-                { name: "Partnership Firm Registration", price: 2999 },
-                { name: "Startup India Registration", price: 4000 },
-                { name: "Public Limited Company Registration", price: 14999 },
-                { name: "Partnership Firm Annual Compliance", price: 1999 }
+                { name: "Private Limited Company Registration", price: 15000 },
+                { name: "Limited Liability Partnership (LLP) Registration", price: 12000 },
+                { name: "One Person Company (OPC) Registration", price: 12000 },
+                { name: "Sole Proprietorship Registration", price: 10000 },
+                { name: "Partnership Firm Registration", price: 5000 },
+                { name: "Startup India Registration", price: 5000 },
+                { name: "Public Limited Company Registration", price: 20000 },
+                { name: "Partnership Firm Annual Compliance", price: 20000 }
             ]
         },
         {
             category: "NGO & Non-Profit Organization",
             services: [
-                { name: "Section 8 Company Registration", price: 9999 },
-                { name: "Trust Registration", price: 7499 },
-                { name: "Society Registration", price: 7499 },
-                { name: "Section 12A & 80G Registration", price: 4999 },
-                { name: "FCRA Registration", price: 11999 },
-                { name: "NGO Darpan Registration", price: 1499 },
-                { name: "CSR-1 Filing", price: 2499 }
+                { name: "Section 8 Company Registration", price: 15000 },
+                { name: "Trust Registration", price: 15000 },
+                { name: "Society Registration", price: 15000 },
+                { name: "Section 12A & 80G Registration", price: 12000 },
+                { name: "FCRA Registration", price: 10000 },
+                { name: "NGO Darpan Registration", price: 15000 },
+                { name: "CSR-1 Filing", price: 5000 }
             ]
         },
         {
             category: "Goods & Services Tax (GST)",
             services: [
-                { name: "GST Registration", price: 1499 },
-                { name: "Monthly / Quarterly GST Return Filing", price: 999 },
-                { name: "Annual Return Filing (GSTR-9)", price: 2999 },
-                { name: "GST Final Return (GSTR-10)", price: 1999 },
-                { name: "Letter of Undertaking (LUT) Filing", price: 999 },
-                { name: "GST Amendment Service", price: 1199 },
-                { name: "GST Cancellation & Surrender", price: 1999 },
-                { name: "GST Notice Response & Consultation", price: 2499 }
+                { name: "GST Registration", price: 2500 },
+                { name: "Monthly / Quarterly GST Return Filing", price: 12000 },
+                { name: "Annual Return Filing (GSTR-9)", price: 12000 },
+                { name: "GST Final Return (GSTR-10)", price: 12000 },
+                { name: "Letter of Undertaking (LUT) Filing", price: 10000 },
+                { name: "GST Amendment Service", price: 5000 },
+                { name: "GST Cancellation & Surrender", price: 5000 },
+                { name: "GST Notice Response & Consultation", price: 5000 }
             ]
         },
         {
             category: "Income Tax & TDS",
             services: [
-                { name: "Income Tax Return (ITR) E-Filing", price: 999 },
-                { name: "ITR-1 (Sahaj) Filing", price: 799 },
-                { name: "ITR-2 Filing (Capital Gains / Foreign Assets)", price: 1999 },
-                { name: "ITR-3 Filing (Business & Professional)", price: 2999 },
-                { name: "ITR-4 (Sugam) Presumptive Taxation Filing", price: 1999 },
-                { name: "ITR-5 Filing (LLP / Partnership / AOP)", price: 3999 },
-                { name: "ITR-6 Filing (Companies)", price: 6999 },
-                { name: "ITR-7 Filing (Trusts & Non-Profits)", price: 4999 },
-                { name: "Business Tax Filing & Advisory", price: 2499 },
-                { name: "TDS Quarterly Return Filing", price: 1499 },
-                { name: "TAN Registration", price: 999 },
-                { name: "Income Tax Notice Response & Assessment", price: 2499 }
+                { name: "Income Tax Return (ITR) E-Filing", price: 1000 },
+                { name: "ITR-1 (Sahaj) Filing", price: 1000 },
+                { name: "ITR-2 Filing (Capital Gains / Foreign Assets)", price: 5000 },
+                { name: "ITR-3 Filing (Business & Professional)", price: 5000 },
+                { name: "ITR-4 (Sugam) Presumptive Taxation Filing", price: 5000 },
+                { name: "ITR-5 Filing (LLP / Partnership / AOP)", price: 5000 },
+                { name: "ITR-6 Filing (Companies)", price: 5000 },
+                { name: "ITR-7 Filing (Trusts & Non-Profits)", price: 5000 },
+                { name: "Business Tax Filing & Advisory", price: 5000 },
+                { name: "TDS Quarterly Return Filing", price: 10000 },
+                { name: "TAN Registration", price: 1000 },
+                { name: "Income Tax Notice Response & Assessment", price: 10000 }
             ]
         },
         {
             category: "Corporate Compliances & ROC",
             services: [
-                { name: "Private Limited Company Annual ROC Compliance", price: 11999 },
-                { name: "LLP Annual ROC Compliance (Form 11 & Form 8)", price: 5999 },
-                { name: "One Person Company (OPC) Annual Compliance", price: 7999 },
-                { name: "ROC Annual Filing (AOC-4 & MGT-7)", price: 4999 },
-                { name: "DIR-3 KYC Web / e-Form Filing", price: 499 },
-                { name: "Section-8 Company Annual Compliance", price: 8999 },
-                { name: "Statutory Auditor Appointment (Form ADT-1)", price: 1499 },
-                { name: "DPT-3 Return of Deposits Filing", price: 1999 }
+                { name: "Private Limited Company Annual ROC Compliance", price: 20000 },
+                { name: "LLP Annual ROC Compliance (Form 11 & Form 8)", price: 20000 },
+                { name: "One Person Company (OPC) Annual Compliance", price: 20000 },
+                { name: "ROC Annual Filing (AOC-4 & MGT-7)", price: 15000 },
+                { name: "DIR-3 KYC Web / e-Form Filing", price: 5000 },
+                { name: "Section-8 Company Annual Compliance", price: 15000 },
+                { name: "Statutory Auditor Appointment (Form ADT-1)", price: 5000 },
+                { name: "DPT-3 Return of Deposits Filing", price: 5000 }
             ]
         },
         {
             category: "Event-Based ROC Compliances",
             services: [
-                { name: "Add or Remove Partner in LLP", price: 2499 },
-                { name: "LLP Agreement Amendment (Form 3)", price: 2499 },
-                { name: "Appointment / Resignation of Director (DIR-12)", price: 1999 },
-                { name: "Increase in Authorized Share Capital (SH-7)", price: 3999 },
-                { name: "Change in Registered Office Address (INC-22)", price: 2999 },
-                { name: "Company Name Change (INC-24)", price: 4999 },
-                { name: "Alteration of MOA / Object Clause (MGT-14)", price: 3499 },
-                { name: "Allotment of Shares / Securities (PAS-3)", price: 3499 },
-                { name: "Change / Removal of Statutory Auditor (ADT-2)", price: 2499 },
-                { name: "Director KYC Verification & Restoration", price: 999 },
-                { name: "Creation / Modification of Charge (CHG-1)", price: 2999 },
-                { name: "Satisfaction of Charge (CHG-4)", price: 1999 },
-                { name: "Change in Management / Shareholding Pattern", price: 2499 },
-                { name: "Change in Corporate Business Address", price: 1499 }
+                { name: "Add or Remove Partner in LLP", price: 5000 },
+                { name: "LLP Agreement Amendment (Form 3)", price: 10000 },
+                { name: "Appointment / Resignation of Director (DIR-12)", price: 5000 },
+                { name: "Increase in Authorized Share Capital (SH-7)", price: 5000 },
+                { name: "Change in Registered Office Address (INC-22)", price: 5000 },
+                { name: "Company Name Change (INC-24)", price: 5000 },
+                { name: "Alteration of MOA / Object Clause (MGT-14)", price: 10000 },
+                { name: "Allotment of Shares / Securities (PAS-3)", price: 10000 },
+                { name: "Change / Removal of Statutory Auditor (ADT-2)", price: 10000 },
+                { name: "Director KYC Verification & Restoration", price: 5000 },
+                { name: "Creation / Modification of Charge (CHG-1)", price: 10000 },
+                { name: "Satisfaction of Charge (CHG-4)", price: 10000 },
+                { name: "Change in Management / Shareholding Pattern", price: 10000 },
+                { name: "Change in Corporate Business Address", price: 5000 }
             ]
         },
         {
             category: "Accounting & Financial Services",
             services: [
-                { name: "Monthly Bookkeeping & Accounting Services", price: 4999 },
-                { name: "Annual Financial Statement Preparation", price: 14999 },
-                { name: "Tax Audit Assistance (Form 3CA/3CB-3CD)", price: 7499 },
-                { name: "Statutory Audit Support & Coordination", price: 9999 },
-                { name: "Financial Due Diligence & Valuation Report", price: 14999 },
+                { name: "Monthly Bookkeeping & Accounting Services", price: 15000 },
+                { name: "Annual Financial Statement Preparation", price: 15000 },
+                { name: "Tax Audit Assistance (Form 3CA/3CB-3CD)", price: 10000 },
+                { name: "Statutory Audit Support & Coordination", price: 15000 },
+                { name: "Financial Due Diligence & Valuation Report", price: 15000 },
                 { name: "Accounts Payable & Receivable Management", price: 5999 }
             ]
         },
         {
             category: "Trademark & Intellectual Property",
             services: [
-                { name: "Trademark Registration & Filing", price: 4499 },
-                { name: "Trademark Registration Certificate Assistance", price: 1499 },
-                { name: "Trademark Objection Reply Drafting", price: 2999 },
-                { name: "Trademark Opposition Hearing & Notice", price: 7499 },
-                { name: "Trademark Show Cause Hearing Representation", price: 4999 },
-                { name: "Trademark Renewal Filing", price: 3499 },
-                { name: "Trademark Assignment & Ownership Transfer", price: 3999 },
-                { name: "Expedited Trademark Examination Filing", price: 9999 },
-                { name: "Copyright Registration", price: 4999 },
-                { name: "Provisional Patent Application Filing", price: 14999 },
-                { name: "Complete Patent Application Filing", price: 24999 },
-                { name: "Trademark Infringement Legal Notice", price: 2999 }
+                { name: "Trademark Registration & Filing", price: 10000 },
+                { name: "Trademark Registration Certificate Assistance", price: 5000 },
+                { name: "Trademark Objection Reply Drafting", price: 10000 },
+                { name: "Trademark Opposition Hearing & Notice", price: 10000 },
+                { name: "Trademark Show Cause Hearing Representation", price: 10000 },
+                { name: "Trademark Renewal Filing", price: 10000 },
+                { name: "Trademark Assignment & Ownership Transfer", price: 10000 },
+                { name: "Expedited Trademark Examination Filing", price: 10000 },
+                { name: "Copyright Registration", price: 15000 },
+                { name: "Provisional Patent Application Filing", price: 30000 },
+                { name: "Complete Patent Application Filing", price: 35000 },
+                { name: "Trademark Infringement Legal Notice", price: 20000 }
             ]
         },
         {
             category: "Business & Municipal Licenses",
             services: [
-                { name: "MSME / Udyam Registration Certificate", price: 999 },
-                { name: "Trade License Registration & Renewal", price: 2499 },
-                { name: "Shop and Establishment Act Registration (Gumasta)", price: 1999 },
-                { name: "Professional Tax Registration (PTEC & PTRC)", price: 1499 },
-                { name: "Factory License Application & Compliance", price: 7499 },
-                { name: "Contract Labor Regulation License (CLRA)", price: 4999 }
+                { name: "MSME / Udyam Registration Certificate", price: 1000 },
+                { name: "Trade License Registration & Renewal", price: 25000 },
+                { name: "Shop and Establishment Act Registration (Gumasta)", price: 10000 },
+                { name: "Professional Tax Registration (PTEC & PTRC)", price: 5000 },
+                { name: "Factory License Application & Compliance", price: 15000 },
+                { name: "Contract Labor Regulation License (CLRA)", price: 25000 }
             ]
         },
         {
             category: "Food & Healthcare Licenses",
             services: [
-                { name: "FSSAI Basic Registration", price: 1499 },
-                { name: "FSSAI State License", price: 4999 },
-                { name: "FSSAI Central License", price: 9999 },
-                { name: "FSSAI Annual Return Filing", price: 1499 },
-                { name: "Retail / Wholesale Drug License", price: 9999 },
-                { name: "AYUSH Manufacturing / Marketing License", price: 11999 },
-                { name: "Cosmetic Manufacturing License", price: 8999 },
-                { name: "Medical Device Registration & Import License", price: 14999 }
+                { name: "FSSAI Basic Registration", price: 5000 },
+                { name: "FSSAI State License", price: 12000 },
+                { name: "FSSAI Central License", price: 20000 },
+                { name: "FSSAI Annual Return Filing", price: 2000 },
+                { name: "Retail / Wholesale Drug License", price: 5000 },
+                { name: "AYUSH Manufacturing / Marketing License", price: 5000 },
+                { name: "Cosmetic Manufacturing License", price: 9000 },
+                { name: "Medical Device Registration & Import License", price: 15000 }
             ]
         },
         {
             category: "Import & Export Licensing",
             services: [
-                { name: "Import Export Code (IEC) Registration", price: 1499 },
-                { name: "IEC Modification & Annual Profile Update", price: 799 },
-                { name: "AD Code Registration with Custom Port", price: 1999 },
-                { name: "Registration Cum Membership Certificate (RCMC)", price: 3499 },
-                { name: "APEDA Registration for Agricultural Export", price: 4999 },
-                { name: "Spices Board Registration (CRES)", price: 4999 }
+                { name: "Import Export Code (IEC) Registration", price: 5000 },
+                { name: "IEC Modification & Annual Profile Update", price: 2000 },
+                { name: "AD Code Registration with Custom Port", price: 3000 },
+                { name: "Registration Cum Membership Certificate (RCMC)", price: 10000 },
+                { name: "APEDA Registration for Agricultural Export", price: 10000 },
+                { name: "Spices Board Registration (CRES)", price: 10000 }
             ]
         },
         {
             category: "Environmental & Pollution Compliances",
             services: [
-                { name: "EPR Registration for Plastic Waste Management", price: 9999 },
-                { name: "EPR Registration for E-Waste Management", price: 11999 },
-                { name: "Consent to Establish (CTE) / Operate (CTO) Pollution NOC", price: 14999 },
-                { name: "Environmental Impact Assessment (EIA) Support", price: 19999 },
-                { name: "Environmental Audit & Compliance Reporting", price: 14999 }
+                { name: "EPR Registration for Plastic Waste Management", price: 10000 },
+                { name: "EPR Registration for E-Waste Management", price: 12000 },
+                { name: "Consent to Establish (CTE) / Operate (CTO) Pollution NOC", price: 15000 },
+                { name: "Environmental Impact Assessment (EIA) Support", price: 20000 },
+                { name: "Environmental Audit & Compliance Reporting", price: 15000 }
             ]
         },
         {
             category: "Business Closure & Conversions",
             services: [
-                { name: "Private Limited Company Strike Off (Form STK-2)", price: 9999 },
-                { name: "LLP Closure & Strike Off (Form 24)", price: 6999 },
-                { name: "OPC Closure & Strike Off", price: 7999 },
-                { name: "Partnership Firm Dissolution", price: 3999 },
-                { name: "Sole Proprietorship Closure", price: 1499 },
-                { name: "Sole Proprietorship to Private Limited Conversion", price: 11999 },
-                { name: "Partnership Firm to LLP Conversion", price: 9999 },
-                { name: "LLP to Private Limited Company Conversion", price: 14999 },
-                { name: "Private Limited to Public Limited Conversion", price: 19999 }
+                { name: "Private Limited Company Strike Off (Form STK-2)", price: 10000 },
+                { name: "LLP Closure & Strike Off (Form 24)", price: 15000 },
+                { name: "OPC Closure & Strike Off", price: 15000 },
+                { name: "Partnership Firm Dissolution", price: 4000 },
+                { name: "Sole Proprietorship Closure", price: 2000 },
+                { name: "Sole Proprietorship to Private Limited Conversion", price: 12000 },
+                { name: "Partnership Firm to LLP Conversion", price: 10000 },
+                { name: "LLP to Private Limited Company Conversion", price: 15000 },
+                { name: "Private Limited to Public Limited Conversion", price: 20000 }
             ]
         },
         {
-            category: "Fundraising & Advisory",
+            category: "Fundraising & Government Grants",
             services: [
-                { name: "Investor Pitch Deck Preparation", price: 9999 },
-                { name: "Financial Model & Valuation Projections", price: 14999 },
-                { name: "Shareholders Agreement (SHA) & Term Sheet Drafting", price: 7999 },
-                { name: "Investor Due Diligence Readiness Support", price: 19999 },
-                { name: "Global impact fund", price:12000}
+                { name: "Fundraising", price: 15000 },
+                { name: "Tide 2.0", price: 15000 },
+                { name: "Seed Support Scheme", price: 15000 },
+                { name: "PMEGP", price: 15000 },
+                { name: "NAIF Scheme", price: 15000 },
+                { name: "Mudra Loan", price: 15000 },
+                { name: "Government of Gujarat Startup Scheme", price: 15000 },
+                { name: "ACT Grants", price: 15000 },
+                { name: "Growth Grant", price: 15000 },
+                { name: "Young Innovators Grant", price: 15000 },
+                { name: "CGTMSE", price: 15000 },
+                { name: "Avaana – Startup India Deep Tech Grand Challenge 2025–26", price: 15000 },
+                { name: "RKVY-RAABI Programme 2026", price: 15000 },
+                { name: "STARTUP SEED SAMRIDH | Funding Opportunity", price: 15000 },
+                { name: "Evolve-Tech", price: 15000 },
+                { name: "GREENOVATION CHALLENGE", price: 15000 },
+                { name: "Womenpreneur for Bharat 4.0", price: 15000 },
+                { name: "CSR MEGA GRANTS", price: 15000 },
+                { name: "PM SVANIDHI STARTUP CHALLENGE", price: 15000 },
+                { name: "CHIPMAT", price: 15000 },
+                { name: "AOP | AFBIC – Agri-Startup Incubation Program", price: 15000 },
+                { name: "BIZLABS ACCELERATOR PROGRAMME", price: 15000 },
+                { name: "STARTUP LEAGUE 2026", price: 15000 },
+                { name: "Gujarat Innovators", price: 15000 },
+                { name: "GLOBAL IMPACT FUND", price: 15000 },
+                { name: "Credit Guarantee Scheme for Startups (CGSS)", price: 15000 }
             ]
         }
     ];
@@ -3166,16 +3187,16 @@ window.addEventListener("resize", () => {
        POPULAR SERVICES (TOP 10) & COMPLETE SERVICE CATALOG
     ===================================================== */
     const POPULAR_SERVICES = [
-        { name: "Private Limited Company Registration", price: 6999, category: "Company Registration & Incorporation" },
-        { name: "Limited Liability Partnership (LLP) Registration", price: 4999, category: "Company Registration & Incorporation" },
-        { name: "One Person Company (OPC) Registration", price: 5999, category: "Company Registration & Incorporation" },
-        { name: "Startup India Registration", price: 4000, category: "Company Registration & Incorporation" },
-        { name: "GST Registration", price: 1499, category: "Goods & Services Tax (GST)" },
-        { name: "Monthly / Quarterly GST Return Filing", price: 999, category: "Goods & Services Tax (GST)" },
-        { name: "Income Tax Return (ITR) E-Filing", price: 999, category: "Income Tax & Direct Tax" },
-        { name: "Trademark Registration & Filing", price: 4499, category: "Trademark & Intellectual Property" },
-        { name: "MSME / Udyam Registration Certificate", price: 999, category: "Business & Municipal Licenses" },
-        { name: "FSSAI Basic Registration", price: 1499, category: "Food & Healthcare Licenses" }
+        { name: "Private Limited Company Registration", price: 15000, category: "Company Registration & Incorporation" },
+        { name: "Limited Liability Partnership (LLP) Registration", price: 12000, category: "Company Registration & Incorporation" },
+        { name: "One Person Company (OPC) Registration", price: 12000, category: "Company Registration & Incorporation" },
+        { name: "Startup India Registration", price: 5000, category: "Company Registration & Incorporation" },
+        { name: "GST Registration", price: 2500, category: "Goods & Services Tax (GST)" },
+        { name: "Monthly / Quarterly GST Return Filing", price: 12000, category: "Goods & Services Tax (GST)" },
+        { name: "Income Tax Return (ITR) E-Filing", price: 1000, category: "Income Tax & Direct Tax" },
+        { name: "Trademark Registration & Filing", price: 10000, category: "Trademark & Intellectual Property" },
+        { name: "MSME / Udyam Registration Certificate", price: 1000, category: "Business & Municipal Licenses" },
+        { name: "FSSAI Basic Registration", price: 5000, category: "Food & Healthcare Licenses" }
     ];
 
     const ALL_SERVICES = [];
@@ -3188,6 +3209,77 @@ window.addEventListener("resize", () => {
             });
         });
     });
+
+    /**
+     * Dynamically fetches all funding schemes from the fundraising backend API / data source,
+     * ensuring newly launched schemes are automatically added to the quotation service catalog
+     * with fixed price of ₹15,000 for quotation.
+     */
+    async function syncFundraisingSchemesForQuotation() {
+        let schemesList = [];
+        try {
+            const res = await fetch("/api/schemes", { cache: "no-store" });
+            if (res.ok) {
+                const data = await res.json();
+                if (data && Array.isArray(data.schemes)) {
+                    schemesList = data.schemes;
+                }
+            }
+        } catch (err) {
+            // Offline or static fallback
+        }
+
+        if (schemesList.length === 0 && typeof SCHEMES_DATA !== "undefined" && Array.isArray(SCHEMES_DATA)) {
+            schemesList = SCHEMES_DATA;
+        }
+
+        if (schemesList.length === 0) return;
+
+        const categoryName = "Fundraising & Government Grants";
+        let catObj = SERVICES_CATALOG.find(c => c.category === categoryName || c.category === "Fundraising");
+        if (!catObj) {
+            catObj = { category: categoryName, services: [] };
+            SERVICES_CATALOG.push(catObj);
+        } else {
+            catObj.category = categoryName;
+        }
+
+        schemesList.forEach(s => {
+            const rawName = (s.name || s.title || "").trim();
+            if (!rawName) return;
+
+            // Ensure price is ₹15,000 for quotation catalogue
+            let existingInCat = catObj.services.find(svc => svc.name.toLowerCase() === rawName.toLowerCase());
+            if (!existingInCat) {
+                catObj.services.push({ name: rawName, price: 15000 });
+            } else {
+                existingInCat.price = 15000;
+            }
+
+            let existingInAll = ALL_SERVICES.find(svc => svc.name.toLowerCase() === rawName.toLowerCase());
+            if (!existingInAll) {
+                ALL_SERVICES.push({
+                    name: rawName,
+                    price: 15000,
+                    category: categoryName
+                });
+            } else {
+                existingInAll.price = 15000;
+                existingInAll.category = categoryName;
+            }
+        });
+
+        if (!ALL_SERVICES.some(s => s.name === "Fundraising")) {
+            ALL_SERVICES.push({ name: "Fundraising", price: 15000, category: categoryName });
+        }
+    }
+
+    // Run dynamic sync immediately
+    syncFundraisingSchemesForQuotation();
+
+    window.ALL_SERVICES = ALL_SERVICES;
+    window.SERVICES_CATALOG = SERVICES_CATALOG;
+    window.syncFundraisingSchemesForQuotation = syncFundraisingSchemesForQuotation;
 
     /**
      * Generates HTML option items for the 10 popular services + Other option.
@@ -3340,10 +3432,13 @@ window.addEventListener("resize", () => {
             : [];
         const items = [];
         let subtotal = 0;
+        let totalDiscount = 0;
+        let grossSubtotal = 0;
 
         itemElements.forEach((row, idx) => {
             const selectEl = row.querySelector(".item-service-select");
             const priceInput = row.querySelector(".item-price-display");
+            const discountInput = row.querySelector(".item-discount-input");
 
             const selectedOption = selectEl?.selectedOptions?.[0];
             let serviceName = selectedOption && selectedOption.value && selectedOption.value !== "__OTHER__"
@@ -3357,17 +3452,26 @@ window.addEventListener("resize", () => {
 
             const rate = selectedOption ? (parseFloat(selectedOption.dataset.price) || 0) : 0;
             const quantity = 1;
-            const amount = rate * quantity;
+            const discountVal = parseFloat(discountInput?.value);
+            const discount = (!isNaN(discountVal) && discountVal > 0) ? discountVal : 0;
+            const netRate = Math.max(0, rate - discount);
+            const amount = netRate * quantity;
 
             if (priceInput) {
                 priceInput.value = currency(rate);
             }
 
             subtotal += amount;
+            totalDiscount += discount * quantity;
+            grossSubtotal += rate * quantity;
+
             items.push({
                 index: idx + 1,
                 quantity,
                 rate,
+                discount,
+                netRate,
+                serviceName,
                 description: serviceName,
                 amount
             });
@@ -3375,6 +3479,7 @@ window.addEventListener("resize", () => {
 
         const gst = Number(gstInput?.value) || 0;
         const roundOff = Number(roundOffInput?.value) || 0;
+        // GST is calculated strictly on the amount AFTER discount (subtotal)
         const gstAmount = (subtotal * gst) / 100;
         const grandTotal = subtotal + gstAmount + roundOff;
 
@@ -3382,8 +3487,21 @@ window.addEventListener("resize", () => {
         if (gstAmountEl) gstAmountEl.textContent = currency(gstAmount);
         if (grandTotalEl) grandTotalEl.textContent = currency(grandTotal);
 
+        const discountRow = document.getElementById("quotationDiscountRow");
+        const totalDiscountEl = document.getElementById("quotationTotalDiscount");
+        if (discountRow && totalDiscountEl) {
+            if (totalDiscount > 0) {
+                discountRow.style.display = "flex";
+                totalDiscountEl.textContent = "- " + currency(totalDiscount);
+            } else {
+                discountRow.style.display = "none";
+            }
+        }
+
         return {
             items,
+            grossSubtotal,
+            totalDiscount,
             subtotal,
             gst,
             gstAmount,
@@ -3462,6 +3580,10 @@ window.addEventListener("resize", () => {
                         <input type="text" class="item-price-display" readonly value="${currency(defaultService.price)}" aria-label="Service Price">
                         <input type="hidden" class="item-quantity" value="1">
                     </div>
+                    <div class="quotation-field quotation-service-discount-field">
+                        <label>Discount (₹)</label>
+                        <input type="number" class="item-discount-input" min="0" step="100" value="0" placeholder="0" aria-label="Service Discount">
+                    </div>
                 </div>
             `;
             servicesList.appendChild(newItem);
@@ -3473,7 +3595,13 @@ window.addEventListener("resize", () => {
         });
 
         servicesList.addEventListener("change", function (e) {
-            if (e.target.matches(".item-service-select")) {
+            if (e.target.matches(".item-service-select") || e.target.matches(".item-discount-input")) {
+                calculate();
+            }
+        });
+
+        servicesList.addEventListener("input", function (e) {
+            if (e.target.matches(".item-discount-input")) {
                 calculate();
             }
         });
@@ -3515,6 +3643,7 @@ window.addEventListener("resize", () => {
        OPEN MODAL
     ===================================================== */
     function openQuotationModalDirect(prefill) {
+        syncFundraisingSchemesForQuotation();
         quotationData = null;
         modal.classList.add("is-open");
         modal.setAttribute("aria-hidden", "false");
@@ -3701,7 +3830,11 @@ window.addEventListener("resize", () => {
             qtyCell.value = Number(item.quantity) || 0;
             qtyCell.numFmt = '#,##0';
 
-            descCell.value = item.description || "";
+            let descText = item.description || "";
+            if (item.discount > 0) {
+                descText += ` (Discount: ₹${Number(item.discount).toLocaleString('en-IN')})`;
+            }
+            descCell.value = descText;
 
             amtCell.value = Number(item.amount) || 0;
             amtCell.numFmt = '"₹"#,##0.00;[Red]-"₹"#,##0.00;"₹"0.00';
@@ -3759,6 +3892,8 @@ window.addEventListener("resize", () => {
             state: stateInput ? stateInput.value.trim() : "",
             customerGST: customerGSTInput ? customerGSTInput.value.trim() : "",
             items: calculation.items,
+            grossSubtotal: calculation.grossSubtotal,
+            totalDiscount: calculation.totalDiscount,
             subtotal: calculation.subtotal,
             gst: calculation.gst,
             gstAmount: calculation.gstAmount,
@@ -3862,10 +3997,14 @@ window.addEventListener("resize", () => {
 
         let itemsRowsHtml = "";
         data.items.forEach(item => {
+            let descHtml = escapeHtml(item.description);
+            if (item.discount > 0) {
+                descHtml += `<div class="excel-discount-note" style="font-size: 11px; color: #16a34a; font-weight: 600; margin-top: 2px;">Includes ₹${Number(item.discount).toLocaleString('en-IN')} Discount (Original: ${currency(item.rate)})</div>`;
+            }
             itemsRowsHtml += `
                 <tr class="excel-item-row">
                     <td class="col-qty">${item.quantity}</td>
-                    <td class="col-desc">${escapeHtml(item.description)}</td>
+                    <td class="col-desc">${descHtml}</td>
                     <td class="col-amount">${currency(item.amount)}</td>
                 </tr>
             `;
@@ -4526,3 +4665,83 @@ window.addEventListener("resize", () => {
     initVisitorCounter();
   }
 })();
+
+// ==========================================
+// CLIENT PORTAL PWA INSTALLATION HANDLER
+// ==========================================
+(function() {
+  function initHomePwaInstall() {
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch((err) => {
+          console.log('SW registration skipped:', err);
+        });
+      });
+    }
+
+    let deferredInstallPrompt = null;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      const installBtns = document.querySelectorAll('.portal-pwa-install-trigger');
+      installBtns.forEach(btn => {
+        btn.classList.add('ready');
+      });
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredInstallPrompt = null;
+      showToastNotification('Corporate Mart Client Portal installed successfully!', 'success');
+    });
+
+    const installButtons = document.querySelectorAll('.portal-pwa-install-trigger, #btnClientPwaInstall, #btnHeroInstallApp');
+    installButtons.forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        if (deferredInstallPrompt) {
+          deferredInstallPrompt.prompt();
+          const choice = await deferredInstallPrompt.userChoice;
+          if (choice && choice.outcome === 'accepted') {
+            showToastNotification('Corporate Mart Client Portal installed successfully!', 'success');
+          }
+          deferredInstallPrompt = null;
+        } else {
+          // iOS Safari detection
+          const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+          if (isIos) {
+            showToastNotification('To install on iOS: Tap Share (⎙) in Safari, then select "Add to Home Screen" (⊞).', 'info');
+          } else {
+            showToastNotification('To install, click the Install icon (⊕ / 📥) in your browser address bar or menu.', 'info');
+          }
+        }
+      });
+    });
+
+    function showToastNotification(message, type) {
+      let container = document.getElementById('cmToastContainer');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'cmToastContainer';
+        container.className = 'cm-toast-container';
+        document.body.appendChild(container);
+      }
+      const toast = document.createElement('div');
+      toast.className = 'cm-toast cm-toast-' + (type || 'info');
+      toast.innerHTML = '<span class="cm-toast-icon">' + (type === 'success' ? '✓' : 'ℹ') + '</span>' +
+                        '<span class="cm-toast-text">' + message + '</span>';
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.add('hide');
+        setTimeout(() => toast.remove(), 350);
+      }, 4500);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initHomePwaInstall);
+  } else {
+    initHomePwaInstall();
+  }
+})();
+

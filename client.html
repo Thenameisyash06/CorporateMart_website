@@ -186,17 +186,7 @@
             <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
           <span>Menu</span>
-          <span class="cp-nav-badge" id="navDocsBadge" style="display:none;">0</span>
-        </a>
-
-        <a href="#support" class="cp-nav-link" data-nav="support">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-          </svg>
-          <span>Help & Support</span>
-          <span class="cp-nav-badge" id="navTicketsBadge">0</span>
+          <span class="cp-nav-badge" id="navMenuBadge" style="display:none;">0</span>
         </a>
       </nav>
 
@@ -359,6 +349,58 @@
             </div>
           </div>
 
+          <!-- Advertisement Auto-Scrolling Section (Images 1 to 7 directly on dashboard background) -->
+          <div class="cp-ads-section" id="cpAdsSection" aria-label="Advertisements & Funding Opportunities">
+            <div class="cp-ads-scroll-wrapper" id="cpAdsWrapper">
+              <div class="cp-ads-group">
+                <a href="fundraising.html" class="cp-ad-card" title="NAIFF Loan for Agri-preneurs">
+                  <img src="images/ads1.png" alt="NAIFF Loan for Agri-preneurs" class="cp-ad-img" loading="eager" draggable="false">
+                </a>
+                <a href="fundraising.html" class="cp-ad-card" title="Setting up new business is easy with CGTMSE">
+                  <img src="images/ads2.png" alt="CGTMSE Loan Scheme" class="cp-ad-img" loading="eager" draggable="false">
+                </a>
+                <a href="fundraising.html" class="cp-ad-card" title="Startup India Funding & Grants">
+                  <img src="images/ads3.png" alt="Startup Grants Scheme" class="cp-ad-img" loading="eager" draggable="false">
+                </a>
+                <a href="fundraising.html" class="cp-ad-card" title="MSME Schemes & Subsidies">
+                  <img src="images/ads4.png" alt="MSME Financial Subsidies" class="cp-ad-img" loading="eager" draggable="false">
+                </a>
+                <a href="fundraising.html" class="cp-ad-card" title="Government Seed Support Schemes">
+                  <img src="images/ads5.png" alt="Government Seed Support Scheme" class="cp-ad-img" loading="eager" draggable="false">
+                </a>
+                <a href="fundraising.html" class="cp-ad-card" title="Startup Expansion Grants">
+                  <img src="images/ads6.png" alt="Startup Expansion Grants" class="cp-ad-img" loading="eager" draggable="false">
+                </a>
+                <a href="fundraising.html" class="cp-ad-card" title="Credit Guarantee Scheme for Startups">
+                  <img src="images/ads7.png" alt="Credit Guarantee Scheme" class="cp-ad-img" loading="eager" draggable="false">
+                </a>
+              </div>
+              <div class="cp-ads-group" aria-hidden="true">
+                <a href="fundraising.html" class="cp-ad-card" tabindex="-1">
+                  <img src="images/ads1.png" alt="" class="cp-ad-img" loading="eager" draggable="false">
+                </a>
+                <a href="fundraising.html" class="cp-ad-card" tabindex="-1">
+                  <img src="images/ads2.png" alt="" class="cp-ad-img" loading="eager" draggable="false">
+                </a>
+                <a href="fundraising.html" class="cp-ad-card" tabindex="-1">
+                  <img src="images/ads3.png" alt="" class="cp-ad-img" loading="eager" draggable="false">
+                </a>
+                <a href="fundraising.html" class="cp-ad-card" tabindex="-1">
+                  <img src="images/ads4.png" alt="" class="cp-ad-img" loading="eager" draggable="false">
+                </a>
+                <a href="fundraising.html" class="cp-ad-card" tabindex="-1">
+                  <img src="images/ads5.png" alt="" class="cp-ad-img" loading="eager" draggable="false">
+                </a>
+                <a href="fundraising.html" class="cp-ad-card" tabindex="-1">
+                  <img src="images/ads6.png" alt="" class="cp-ad-img" loading="eager" draggable="false">
+                </a>
+                <a href="fundraising.html" class="cp-ad-card" tabindex="-1">
+                  <img src="images/ads7.png" alt="" class="cp-ad-img" loading="eager" draggable="false">
+                </a>
+              </div>
+            </div>
+          </div>
+
           <!-- Service Category Cards (Explore Business Services) -->
           <div class="cp-dashboard-section" style="margin-bottom: 24px;">
             <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
@@ -402,7 +444,7 @@
             <button type="button" class="cp-action-card" id="qaViewDocsBtn">
               <div class="cp-action-icon">📥</div>
               <div class="cp-action-text">
-                <strong>Download Certificates</strong>
+                <strong>Download Documents</strong>
               </div>
             </button>
           </div>
@@ -435,7 +477,10 @@
 
             <div class="cp-kpi-card">
               <div class="cp-kpi-header">
-                <span class="cp-kpi-title">Completed Services</span>
+                <span class="cp-kpi-title">
+                  <span class="kpi-title-desktop">Completed Services</span>
+                  <span class="kpi-title-mobile">Completed</span>
+                </span>
                 <span class="cp-kpi-icon kpi-green">✅</span>
               </div>
               <div class="cp-kpi-value" id="kpiCompletedServices">0</div>
@@ -444,7 +489,10 @@
 
             <div class="cp-kpi-card">
               <div class="cp-kpi-header">
-                <span class="cp-kpi-title">Available Documents</span>
+                <span class="cp-kpi-title">
+                  <span class="kpi-title-desktop">Available Documents</span>
+                  <span class="kpi-title-mobile">Available Docs</span>
+                </span>
                 <span class="cp-kpi-icon kpi-blue">📁</span>
               </div>
               <div class="cp-kpi-value" id="kpiTotalDocuments">0</div>
@@ -460,92 +508,116 @@
         <!-- ========================================== -->
         <!-- 3. MENU & ACCOUNT HUB SECTION (INCL. DOCS) -->
         <!-- ========================================== -->
+        <!-- ========================================== -->
+        <!-- 3. MENU & ACCOUNT HUB SECTION (NAV TABS)   -->
+        <!-- ========================================== -->
         <section id="sec-menu" class="cp-view-section">
           <div class="cp-section-header">
             <div>
               <h2>Menu &amp; Account Hub</h2>
-              <p>Your profile details, live push notification alerts, and document vault</p>
+              <p>Your profile details, document vault, and direct operations support</p>
             </div>
           </div>
 
-          <!-- Quick Two-Column Grid: Profile Card & Push Notifications Card -->
-          <div class="cp-menu-cards-grid">
-            <!-- A. PROFILE & DIRECTOR ACCOUNT CARD -->
-            <div class="cp-card cp-menu-card">
-              <div class="cp-card-header">
-                <div class="cp-card-title">
-                  <h3>Director &amp; Company Profile</h3>
-                  <p>Your registered company credentials and account settings</p>
+          <!-- Top Subnav Tab Bar: Profile | Documents | Help & Support -->
+          <div class="cp-menu-subnav" role="tablist" aria-label="Menu Navigation Tabs">
+            <button type="button" class="cp-menu-subnav-btn active" data-menu-tab="profile" role="tab" aria-selected="true">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <span>Profile</span>
+            </button>
+            <button type="button" class="cp-menu-subnav-btn" data-menu-tab="documents" role="tab" aria-selected="false">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+              <span>Documents</span>
+              <span class="cp-subnav-badge" id="menuDocsBadge" style="display:none;">0</span>
+            </button>
+            <button type="button" class="cp-menu-subnav-btn" data-menu-tab="support" role="tab" aria-selected="false">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span>Help &amp; Support</span>
+              <span class="cp-subnav-badge" id="menuTicketsBadge" style="display:none;">0</span>
+            </button>
+          </div>
+
+          <!-- TAB 1: PROFILE PANE -->
+          <div class="cp-menu-tab-pane active" id="menuPaneProfile" role="tabpanel">
+            <div class="cp-card cp-profile-card">
+              <div class="cp-profile-top">
+                <div class="cp-profile-avatar" id="menuClientAvatar">CM</div>
+                <div class="cp-profile-meta">
+                  <h3 id="menuClientCompanyName">Corporate Mart Client</h3>
+                  <p id="menuClientDirectorName">Director</p>
+                  <div class="cp-profile-badges">
+                    <span class="cp-badge-pill cp-badge-active">🟢 Active Member</span>
+                    <span class="cp-badge-pill" id="menuClientEmailBadge">director@company.com</span>
+                  </div>
                 </div>
-                <button type="button" class="cp-btn cp-btn-primary cp-btn-sm" id="clientTopSettingsBtn">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
+              </div>
+
+              <!-- Profile Details Grid -->
+              <div class="cp-profile-info-grid">
+                <div class="cp-profile-info-item">
+                  <span class="cp-profile-label">Director / Contact Name</span>
+                  <strong class="cp-profile-value" id="profileDetailDirector">—</strong>
+                </div>
+                <div class="cp-profile-info-item">
+                  <span class="cp-profile-label">Registered Company</span>
+                  <strong class="cp-profile-value" id="profileDetailCompany">—</strong>
+                </div>
+                <div class="cp-profile-info-item">
+                  <span class="cp-profile-label">Email Address</span>
+                  <strong class="cp-profile-value" id="profileDetailEmail">—</strong>
+                </div>
+                <div class="cp-profile-info-item">
+                  <span class="cp-profile-label">Phone Number</span>
+                  <strong class="cp-profile-value" id="profileDetailPhone">—</strong>
+                </div>
+              </div>
+
+              <!-- Profile Actions: Edit, Notifications, Change Password, Sign Out -->
+              <div class="cp-profile-actions">
+                <button type="button" class="cp-btn cp-btn-primary" id="clientTopSettingsBtn">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                   </svg>
                   <span>Edit Profile</span>
                 </button>
-              </div>
-              <div class="cp-menu-profile-body">
-                <div class="cp-menu-profile-avatar-wrap">
-                  <div class="cp-avatar cp-avatar-lg" id="menuClientAvatar">CM</div>
-                  <div class="cp-menu-profile-info">
-                    <h4 id="menuClientCompanyName">Corporate Mart Client</h4>
-                    <p id="menuClientDirectorName">Director</p>
-                    <div class="cp-menu-profile-badges">
-                      <span class="cp-badge-pill cp-badge-active">Active Member</span>
-                      <span class="cp-badge-pill" id="menuClientEmailBadge">director@company.com</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="cp-menu-actions-row">
-                  <button type="button" class="cp-btn cp-btn-secondary cp-btn-sm" id="menuBtnChangePassword">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                    <span>Change Password</span>
-                  </button>
-                  <button type="button" class="cp-btn cp-btn-secondary cp-btn-sm btn-client-modal-logout" style="color:#ef4444; border-color:rgba(239, 68, 68, 0.3);">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                    <span>Sign Out</span>
-                  </button>
-                </div>
-              </div>
-            </div>
 
-            <!-- B. IN-PHONE PUSH NOTIFICATIONS CARD -->
-            <div class="cp-card cp-menu-card">
-              <div class="cp-card-header">
-                <div class="cp-card-title">
-                  <h3>Push &amp; In-Phone Alerts</h3>
-                  <p>Real-time lock-screen updates for certificates and compliance filings</p>
-                </div>
-              </div>
-              <div class="cp-menu-notif-body">
-                <div class="cp-menu-notif-desc">
-                  <div class="cp-notif-big-icon">🔔</div>
-                  <div>
-                    <h4>Lock-Screen Live Alerts</h4>
-                    <p>Receive instant notifications on your phone or PC when filings are updated, certificates are issued, or queries are answered.</p>
-                  </div>
-                </div>
-                <div class="cp-menu-notif-action">
-                  <button type="button" class="cp-btn cp-btn-primary" id="btnEnableNotifications">
-                    <span id="notifBellIcon">🔔</span>
-                    <span id="menuNotifBtnText">Enable Notifications</span>
-                    <span id="notifBadgeDot" style="display:none; width:8px; height:8px; background:#10b981; border-radius:50%; margin-left:4px;"></span>
-                  </button>
-                </div>
+                <button type="button" class="cp-btn cp-btn-secondary" id="btnEnableNotifications">
+                  <span id="notifBellIcon">🔔</span>
+                  <span id="menuNotifBtnText">Enable Notifications</span>
+                  <span id="notifBadgeDot" style="display:none; width:8px; height:8px; background:#10b981; border-radius:50%; margin-left:4px;"></span>
+                </button>
+
+                <button type="button" class="cp-btn cp-btn-secondary" id="menuBtnChangePassword">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                  <span>Change Password</span>
+                </button>
+
+                <button type="button" class="cp-btn cp-btn-danger-outline btn-client-modal-logout">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                  </svg>
+                  <span>Sign Out</span>
+                </button>
               </div>
             </div>
           </div>
 
-          <!-- C. MY DOCUMENTS & CERTIFICATES (INSIDE MENU SECTION) -->
-          <div class="cp-menu-docs-section" id="menuDocsSection" style="margin-top: 24px;">
-            <div class="cp-section-header" style="margin-bottom: 16px;">
-              <div>
-                <h2>My Documents &amp; Certificates</h2>
-                <p>Official company records, onboarding KYC proofs, and issued certificates</p>
-              </div>
-            </div>
-
+          <!-- TAB 2: DOCUMENTS PANE -->
+          <div class="cp-menu-tab-pane" id="menuPaneDocuments" role="tabpanel">
             <!-- Company Documents (DigiLocker Card Grid) -->
             <div class="cp-card" style="margin-bottom: 24px;">
               <div class="cp-card-header">
@@ -586,52 +658,52 @@
               </div>
             </div>
           </div>
-        </section>
 
-        <!-- ========================================== -->
-        <!-- 4. HELP & SUPPORT SECTION                  -->
-        <!-- ========================================== -->
-        <section id="sec-support" class="cp-view-section">
-          <div class="cp-section-header">
-            <div>
-              <h2>Help & Support Desk</h2>
-              <p>Ask a question, request assistance, or view replies from the Corporate Mart team</p>
-            </div>
-            <button type="button" class="cp-btn cp-btn-primary" id="openNewTicketModalBtn">
-              + Ask a Question
-            </button>
-          </div>
-
-          <div class="cp-support-layout">
-            <!-- Tickets List -->
-            <div class="cp-support-sidebar">
-              <div class="cp-support-sidebar-header">
-                <h3>Your Conversations</h3>
-              </div>
-              <div class="cp-tickets-list" id="clientTicketsList">
-                <div class="cp-td-empty">Loading conversations...</div>
-              </div>
-            </div>
-
-            <!-- Active Thread View -->
-            <div class="cp-support-chat-window" id="chatWindow">
-              <div class="cp-chat-header" id="chatHeader">
+          <!-- TAB 3: HELP & SUPPORT PANE -->
+          <div class="cp-menu-tab-pane" id="menuPaneSupport" role="tabpanel">
+            <div class="cp-card" style="margin-bottom: 16px; padding: 16px 20px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
                 <div>
-                  <h3 id="chatTitle">Select a conversation</h3>
-                  <p id="chatSubtitle">Or start a new inquiry with the operations team</p>
+                  <h3 style="margin:0; font-size:17px; font-weight:800; color:var(--cp-text-main);">Help &amp; Support Desk</h3>
+                  <p style="margin:2px 0 0 0; font-size:12.5px; color:var(--cp-text-muted);">Direct message line with your dedicated Corporate Mart operations team</p>
                 </div>
-                <div id="chatStatusBadge"></div>
+                <button type="button" class="cp-btn cp-btn-primary cp-btn-sm" id="openNewTicketModalBtn">
+                  + Ask a Question
+                </button>
               </div>
-              <div class="cp-chat-messages" id="chatMessages">
-                <div class="cp-empty-state">
-                  <span style="font-size:36px;">💬</span>
-                  <p>Select an inquiry on the left or click <strong>"+ Ask a Question"</strong> above.</p>
+            </div>
+
+            <div class="cp-support-layout">
+              <!-- Tickets List -->
+              <div class="cp-support-sidebar">
+                <div class="cp-support-sidebar-header">
+                  <h3>Your Conversations</h3>
+                </div>
+                <div class="cp-tickets-list" id="clientTicketsList">
+                  <div class="cp-td-empty">Loading conversations...</div>
                 </div>
               </div>
-              <form id="chatReplyForm" class="cp-chat-reply-bar" style="display:none;">
-                <input type="text" id="chatReplyInput" class="cp-input" placeholder="Type your reply to the operations team..." required>
-                <button type="submit" class="cp-btn cp-btn-primary">Send Reply</button>
-              </form>
+
+              <!-- Active Thread View -->
+              <div class="cp-support-chat-window" id="chatWindow">
+                <div class="cp-chat-header" id="chatHeader">
+                  <div>
+                    <h3 id="chatTitle">Select a conversation</h3>
+                    <p id="chatSubtitle">Or start a new inquiry with the operations team</p>
+                  </div>
+                  <div id="chatStatusBadge"></div>
+                </div>
+                <div class="cp-chat-messages" id="chatMessages">
+                  <div class="cp-empty-state">
+                    <span style="font-size:36px;">💬</span>
+                    <p>Select an inquiry on the left or click <strong>"+ Ask a Question"</strong> above.</p>
+                  </div>
+                </div>
+                <form id="chatReplyForm" class="cp-chat-reply-bar" style="display:none;">
+                  <input type="text" id="chatReplyInput" class="cp-input" placeholder="Type your reply to the operations team..." required>
+                  <button type="submit" class="cp-btn cp-btn-primary">Send Reply</button>
+                </form>
+              </div>
             </div>
           </div>
         </section>
@@ -642,8 +714,7 @@
             <div class="cp-buy-hero-content">
               <span class="cp-buy-pill">Corporate Mart Marketplace</span>
               <h2>Explore &amp; Buy Services, Packages &amp; Grants</h2>
-              <p>Choose from curated all-inclusive combo plans, order specialized business registrations, or apply for government funding grants with dedicated CA/CS assistance.</p>
-            </div>
+              </div>
             <div class="cp-buy-stats">
               <div class="cp-buy-stat">
                 <strong>9+</strong>
@@ -1372,15 +1443,6 @@
         <span class="bottom-nav-badge" id="bottomNavDocsBadge" style="display:none;">0</span>
       </div>
       <span class="bottom-nav-label">Menu</span>
-    </a>
-    <a href="#support" class="portal-bottom-nav-item" data-nav="support">
-      <div class="bottom-nav-icon-wrap">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-        </svg>
-        <span class="bottom-nav-badge" id="bottomNavTicketsBadge" style="display:none;">0</span>
-      </div>
-      <span class="bottom-nav-label">Support</span>
     </a>
   </nav>
 
