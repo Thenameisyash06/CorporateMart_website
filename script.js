@@ -1313,16 +1313,40 @@ window.addEventListener("resize", () => {
       video.pauseAllVideos();
 
       if (url.toLowerCase().indexOf(".mp4") !== -1) {
-        thumb.innerHTML = '<video src="' + url + '" controls autoplay playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit;background:#000;"></video>';
+        var cleanUrl = encodeURI(url);
+        thumb.innerHTML = '<div class="tm-video-container" style="position:absolute;inset:0;width:100%;height:100%;border-radius:inherit;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;">' +
+          '<video src="' + cleanUrl + '" preload="auto" controls autoplay playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit;background:#000;"></video>' +
+          '<div class="tm-video-spinner" style="position:absolute;pointer-events:none;display:flex;align-items:center;justify-content:center;width:44px;height:44px;background:rgba(0,0,0,0.55);border-radius:50%;backdrop-filter:blur(4px);color:#fff;transition:opacity 0.25s ease;opacity:1;z-index:2;">' +
+          '<svg style="animation:spin 0.9s linear infinite;width:24px;height:24px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9" stroke="rgba(255,255,255,0.2)"></circle><path d="M12 3a9 9 0 0 1 9 9" stroke-linecap="round"></path></svg>' +
+          '</div>' +
+          '</div>';
+
+        var container = thumb.querySelector(".tm-video-container");
         var vid = thumb.querySelector("video");
+        var spinner = thumb.querySelector(".tm-video-spinner");
+
         if (vid) {
           vid.dataset.userActive = "true";
 
-          // Explicitly invoke .play() to ensure playback starts within user gesture
+          var hideSpinner = function () {
+            if (spinner) spinner.style.opacity = "0";
+          };
+          var showSpinner = function () {
+            if (spinner) spinner.style.opacity = "1";
+          };
+
+          vid.addEventListener("canplay", hideSpinner);
+          vid.addEventListener("playing", hideSpinner);
+          vid.addEventListener("waiting", showSpinner);
+          vid.addEventListener("stalled", showSpinner);
+
+          // Explicitly invoke .play() within user gesture
           var playPromise = vid.play();
           if (playPromise !== undefined) {
-            playPromise.catch(function () {
-              // Video controls remain available for user interaction
+            playPromise.then(function () {
+              hideSpinner();
+            }).catch(function () {
+              hideSpinner();
             });
           }
 
@@ -1333,6 +1357,7 @@ window.addEventListener("resize", () => {
           vid.addEventListener("playing", function () {
             vid.dataset.userActive = "true";
             video.stop();
+            hideSpinner();
           });
           vid.addEventListener("waiting", function () {
             video.stop();
@@ -1362,7 +1387,7 @@ window.addEventListener("resize", () => {
           });
         }
       } else {
-        thumb.innerHTML = '<iframe src="' + url + '" allow="autoplay; encrypted-media" allowfullscreen title="Testimonial" style="position:absolute;inset:0;width:100%;height:100%;border:0;"></iframe>';
+        thumb.innerHTML = '<iframe src="' + encodeURI(url) + '" allow="autoplay; encrypted-media" allowfullscreen title="Testimonial" style="position:absolute;inset:0;width:100%;height:100%;border:0;"></iframe>';
         video.stop();
       }
     });

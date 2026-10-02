@@ -547,42 +547,84 @@ body.dark-mode .cp-topbar {
   gap: 12px;
 }
 
-/* Highlighted Request a Service Button */
+/* Highlighted Request a Service Button - Styled like Client Portal CTA Button */
 #topRequestServiceBtn,
 .cp-btn-highlight {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
-  color: #0b1727 !important;
-  font-weight: 800 !important;
-  font-size: 13.5px !important;
-  padding: 10px 18px !important;
+  background: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #4f46e5 100%) !important;
+  color: #ffffff !important;
+  font-family: inherit !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  letter-spacing: 0.2px !important;
+  padding: 0 16px !important;
   height: 42px !important;
-  border: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
   border-radius: 12px !important;
-  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45) !important;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35), 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease !important;
   display: inline-flex !important;
   align-items: center !important;
   gap: 8px !important;
   white-space: nowrap !important;
   cursor: pointer !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+#topRequestServiceBtn::before,
+.cp-btn-highlight::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+  transform: skewX(-20deg);
+  animation: cpPortalShimmer 3.5s infinite ease-in-out;
+  pointer-events: none;
+}
+
+@keyframes cpPortalShimmer {
+  0%, 65% {
+    left: -100%;
+  }
+  100% {
+    left: 200%;
+  }
 }
 
 #topRequestServiceBtn:hover,
 .cp-btn-highlight:hover {
   transform: translateY(-2px) !important;
-  box-shadow: 0 10px 24px rgba(245, 158, 11, 0.6) !important;
-  filter: brightness(1.06) !important;
+  background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 50%, #6366f1 100%) !important;
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.5), 0 2px 4px rgba(0, 0, 0, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.45) !important;
+  color: #ffffff !important;
 }
 
 #topRequestServiceBtn:active,
 .cp-btn-highlight:active {
   transform: translateY(0) !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4) !important;
 }
 
 #topRequestServiceBtn svg,
 .cp-btn-highlight svg {
-  stroke: #0b1727 !important;
-  stroke-width: 3 !important;
+  stroke: #ffffff !important;
+  stroke-width: 2.5 !important;
+  flex-shrink: 0;
+}
+
+/* Default display states for responsive text spans */
+.cp-btn-text-full {
+  display: inline !important;
+}
+.cp-btn-text-mid {
+  display: none !important;
+}
+.cp-btn-text-short {
+  display: none !important;
 }
 
 .cp-theme-toggle {
@@ -2987,13 +3029,28 @@ body.dark-mode .cp-service-detail-remark-box {
   }
 
   .cp-topbar {
-    padding: 0 12px;
-    gap: 8px;
+    padding: 0 14px;
+    gap: 10px;
+    height: 64px;
+    justify-content: space-between;
   }
 
   .cp-topbar-left {
     min-width: 0;
-    flex-shrink: 1;
+    flex: 0 1 auto;
+    overflow: hidden;
+  }
+
+  .cp-header-brand {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .cp-header-logo {
+    height: 32px;
+    max-width: 135px;
+    object-fit: contain;
   }
 
   .cp-page-heading h1 {
@@ -3004,28 +3061,33 @@ body.dark-mode .cp-service-detail-remark-box {
   }
 
   .cp-topbar-right {
-    gap: 6px;
+    gap: 8px;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  .cp-theme-toggle {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    font-size: 15px;
     flex-shrink: 0;
   }
 
-  #topRequestServiceBtn {
-    padding: 8px 12px !important;
-    height: 38px !important;
+  #topRequestServiceBtn,
+  .cp-btn-highlight {
+    padding: 0 12px !important;
+    height: 36px !important;
     font-size: 12px !important;
     border-radius: 10px !important;
-    flex-shrink: 0;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
   }
 
-  #topRequestServiceBtn span {
-    display: inline-block !important;
-    font-size: 11.5px !important;
-    font-weight: 800 !important;
-    white-space: nowrap;
-  }
-
-  .cp-header-logo {
-    height: 32px;
-    max-width: 140px;
+  #topRequestServiceBtn svg,
+  .cp-btn-highlight svg {
+    width: 14px;
+    height: 14px;
   }
 
   .cp-section-header {
@@ -3140,6 +3202,51 @@ body.dark-mode .cp-service-detail-remark-box {
   }
 }
 
+@media (max-width: 520px) {
+  .cp-topbar {
+    padding: 0 12px;
+    gap: 8px;
+    height: 58px;
+  }
+
+  .cp-header-logo {
+    height: 27px;
+    max-width: 118px;
+  }
+
+  .cp-topbar-right {
+    gap: 6px;
+  }
+
+  .cp-theme-toggle {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+
+  #topRequestServiceBtn,
+  .cp-btn-highlight {
+    padding: 0 10px !important;
+    height: 34px !important;
+    font-size: 11.5px !important;
+    border-radius: 8px !important;
+    gap: 5px !important;
+  }
+
+  .cp-btn-text-full {
+    display: none !important;
+  }
+
+  .cp-btn-text-mid {
+    display: inline !important;
+  }
+
+  .cp-btn-text-short {
+    display: none !important;
+  }
+}
+
 @media (max-width: 480px) {
   .cp-card-header {
     flex-wrap: wrap;
@@ -3163,6 +3270,51 @@ body.dark-mode .cp-service-detail-remark-box {
   .cp-carousel-arrow-btn {
     width: 28px;
     height: 28px;
+  }
+}
+
+@media (max-width: 380px) {
+  .cp-topbar {
+    padding: 0 8px;
+    gap: 6px;
+    height: 54px;
+  }
+
+  .cp-header-logo {
+    height: 24px;
+    max-width: 95px;
+  }
+
+  .cp-topbar-right {
+    gap: 5px;
+  }
+
+  .cp-theme-toggle {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+
+  #topRequestServiceBtn,
+  .cp-btn-highlight {
+    padding: 0 8px !important;
+    height: 32px !important;
+    font-size: 11px !important;
+    border-radius: 7px !important;
+    gap: 4px !important;
+  }
+
+  .cp-btn-text-full {
+    display: none !important;
+  }
+
+  .cp-btn-text-mid {
+    display: none !important;
+  }
+
+  .cp-btn-text-short {
+    display: inline !important;
   }
 }
 

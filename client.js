@@ -368,7 +368,7 @@
 
     if (companyEl) companyEl.textContent = companyName;
     if (directorEl) directorEl.textContent = directorName;
-    if (welcomeTitle) welcomeTitle.textContent = `Hello, ${directorName}! 👋`;
+    if (welcomeTitle) welcomeTitle.textContent = `Hello, ${directorName}!`;
     if (welcomeCompanyTag) welcomeCompanyTag.textContent = companyName;
 
     if (avatarEl) {

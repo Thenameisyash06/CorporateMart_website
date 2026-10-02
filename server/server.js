@@ -39,8 +39,16 @@ app.use(cors());
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
-// Serve static frontend files from parent directory with HTML extension support
-app.use(express.static(path.join(__dirname, '..'), { extensions: ['html'] }));
+// Serve static frontend files from parent directory with HTML extension support and video caching
+app.use(express.static(path.join(__dirname, '..'), {
+  extensions: ['html'],
+  setHeaders: (res, filePath) => {
+    if (/\.(mp4|webm|ogg)$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+      res.setHeader('Accept-Ranges', 'bytes');
+    }
+  }
+}));
 app.use('/uploads', express.static(uploadsDir));
 
 // Page shortcuts so URLs without .html work seamlessly
