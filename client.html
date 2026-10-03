@@ -31,8 +31,8 @@
   <div id="authOverlay" class="cp-auth-overlay">
     <div class="cp-auth-card">
       <div class="cp-auth-header">
-        <div class="cp-logo-badge">
-          <img src="icons/download (2).png" alt="CorporateMart Logo" width="44" height="44" style="border-radius:50%; object-fit:contain; display:block;">
+        <div class="cp-logo-badge cp-logo-badge-app">
+          <img src="icons/download (2).png" alt="CorporateMart Logo" width="56" height="56" style="border-radius:14px; object-fit:cover; display:block;">
         </div>
         <h2>Client Portal</h2>
         <p>Corporate Mart Client Access & Compliance Desk</p>
@@ -137,8 +137,8 @@
     <!-- SIDEBAR NAVIGATION -->
     <aside class="cp-sidebar" id="cpSidebar">
       <div class="cp-sidebar-brand">
-        <div class="cp-brand-icon">
-          <img src="icons/download (2).png" alt="CorporateMart" width="30" height="30" style="border-radius:50%; object-fit:contain; display:block;">
+        <div class="cp-brand-icon cp-brand-icon-app">
+          <img src="icons/download (2).png" alt="CorporateMart" width="40" height="40" style="border-radius:10px; object-fit:cover; display:block;">
         </div>
         <div class="cp-brand-text">
           <span class="cp-brand-name">CORPORATE MART</span>
@@ -312,52 +312,118 @@
             <div class="cp-welcome-badge" id="welcomeCompanyTag">Active Account</div>
           </div>
 
-          <div class="cp-ads-section" id="cpAdsSection" aria-label="Advertisements & Funding Opportunities">
+          <div class="cp-ads-section" id="cpAdsSection" aria-label="Government Funding & Scheme Opportunities">
             <div class="cp-ads-scroll-wrapper" id="cpAdsWrapper">
               <div class="cp-ads-group">
-                <a href="fundraising.html" class="cp-ad-card" title="NAIFF Loan for Agri-preneurs">
-                  <img src="images/ads1.png" alt="NAIFF Loan for Agri-preneurs" class="cp-ad-img" loading="eager" draggable="false">
+                <a href="fundraising.html" class="cp-scheme-card scheme-cgtmse" title="CGTMSE Collateral-Free Loan Scheme">
+                  <div class="cp-scheme-badge">Govt Guarantee</div>
+                  <div class="cp-scheme-title">CGTMSE Credit Guarantee</div>
+                  <div class="cp-scheme-highlight">Up to ₹5 Cr Collateral-Free</div>
+                  <div class="cp-scheme-footer">
+                    <span>85% Coverage</span>
+                    <span class="cp-scheme-arrow">Explore &rarr;</span>
+                  </div>
                 </a>
-                <a href="fundraising.html" class="cp-ad-card" title="Setting up new business is easy with CGTMSE">
-                  <img src="images/ads2.png" alt="CGTMSE Loan Scheme" class="cp-ad-img" loading="eager" draggable="false">
+                <a href="fundraising.html" class="cp-scheme-card scheme-startup" title="Startup India Seed Fund Scheme">
+                  <div class="cp-scheme-badge">DPIIT Grant</div>
+                  <div class="cp-scheme-title">Startup India Seed Fund</div>
+                  <div class="cp-scheme-highlight">Up to ₹50 Lakhs Capital</div>
+                  <div class="cp-scheme-footer">
+                    <span>Seed Support</span>
+                    <span class="cp-scheme-arrow">Explore &rarr;</span>
+                  </div>
                 </a>
-                <a href="fundraising.html" class="cp-ad-card" title="Startup India Funding & Grants">
-                  <img src="images/ads3.png" alt="Startup Grants Scheme" class="cp-ad-img" loading="eager" draggable="false">
+                <a href="fundraising.html" class="cp-scheme-card scheme-msme" title="MSME Champions & Subsidy Schemes">
+                  <div class="cp-scheme-badge">MSME Ministry</div>
+                  <div class="cp-scheme-title">MSME Champions Subsidies</div>
+                  <div class="cp-scheme-highlight">ZED &amp; Tech Upgradation</div>
+                  <div class="cp-scheme-footer">
+                    <span>Up to 80% Subsidy</span>
+                    <span class="cp-scheme-arrow">Explore &rarr;</span>
+                  </div>
                 </a>
-                <a href="fundraising.html" class="cp-ad-card" title="MSME Schemes & Subsidies">
-                  <img src="images/ads4.png" alt="MSME Financial Subsidies" class="cp-ad-img" loading="eager" draggable="false">
+                <a href="fundraising.html" class="cp-scheme-card scheme-pmegp" title="PMEGP Prime Minister Scheme">
+                  <div class="cp-scheme-badge">Capital Subsidy</div>
+                  <div class="cp-scheme-title">PMEGP Govt Loan Support</div>
+                  <div class="cp-scheme-highlight">15% - 35% Margin Subsidy</div>
+                  <div class="cp-scheme-footer">
+                    <span>Up to ₹50 Lakhs</span>
+                    <span class="cp-scheme-arrow">Explore &rarr;</span>
+                  </div>
                 </a>
-                <a href="fundraising.html" class="cp-ad-card" title="Government Seed Support Schemes">
-                  <img src="images/ads5.png" alt="Government Seed Support Scheme" class="cp-ad-img" loading="eager" draggable="false">
+                <a href="fundraising.html" class="cp-scheme-card scheme-naiff" title="Agri & Food Infrastructure Grants">
+                  <div class="cp-scheme-badge">Agri-Infra</div>
+                  <div class="cp-scheme-title">NAIFF Agri-Business Fund</div>
+                  <div class="cp-scheme-highlight">3% Interest Subvention</div>
+                  <div class="cp-scheme-footer">
+                    <span>Post-Harvest Fund</span>
+                    <span class="cp-scheme-arrow">Explore &rarr;</span>
+                  </div>
                 </a>
-                <a href="fundraising.html" class="cp-ad-card" title="Startup Expansion Grants">
-                  <img src="images/ads6.png" alt="Startup Expansion Grants" class="cp-ad-img" loading="eager" draggable="false">
-                </a>
-                <a href="fundraising.html" class="cp-ad-card" title="Credit Guarantee Scheme for Startups">
-                  <img src="images/ads7.png" alt="Credit Guarantee Scheme" class="cp-ad-img" loading="eager" draggable="false">
+                <a href="fundraising.html" class="cp-scheme-card scheme-ip" title="Patent & Trademark SIPP Subsidy">
+                  <div class="cp-scheme-badge">IP Rebate</div>
+                  <div class="cp-scheme-title">SIPP Patent &amp; IP Rebate</div>
+                  <div class="cp-scheme-highlight">80% Off Official Fees</div>
+                  <div class="cp-scheme-footer">
+                    <span>Govt Approved</span>
+                    <span class="cp-scheme-arrow">Explore &rarr;</span>
+                  </div>
                 </a>
               </div>
               <div class="cp-ads-group" aria-hidden="true">
-                <a href="fundraising.html" class="cp-ad-card" tabindex="-1">
-                  <img src="images/ads1.png" alt="" class="cp-ad-img" loading="eager" draggable="false">
+                <a href="fundraising.html" class="cp-scheme-card scheme-cgtmse" tabindex="-1">
+                  <div class="cp-scheme-badge">Govt Guarantee</div>
+                  <div class="cp-scheme-title">CGTMSE Credit Guarantee</div>
+                  <div class="cp-scheme-highlight">Up to ₹5 Cr Collateral-Free</div>
+                  <div class="cp-scheme-footer">
+                    <span>85% Coverage</span>
+                    <span class="cp-scheme-arrow">Explore &rarr;</span>
+                  </div>
                 </a>
-                <a href="fundraising.html" class="cp-ad-card" tabindex="-1">
-                  <img src="images/ads2.png" alt="" class="cp-ad-img" loading="eager" draggable="false">
+                <a href="fundraising.html" class="cp-scheme-card scheme-startup" tabindex="-1">
+                  <div class="cp-scheme-badge">DPIIT Grant</div>
+                  <div class="cp-scheme-title">Startup India Seed Fund</div>
+                  <div class="cp-scheme-highlight">Up to ₹50 Lakhs Capital</div>
+                  <div class="cp-scheme-footer">
+                    <span>Seed Support</span>
+                    <span class="cp-scheme-arrow">Explore &rarr;</span>
+                  </div>
                 </a>
-                <a href="fundraising.html" class="cp-ad-card" tabindex="-1">
-                  <img src="images/ads3.png" alt="" class="cp-ad-img" loading="eager" draggable="false">
+                <a href="fundraising.html" class="cp-scheme-card scheme-msme" tabindex="-1">
+                  <div class="cp-scheme-badge">MSME Ministry</div>
+                  <div class="cp-scheme-title">MSME Champions Subsidies</div>
+                  <div class="cp-scheme-highlight">ZED &amp; Tech Upgradation</div>
+                  <div class="cp-scheme-footer">
+                    <span>Up to 80% Subsidy</span>
+                    <span class="cp-scheme-arrow">Explore &rarr;</span>
+                  </div>
                 </a>
-                <a href="fundraising.html" class="cp-ad-card" tabindex="-1">
-                  <img src="images/ads4.png" alt="" class="cp-ad-img" loading="eager" draggable="false">
+                <a href="fundraising.html" class="cp-scheme-card scheme-pmegp" tabindex="-1">
+                  <div class="cp-scheme-badge">Capital Subsidy</div>
+                  <div class="cp-scheme-title">PMEGP Govt Loan Support</div>
+                  <div class="cp-scheme-highlight">15% - 35% Margin Subsidy</div>
+                  <div class="cp-scheme-footer">
+                    <span>Up to ₹50 Lakhs</span>
+                    <span class="cp-scheme-arrow">Explore &rarr;</span>
+                  </div>
                 </a>
-                <a href="fundraising.html" class="cp-ad-card" tabindex="-1">
-                  <img src="images/ads5.png" alt="" class="cp-ad-img" loading="eager" draggable="false">
+                <a href="fundraising.html" class="cp-scheme-card scheme-naiff" tabindex="-1">
+                  <div class="cp-scheme-badge">Agri-Infra</div>
+                  <div class="cp-scheme-title">NAIFF Agri-Business Fund</div>
+                  <div class="cp-scheme-highlight">3% Interest Subvention</div>
+                  <div class="cp-scheme-footer">
+                    <span>Post-Harvest Fund</span>
+                    <span class="cp-scheme-arrow">Explore &rarr;</span>
+                  </div>
                 </a>
-                <a href="fundraising.html" class="cp-ad-card" tabindex="-1">
-                  <img src="images/ads6.png" alt="" class="cp-ad-img" loading="eager" draggable="false">
-                </a>
-                <a href="fundraising.html" class="cp-ad-card" tabindex="-1">
-                  <img src="images/ads7.png" alt="" class="cp-ad-img" loading="eager" draggable="false">
+                <a href="fundraising.html" class="cp-scheme-card scheme-ip" tabindex="-1">
+                  <div class="cp-scheme-badge">IP Rebate</div>
+                  <div class="cp-scheme-title">SIPP Patent &amp; IP Rebate</div>
+                  <div class="cp-scheme-highlight">80% Off Official Fees</div>
+                  <div class="cp-scheme-footer">
+                    <span>Govt Approved</span>
+                    <span class="cp-scheme-arrow">Explore &rarr;</span>
+                  </div>
                 </a>
               </div>
             </div>
@@ -697,9 +763,15 @@
                     <p>Select an inquiry on the left or click <strong>"+ Ask a Question"</strong> above.</p>
                   </div>
                 </div>
-                <form id="chatReplyForm" class="cp-chat-reply-bar" style="display:none;">
-                  <input type="text" id="chatReplyInput" class="cp-input" placeholder="Type your reply to the operations team..." required>
-                  <button type="submit" class="cp-btn cp-btn-primary">Send Reply</button>
+                <form id="chatReplyForm" class="cp-chat-reply-bar">
+                  <input type="text" id="chatReplyInput" class="cp-input" placeholder="Type your message or inquiry to operations..." required autocomplete="off">
+                  <button type="submit" id="chatReplyBtn" class="cp-btn cp-btn-primary">
+                    <span>Send</span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="22" y1="2" x2="11" y2="13"></line>
+                      <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                  </button>
                 </form>
               </div>
             </div>
@@ -1386,7 +1458,7 @@
 
   <!-- PWA DOWNLOAD SUGGESTION BANNER (ONE-TIME PROMPT) -->
   <div class="portal-pwa-suggest" id="clientPwaSuggestBanner" style="display:none;">
-    <img src="icons/download (2).png" alt="CorporateMart App" width="36" height="36" style="border-radius:50%; object-fit:contain; display:block; flex-shrink:0;">
+    <img src="icons/download (2).png" alt="CorporateMart App" width="38" height="38" style="border-radius:10px; object-fit:cover; display:block; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,0.25);">
     <div class="portal-pwa-suggest-text">
       <strong>Install Client Portal?</strong>
       <span>Add Corporate Mart Client Portal to your home screen or desktop for easy access.</span>

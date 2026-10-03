@@ -13573,6 +13573,18 @@ body.dark-mode .portal-pwa-suggest-banner {
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
 }
 
+.portal-pwa-icon-box.portal-pwa-icon-box-app {
+  background: transparent;
+  padding: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+body.dark-mode .portal-pwa-icon-box.portal-pwa-icon-box-app {
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
 .portal-pwa-suggest-text {
   flex: 1;
   min-width: 0;

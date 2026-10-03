@@ -806,11 +806,25 @@
     }
 
     if (tabName === 'support') {
+      const replyForm = document.getElementById('chatReplyForm');
+      if (replyForm) {
+        replyForm.style.display = 'flex';
+      }
+      const supportLayout = document.querySelector('.cp-support-layout');
+      if (supportLayout) {
+        setTimeout(() => {
+          supportLayout.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 60);
+      }
       const chatMessages = document.getElementById('chatMessages');
       if (chatMessages) {
         setTimeout(() => {
           chatMessages.scrollTop = chatMessages.scrollHeight;
-        }, 80);
+        }, 100);
+      }
+      const input = document.getElementById('chatReplyInput');
+      if (input && window.innerWidth >= 992) {
+        setTimeout(() => input.focus(), 140);
       }
     }
   }
@@ -2096,7 +2110,16 @@
     if (!listEl) return;
 
     if (tickets.length === 0) {
-      listEl.innerHTML = '<div class="cp-td-empty">No messages yet. Click "+ Ask a Question" to message operations.</div>';
+      listEl.innerHTML = '<div class="cp-td-empty">No conversations yet. Type below to message operations directly, or click "+ Ask a Question".</div>';
+      const replyForm = document.getElementById('chatReplyForm');
+      const replyInput = document.getElementById('chatReplyInput');
+      const replyBtn = document.getElementById('chatReplyBtn');
+      if (replyForm) replyForm.style.display = 'flex';
+      if (replyInput) replyInput.placeholder = 'Type your question or message to operations...';
+      if (replyBtn) {
+        const span = replyBtn.querySelector('span');
+        if (span) span.textContent = 'Send';
+      }
       return;
     }
 
@@ -2130,6 +2153,16 @@
       selectTicket(tickets[0].ticketId);
     } else if (activeTicketId) {
       selectTicket(activeTicketId);
+    } else {
+      const replyForm = document.getElementById('chatReplyForm');
+      const replyInput = document.getElementById('chatReplyInput');
+      const replyBtn = document.getElementById('chatReplyBtn');
+      if (replyForm) replyForm.style.display = 'flex';
+      if (replyInput) replyInput.placeholder = 'Type your question or message to operations...';
+      if (replyBtn) {
+        const span = replyBtn.querySelector('span');
+        if (span) span.textContent = 'Send';
+      }
     }
   }
 
@@ -2148,9 +2181,11 @@
     const chatStatusBadge = document.getElementById('chatStatusBadge');
     const chatMessages = document.getElementById('chatMessages');
     const replyForm = document.getElementById('chatReplyForm');
+    const replyInput = document.getElementById('chatReplyInput');
+    const replyBtn = document.getElementById('chatReplyBtn');
 
     if (chatTitle) chatTitle.textContent = ticket.subject;
-    if (chatSubtitle) chatSubtitle.textContent = `${ticket.ticketId} • Category: ${ticket.category.toUpperCase()}`;
+    if (chatSubtitle) chatSubtitle.textContent = `${ticket.ticketId} • Category: ${(ticket.category || 'general').toUpperCase()}`;
     if (chatStatusBadge) {
       chatStatusBadge.innerHTML = ticket.status === 'resolved'
         ? '<span class="cp-badge cp-badge-approved">🟢 Resolved</span>'
@@ -2172,28 +2207,55 @@
     }
 
     if (replyForm) replyForm.style.display = 'flex';
+    if (replyInput) replyInput.placeholder = `Reply to operations regarding ${ticket.subject || ticket.ticketId}...`;
+    if (replyBtn) {
+      const span = replyBtn.querySelector('span');
+      if (span) span.textContent = 'Send Reply';
+    }
   }
 
-  // Reply Form Submit
+  // Reply / Message Form Submit (handles replying to selected ticket or starting inquiry)
   const chatReplyForm = document.getElementById('chatReplyForm');
   if (chatReplyForm) {
     chatReplyForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      if (!activeTicketId) return;
       const input = document.getElementById('chatReplyInput');
       const message = input.value.trim();
       if (!message) return;
 
+      const submitBtn = chatReplyForm.querySelector('button[type="submit"]');
+      if (submitBtn) submitBtn.disabled = true;
+
       try {
-        await apiRequest(`/api/portal/client/tickets/${activeTicketId}/reply`, {
-          method: 'POST',
-          body: JSON.stringify({ message })
-        });
-        input.value = '';
-        showToast('Reply sent to operations team!', 'success');
-        loadPortalData();
+        if (activeTicketId) {
+          await apiRequest(`/api/portal/client/tickets/${activeTicketId}/reply`, {
+            method: 'POST',
+            body: JSON.stringify({ message })
+          });
+          input.value = '';
+          showToast('Reply sent to operations team!', 'success');
+          await loadPortalData();
+        } else {
+          const res = await apiRequest('/api/portal/client/tickets', {
+            method: 'POST',
+            body: JSON.stringify({
+              subject: message.length > 50 ? message.substring(0, 47) + '...' : message,
+              message,
+              category: 'general',
+              priority: 'medium'
+            })
+          });
+          input.value = '';
+          showToast('Inquiry sent to operations team!', 'success');
+          await loadPortalData();
+          if (res && res.ticket && res.ticket.ticketId) {
+            selectTicket(res.ticket.ticketId);
+          }
+        }
       } catch (err) {
-        showToast(err.message, 'error');
+        showToast(err.message || 'Failed to send message', 'error');
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
       }
     });
   }
