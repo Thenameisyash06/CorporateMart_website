@@ -6306,6 +6306,8 @@ body.dark-mode .site-footer{
 .footer-social {
   display: flex;
   gap: 10px;
+      margin-top: 50px;
+    padding-left: 15px;
 }
 
 .footer-social a {
@@ -6359,6 +6361,7 @@ body.dark-mode .site-footer{
   width: fit-content;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
   transition: all 0.25s ease;
+  margin-left: 15px;
 }
 
 .footer-visitor-card:hover {
@@ -7259,6 +7262,53 @@ body.dark-mode .dual-popup-grid .lead-modal-dialog {
   margin-top: 10px;
 }
 
+/* Submit Row with WhatsApp Square Button */
+.lead-submit-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.lead-submit-row .lead-submit,
+.dual-popup-grid .lead-submit-row .lead-submit {
+  flex: 1;
+  width: auto;
+  margin-top: 0 !important;
+  height: 48px;
+  padding: 0 16px;
+  white-space: nowrap;
+}
+
+.lead-whatsapp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  background: #25d366;
+  color: #ffffff !important;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(37, 211, 102, 0.35);
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.lead-whatsapp-btn:hover {
+  transform: translateY(-2px);
+  background: #20ba59;
+  box-shadow: 0 12px 26px rgba(37, 211, 102, 0.5);
+  color: #ffffff !important;
+}
+
+.lead-whatsapp-btn:active {
+  transform: translateY(0);
+}
+
 .funding-poster-cta:hover,
 .dual-popup-grid .lead-submit:hover {
   transform: translateY(-2px);
@@ -7513,6 +7563,26 @@ body.dark-mode .dual-popup-grid .lead-modal-dialog {
 
   .dual-popup-grid .lead-submit {
     margin-top: 6px;
+  }
+
+  .lead-submit-row {
+    margin-top: 6px;
+    gap: 8px;
+  }
+
+  .lead-submit-row .lead-submit,
+  .dual-popup-grid .lead-submit-row .lead-submit {
+    height: 44px;
+    font-size: 13.5px;
+    border-radius: 10px;
+    padding: 0 10px;
+  }
+
+  .lead-whatsapp-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 10px;
   }
 
   /* Streamlined Form Fields on Mobile */
@@ -13951,4 +14021,11 @@ body.dark-mode .phone-mockup-device-img.dark-only {
     width: 100%;
     justify-content: center;
   }
+}
+
+/* Hide Sample Certificate Button on all consultation forms */
+#showCertificateBtn,
+.si-flip-front .si-flip-btn,
+.si-consult-card .si-flip-btn {
+  display: none !important;
 }

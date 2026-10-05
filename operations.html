@@ -35,7 +35,7 @@
       <form id="opsLoginForm" class="ops-form" novalidate>
         <div class="ops-form-group">
           <label for="opsEmail">Staff Email</label>
-          <input type="email" id="opsEmail" class="ops-input" placeholder="admin@corporatemart.in" value="admin@corporatemart.in" required>
+          <input type="email" id="opsEmail" class="ops-input" placeholder="Admin@corporate-mart.com" value="Admin@corporate-mart.com" required>
         </div>
         <div class="ops-form-group">
           <label for="opsPassword">Password</label>
@@ -73,7 +73,7 @@
       <form id="formOpsForgotStep1" class="ops-form">
         <div class="ops-form-group">
           <label for="opsForgotEmail">Staff Email Address</label>
-          <input type="email" id="opsForgotEmail" class="ops-input" placeholder="admin@corporatemart.in" required>
+          <input type="email" id="opsForgotEmail" class="ops-input" placeholder="Admin@corporate-mart.com" required>
         </div>
         <div id="opsForgotError1" class="ops-alert-error" style="display:none;"></div>
         <button type="submit" id="btnSendOpsResetOtp" class="ops-btn ops-btn-primary ops-btn-block">
@@ -452,6 +452,10 @@
           </div>
 
           <div class="ops-card">
+            <div class="ops-filter-bar">
+              <input type="text" id="caseFilterSearch" class="ops-input" placeholder="Search by service name, company, service ID, or note...">
+            </div>
+
             <div class="ops-tabs-bar" id="caseStatusTabs">
               <button type="button" class="ops-tab active" data-status="">All Services</button>
               <button type="button" class="ops-tab" data-status="in_review">🟡 In Progress</button>
@@ -497,6 +501,10 @@
           </div>
 
           <div class="ops-card">
+            <div class="ops-filter-bar">
+              <input type="text" id="docFilterSearch" class="ops-input" placeholder="Search by document title, company, category, or file name...">
+            </div>
+
             <div class="ops-table-responsive">
               <table class="ops-table">
                 <thead>
@@ -531,6 +539,10 @@
           </div>
 
           <div class="ops-card">
+            <div class="ops-filter-bar">
+              <input type="text" id="ticketFilterSearch" class="ops-input" placeholder="Search by subject, company, category, or message ID...">
+            </div>
+
             <div class="ops-table-responsive">
               <table class="ops-table">
                 <thead>

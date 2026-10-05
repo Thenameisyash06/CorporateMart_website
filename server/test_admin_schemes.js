@@ -22,7 +22,7 @@ async function runAdminTests() {
     const adminLoginRes = await fetch(`${baseUrl}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'admin@corporatemart.in', password: 'Admin@123' })
+      body: JSON.stringify({ email: 'Admin@corporate-mart.com', password: 'Admin@123' })
     });
     const adminLoginData = await adminLoginRes.json();
     assert.strictEqual(adminLoginRes.status, 200, 'Admin login must succeed');

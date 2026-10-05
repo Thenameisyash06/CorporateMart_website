@@ -1,6 +1,27 @@
 {
   "version": 2,
+  "cleanUrls": true,
   "rewrites": [
+    {
+      "source": "/operations",
+      "destination": "/operations.html"
+    },
+    {
+      "source": "/portal/operations",
+      "destination": "/operations.html"
+    },
+    {
+      "source": "/client",
+      "destination": "/client.html"
+    },
+    {
+      "source": "/portal/client",
+      "destination": "/client.html"
+    },
+    {
+      "source": "/portal",
+      "destination": "/client.html"
+    },
     {
       "source": "/fundraising",
       "destination": "/fundraising.html"
@@ -8,6 +29,18 @@
     {
       "source": "/schemes",
       "destination": "/fundraising.html"
+    },
+    {
+      "source": "/admin/schemes",
+      "destination": "/fundraising_admin.html"
+    },
+    {
+      "source": "/fundraising-admin",
+      "destination": "/fundraising_admin.html"
+    },
+    {
+      "source": "/fundraising_admin",
+      "destination": "/fundraising_admin.html"
     },
     {
       "source": "/uploads/(.*)",

@@ -81,6 +81,7 @@ async function initMongo() {
     isMongoConnected = mongoose.connection.readyState === 1;
     if (isMongoConnected) {
       console.log('✔ [DB] Successfully connected to MongoDB Atlas!');
+      seedMongoAdmin().catch(() => {});
       return true;
     }
 
@@ -138,14 +139,14 @@ function seedDefaultAdmin(data) {
   //   modified = true;
   // }
 
-  // Ensure admin@corporatemart.in exists as an admin
-  const adminExists = data.users.find(u => u.email && u.email.toLowerCase() === 'admin@corporatemart.in');
+  // Ensure Admin@corporate-mart.com exists as an admin
+  const adminExists = data.users.find(u => u.email && (u.email.toLowerCase() === 'admin@corporate-mart.com' || u.email.toLowerCase() === 'Admin@corporate-mart.com'));
   if (!adminExists) {
     const { salt, hash } = hashPassword('Admin@123');
     data.users.unshift({
       id: 'usr_admin_corporatemart',
       name: 'CorporateMart Admin',
-      email: 'admin@corporatemart.in',
+      email: 'Admin@corporate-mart.com',
       phone: '+919876543210',
       salt,
       passwordHash: hash,
@@ -156,7 +157,8 @@ function seedDefaultAdmin(data) {
       createdAt: new Date().toISOString()
     });
     modified = true;
-  } else if (adminExists.role !== 'admin') {
+  } else {
+    adminExists.email = 'Admin@corporate-mart.com';
     adminExists.role = 'admin';
     modified = true;
   }
@@ -256,6 +258,57 @@ function verifyPassword(password, salt, storedHash) {
   return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(storedHash, 'hex'));
 }
 
+async function seedMongoAdmin() {
+  try {
+    if (!mongoose.connection || mongoose.connection.readyState !== 1) return;
+    const adminUser = await User.findOne({
+      $or: [
+        { email: 'admin@corporate-mart.com' },
+        { email: 'Admin@corporate-mart.com' },
+        { email: 'admin@corporatemart.in' }
+      ]
+    });
+    if (!adminUser) {
+      const { salt, hash } = hashPassword('Admin@123');
+      await User.create({
+        name: 'CorporateMart Admin',
+        email: 'Admin@corporate-mart.com',
+        phone: '+919876543210',
+        salt,
+        passwordHash: hash,
+        role: 'admin',
+        plan: 'pro',
+        isSubscribed: true,
+        subscriptionExpiresAt: new Date('2030-01-01T00:00:00.000Z')
+      });
+    } else {
+      let needsSave = false;
+      if (adminUser.email !== 'Admin@corporate-mart.com') {
+        adminUser.email = 'Admin@corporate-mart.com';
+        needsSave = true;
+      }
+      if (adminUser.role !== 'admin') {
+        adminUser.role = 'admin';
+        needsSave = true;
+      }
+      if (adminUser.plan !== 'pro') {
+        adminUser.plan = 'pro';
+        needsSave = true;
+      }
+      if (!adminUser.isSubscribed) {
+        adminUser.isSubscribed = true;
+        needsSave = true;
+      }
+      if (needsSave) {
+        await adminUser.save();
+      }
+    }
+  } catch (err) {
+    // Non-blocking sync error catch
+  }
+}
+
+
 function createToken(payload) {
   const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
   const body = Buffer.from(JSON.stringify({ ...payload, exp: Date.now() + 30 * 24 * 60 * 60 * 1000 })).toString('base64url');
@@ -299,8 +352,9 @@ function verifyToken(token) {
 function sanitizeUser(user) {
   if (!user) return null;
   const id = user.id || (user._id ? user._id.toString() : '');
+  const isAdmin = user.role === 'admin';
   const expiresAt = user.subscriptionExpiresAt ? new Date(user.subscriptionExpiresAt) : null;
-  const isSubscribed = user.plan === 'pro' && expiresAt && expiresAt.getTime() > Date.now();
+  const isSubscribed = isAdmin || (user.plan === 'pro' && expiresAt && expiresAt.getTime() > Date.now());
 
   return {
     id,
@@ -309,9 +363,9 @@ function sanitizeUser(user) {
     phone: user.phone || '',
     companyName: user.companyName || '',
     role: user.role || 'user',
-    plan: isSubscribed ? 'pro' : 'free',
-    isSubscribed: Boolean(isSubscribed),
-    subscriptionExpiresAt: expiresAt ? expiresAt.toISOString() : null,
+    plan: (isAdmin || isSubscribed) ? 'pro' : 'free',
+    isSubscribed: Boolean(isAdmin || isSubscribed),
+    subscriptionExpiresAt: expiresAt ? expiresAt.toISOString() : (isAdmin ? '2030-01-01T00:00:00.000Z' : null),
     createdAt: user.createdAt ? new Date(user.createdAt).toISOString() : new Date().toISOString()
   };
 }
@@ -325,7 +379,8 @@ async function findUserByEmail(email) {
 
   if (mongoose.connection && mongoose.connection.readyState === 1) {
     try {
-      const user = await User.findOne({ email: cleanEmail }).exec();
+      const escaped = cleanEmail.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+      const user = await User.findOne({ email: new RegExp('^' + escaped + '$', 'i') }).exec();
       if (user) return user.toObject();
     } catch (e) {
       console.warn('Mongo query error, falling back to local DB:', e.message);
@@ -333,7 +388,7 @@ async function findUserByEmail(email) {
   }
 
   const localDb = readDB();
-  return localDb.users.find(u => u.email.toLowerCase() === cleanEmail) || null;
+  return localDb.users.find(u => u.email && u.email.toLowerCase() === cleanEmail) || null;
 }
 
 async function findUserById(id) {
@@ -360,7 +415,7 @@ async function findUserById(id) {
   }
 
   const localDb = readDB();
-  const localUser = localDb.users.find(u => u.id === id || (id === 'usr_admin_corporatemart' && u.email === 'admin@corporatemart.in'));
+  const localUser = localDb.users.find(u => u.id === id || (id === 'usr_admin_corporatemart' && (u.email && (u.email.toLowerCase() === 'admin@corporate-mart.com' || u.email.toLowerCase() === 'Admin@corporate-mart.com'))));
   if (localUser) return localUser;
 
   // Static fallback for default operations admin
@@ -368,7 +423,7 @@ async function findUserById(id) {
     return {
       id: 'usr_admin_corporatemart',
       name: 'CorporateMart Admin',
-      email: 'admin@corporatemart.in',
+      email: 'Admin@corporate-mart.com',
       role: 'admin',
       plan: 'pro',
       status: 'active'
@@ -421,7 +476,7 @@ async function savePushSubscription(userId, subscription) {
 async function createUser({ name, email, phone = '', password, role = 'user' }) {
   const cleanEmail = String(email).trim().toLowerCase();
   const cleanPhone = String(phone || '').trim();
-  const userRole = (role === 'admin' || cleanEmail === 'admin@corporatemart.in') ? 'admin' : 'user';
+  const userRole = (role === 'admin' || cleanEmail === 'admin@corporate-mart.com' || cleanEmail === 'Admin@corporate-mart.com') ? 'admin' : 'user';
   await ensureMongoConnected();
   const existing = await findUserByEmail(cleanEmail);
   if (existing) {

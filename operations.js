@@ -12,6 +12,8 @@
   let currentUser = null;
   let cachedClients = [];
   let cachedCases = [];
+  let cachedDocuments = [];
+  let cachedTickets = [];
   let currentCaseFilter = '';
 
   // DOM Elements
@@ -1058,13 +1060,28 @@
   }
 
   // C. Cases & Services
+  function applyCaseFilters() {
+    const q = (document.getElementById('caseFilterSearch')?.value || '').toLowerCase().trim();
+    let list = cachedCases;
+    if (q) {
+      list = list.filter((c) =>
+        (c.caseId && c.caseId.toLowerCase().includes(q)) ||
+        (c.companyName && c.companyName.toLowerCase().includes(q)) ||
+        (c.serviceName && c.serviceName.toLowerCase().includes(q)) ||
+        (c.statusNote && c.statusNote.toLowerCase().includes(q)) ||
+        (c.status && c.status.toLowerCase().includes(q))
+      );
+    }
+    renderCasesTable(list);
+  }
+
   async function loadCases(statusFilter = '') {
     try {
       currentCaseFilter = statusFilter;
       const url = statusFilter ? `/api/portal/ops/cases?status=${encodeURIComponent(statusFilter)}` : '/api/portal/ops/cases';
       const data = await apiRequest(url);
       cachedCases = data.cases || [];
-      renderCasesTable(cachedCases);
+      applyCaseFilters();
       renderDashboardCases(cachedCases.slice(0, 5));
       populateCaseSelectForDocs();
     } catch (e) {
@@ -1243,6 +1260,12 @@
     });
   }
 
+  // Filter cases search
+  const caseFilterSearch = document.getElementById('caseFilterSearch');
+  if (caseFilterSearch) {
+    caseFilterSearch.addEventListener('input', applyCaseFilters);
+  }
+
   // Tabs for Cases Status Filter
   const caseTabs = document.querySelectorAll('#caseStatusTabs .ops-tab');
   caseTabs.forEach((tab) => {
@@ -1317,10 +1340,31 @@
   }
 
   // D. Documents
+  function applyDocFilters() {
+    const q = (document.getElementById('docFilterSearch')?.value || '').toLowerCase().trim();
+    let list = cachedDocuments;
+    if (q) {
+      list = list.filter((d) =>
+        (d.title && d.title.toLowerCase().includes(q)) ||
+        (d.companyName && d.companyName.toLowerCase().includes(q)) ||
+        (d.docId && d.docId.toLowerCase().includes(q)) ||
+        (d.category && d.category.toLowerCase().includes(q)) ||
+        (d.fileName && d.fileName.toLowerCase().includes(q))
+      );
+    }
+    renderDocumentsTable(list);
+  }
+
+  const docFilterSearch = document.getElementById('docFilterSearch');
+  if (docFilterSearch) {
+    docFilterSearch.addEventListener('input', applyDocFilters);
+  }
+
   async function loadDocuments() {
     try {
       const data = await apiRequest('/api/portal/ops/documents');
-      renderDocumentsTable(data.documents || []);
+      cachedDocuments = data.documents || [];
+      applyDocFilters();
     } catch (e) {
       console.warn('Error loading documents:', e);
     }
@@ -2126,12 +2170,35 @@
   }
 
   // E. Support & Help Messages
+  function applyTicketFilters() {
+    const q = (document.getElementById('ticketFilterSearch')?.value || '').toLowerCase().trim();
+    let list = cachedTickets;
+    if (q) {
+      list = list.filter((t) =>
+        (t.ticketId && t.ticketId.toLowerCase().includes(q)) ||
+        (t.companyName && t.companyName.toLowerCase().includes(q)) ||
+        (t.clientName && t.clientName.toLowerCase().includes(q)) ||
+        (t.subject && t.subject.toLowerCase().includes(q)) ||
+        (t.category && t.category.toLowerCase().includes(q)) ||
+        (t.status && t.status.toLowerCase().includes(q)) ||
+        (t.priority && t.priority.toLowerCase().includes(q)) ||
+        (t.messages && t.messages.some((m) => m.text && m.text.toLowerCase().includes(q)))
+      );
+    }
+    renderTicketsTable(list);
+  }
+
+  const ticketFilterSearch = document.getElementById('ticketFilterSearch');
+  if (ticketFilterSearch) {
+    ticketFilterSearch.addEventListener('input', applyTicketFilters);
+  }
+
   async function loadTickets() {
     try {
       const data = await apiRequest('/api/portal/ops/tickets');
-      const tickets = data.tickets || [];
-      renderTicketsTable(tickets);
-      renderDashboardTickets(tickets.filter((t) => t.status === 'open' || t.status === 'in_progress').slice(0, 5));
+      cachedTickets = data.tickets || [];
+      applyTicketFilters();
+      renderDashboardTickets(cachedTickets.filter((t) => t.status === 'open' || t.status === 'in_progress').slice(0, 5));
     } catch (e) {
       console.warn('Error loading tickets:', e);
     }

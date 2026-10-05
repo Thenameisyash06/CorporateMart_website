@@ -1,6 +1,13 @@
 User-agent: *
 Allow: /
+
+# Private Internal & Admin Portals
+Disallow: /operations.html
+Disallow: /fundraising_admin.html
+Disallow: /client.html
+Disallow: /server/
 Disallow: /docs_and_references/
 Disallow: /icons/WhatsApp*
 
-Sitemap: https://corporatemart.in/sitemap.xml
+# Sitemap Location
+Sitemap: https://corporate-mart.com/sitemap.xml

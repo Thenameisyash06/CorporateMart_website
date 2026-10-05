@@ -9,7 +9,7 @@
   const HELPLINE_PHONE = "7041554148";
   const WHATSAPP_PHONE = "917041554148";
   const ASSISTANT_AVATAR_IMG = "images/ai_female_assistant.jpg";
-  const WEB3FORMS_ACCESS_KEY = (typeof window !== "undefined" && window.WEB3FORMS_ACCESS_KEY) || "f9e8e977-8a5c-4979-8cf0-e303edbcac00";
+  const WEB3FORMS_ACCESS_KEY = (typeof window !== "undefined" && window.WEB3FORMS_ACCESS_KEY) || "be37ec80-ab81-41dd-992a-4229dbf48650";
 
   let leadData = {
     service: "",

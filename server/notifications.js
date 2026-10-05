@@ -3,10 +3,12 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 const nodemailer = require('nodemailer');
 const webpush = require('web-push');
 
-// 1. Configure Web Push
+// -------------------------------------------------------------
+// 1. CONFIGURE IN-PHONE WEB PUSH NOTIFICATIONS (VAPID)
+// -------------------------------------------------------------
 const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || '';
 const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || '';
-const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:contact@corporatemart.in';
+const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:contact@corporate-mart.com';
 
 let isPushConfigured = false;
 if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
@@ -18,8 +20,22 @@ if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
   }
 }
 
-// 2. Configure Email Transporter
-const APP_URL = (process.env.APP_URL || 'https://corporatemart.in').replace(/\/$/, '');
+// -------------------------------------------------------------
+// 2. CONFIGURE EMAIL DISPATCHER (MICROSOFT GRAPH OAUTH2 / SMTP)
+// -------------------------------------------------------------
+const APP_URL = (process.env.APP_URL || 'https://corporate-mart.com').replace(/\/$/, '');
+
+// Microsoft Graph API (OAuth2 Client Credentials)
+const MICROSOFT_CLIENT_ID = (process.env.MICROSOFT_CLIENT_ID || '').trim();
+const MICROSOFT_CLIENT_SECRET = (process.env.MICROSOFT_CLIENT_SECRET || '').trim();
+const MICROSOFT_TENANT_ID = (process.env.MICROSOFT_TENANT_ID || '').trim();
+const MICROSOFT_EMAIL = (process.env.MICROSOFT_EMAIL || process.env.ADMIN_EMAIL || 'Admin@corporate-mart.com').trim();
+
+const isMicrosoftGraphConfigured = Boolean(
+  MICROSOFT_CLIENT_ID && MICROSOFT_CLIENT_SECRET && MICROSOFT_TENANT_ID
+);
+
+// SMTP Fallback Settings
 const SMTP_HOST = process.env.SMTP_HOST || '';
 const SMTP_PORT = parseInt(process.env.SMTP_PORT, 10) || 587;
 const SMTP_USER = (process.env.SMTP_USER || '').trim();
@@ -27,9 +43,9 @@ const SMTP_PASS = (process.env.SMTP_PASS || '').trim();
 const rawEmailFrom = (process.env.EMAIL_FROM || '').trim();
 
 let transporter = null;
-let senderEmail = rawEmailFrom;
+let smtpSenderEmail = rawEmailFrom;
 
-if (SMTP_HOST && SMTP_USER && SMTP_PASS) {
+if (!isMicrosoftGraphConfigured && SMTP_HOST && SMTP_USER && SMTP_PASS) {
   const cleanPass = SMTP_PASS.replace(/\s+/g, '');
   const isGmail = SMTP_HOST.toLowerCase().includes('gmail') || SMTP_USER.toLowerCase().includes('@gmail.com');
 
@@ -41,7 +57,7 @@ if (SMTP_HOST && SMTP_USER && SMTP_PASS) {
         pass: cleanPass
       }
     });
-    senderEmail = `"Corporate Mart" <${SMTP_USER}>`;
+    smtpSenderEmail = `"Corporate Mart" <${SMTP_USER}>`;
   } else {
     transporter = nodemailer.createTransport({
       host: SMTP_HOST,
@@ -50,11 +66,147 @@ if (SMTP_HOST && SMTP_USER && SMTP_PASS) {
       auth: {
         user: SMTP_USER,
         pass: cleanPass
+      },
+      tls: {
+        ciphers: 'SSLv3',
+        rejectUnauthorized: false
       }
     });
-    senderEmail = rawEmailFrom || `"Corporate Mart" <${SMTP_USER}>`;
+    smtpSenderEmail = rawEmailFrom || `"Corporate Mart" <${SMTP_USER}>`;
   }
-  console.log(`✉️ [EMAIL] Transporter ready for ${SMTP_USER} (${isGmail ? 'Gmail Service' : SMTP_HOST})`);
+  console.log(`✉️ [EMAIL] SMTP Transporter ready for ${SMTP_USER} (${isGmail ? 'Gmail Service' : SMTP_HOST})`);
+}
+
+if (isMicrosoftGraphConfigured) {
+  console.log(`✉️ [EMAIL] Microsoft Graph API OAuth2 ready for ${MICROSOFT_EMAIL} (Tenant: ${MICROSOFT_TENANT_ID.substring(0, 8)}...)`);
+}
+
+// In-Memory Token Cache for Microsoft Graph OAuth2
+let msTokenCache = {
+  token: null,
+  expiresAt: 0
+};
+
+/**
+ * Acquire or reuse valid Microsoft Graph OAuth2 access token
+ */
+async function getMicrosoftGraphToken() {
+  const now = Date.now();
+  // Return cached token if valid for at least another 2 minutes
+  if (msTokenCache.token && msTokenCache.expiresAt > now + 120000) {
+    return msTokenCache.token;
+  }
+
+  const tokenUrl = `https://login.microsoftonline.com/${MICROSOFT_TENANT_ID}/oauth2/v2.0/token`;
+  const params = new URLSearchParams();
+  params.append('client_id', MICROSOFT_CLIENT_ID);
+  params.append('client_secret', MICROSOFT_CLIENT_SECRET);
+  params.append('grant_type', 'client_credentials');
+  params.append('scope', 'https://graph.microsoft.com/.default');
+
+  const res = await fetch(tokenUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: params.toString()
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Microsoft OAuth token acquisition failed (${res.status}): ${errText}`);
+  }
+
+  const data = await res.json();
+  msTokenCache.token = data.access_token;
+  msTokenCache.expiresAt = now + ((data.expires_in || 3600) * 1000);
+  return msTokenCache.token;
+}
+
+/**
+ * Send email via Microsoft Graph API (/users/{email}/sendMail)
+ */
+async function sendEmailViaGraph({ to, subject, text, html, replyTo, fromName = 'Corporate Mart' }) {
+  const token = await getMicrosoftGraphToken();
+  const senderUser = MICROSOFT_EMAIL || 'Admin@corporate-mart.com';
+
+  const recipientList = Array.isArray(to) ? to : String(to).split(/[,;]/);
+  const recipients = recipientList
+    .map(e => e.trim())
+    .filter(Boolean)
+    .map(address => ({ emailAddress: { address } }));
+
+  if (recipients.length === 0) {
+    throw new Error('No recipient email specified');
+  }
+
+  const message = {
+    subject,
+    body: {
+      contentType: html ? 'HTML' : 'Text',
+      content: html || text || ''
+    },
+    toRecipients: recipients,
+    from: {
+      emailAddress: {
+        name: fromName,
+        address: senderUser
+      }
+    }
+  };
+
+  const replyAddress = replyTo || senderUser;
+  if (replyAddress) {
+    message.replyTo = [
+      {
+        emailAddress: {
+          address: replyAddress
+        }
+      }
+    ];
+  }
+
+  const sendMailUrl = `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(senderUser)}/sendMail`;
+  const res = await fetch(sendMailUrl, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      message,
+      saveToSentItems: 'true'
+    })
+  });
+
+  if (res.status !== 202 && res.status !== 200) {
+    const errBody = await res.text();
+    throw new Error(`Microsoft Graph sendMail failed (${res.status}): ${errBody}`);
+  }
+
+  return true;
+}
+
+/**
+ * Universal Dispatcher: Routes email to Microsoft Graph, SMTP, or Console Preview
+ */
+async function dispatchEmail({ to, subject, text, html, replyTo, fromName = 'Corporate Mart' }) {
+  if (isMicrosoftGraphConfigured) {
+    return await sendEmailViaGraph({ to, subject, text, html, replyTo, fromName });
+  } else if (transporter) {
+    return await transporter.sendMail({
+      from: smtpSenderEmail,
+      to,
+      replyTo: replyTo || SMTP_USER || 'Admin@corporate-mart.com',
+      subject,
+      text,
+      html
+    });
+  } else {
+    console.log(`✉️ [EMAIL PREVIEW - NO SENDER CONFIGURED]`);
+    console.log(`   To: ${to}`);
+    console.log(`   Subject: ${subject}`);
+    console.log(`   Reply-To: ${replyTo || 'N/A'}`);
+    return true;
+  }
 }
 
 /**
@@ -121,7 +273,7 @@ function buildEmailTemplate({ heading, title, bodyHtml, buttonText, buttonUrl, n
         <tr>
           <td style="background-color:#f8fafc; padding:20px 32px; border-top:1px solid #e2e8f0; text-align:center; font-size:12px; color:#64748b;">
             <p style="margin:0 0 6px 0;">Corporate Mart • Legal & Compliance Consultations • India</p>
-            <p style="margin:0;">Support Hotline: <a href="tel:+917041554148" style="color:#2563eb; text-decoration:none; font-weight:600;">+91 7041554148</a> | Email: <a href="mailto:contact@corporatemart.in" style="color:#2563eb; text-decoration:none;">contact@corporatemart.in</a></p>
+            <p style="margin:0;">Support Hotline: <a href="tel:+917041554148" style="color:#2563eb; text-decoration:none; font-weight:600;">+91 7041554148</a> | Email: <a href="mailto:contact@corporate-mart.com" style="color:#2563eb; text-decoration:none;">contact@corporate-mart.com</a></p>
           </td>
         </tr>
       </table>
@@ -244,27 +396,19 @@ async function notifyClient({ client, eventType, data }) {
   // -------------------------------------------------------------
   let emailSent = false;
   if (client.email) {
-    if (transporter) {
-      try {
-        await transporter.sendMail({
-          from: senderEmail,
-          to: client.email,
-          replyTo: SMTP_USER,
-          subject: emailSubject,
-          text: emailText,
-          html: emailHtml
-        });
-        emailSent = true;
-        console.log(`✉️ [EMAIL] Alert sent to ${client.email} (${emailSubject})`);
-      } catch (err) {
-        console.warn(`⚠️ [EMAIL] Failed sending email to ${client.email}:`, err.message);
-      }
-    } else {
-      // Test / Console Mock Delivery (no SMTP credentials yet)
-      console.log(`✉️ [EMAIL PREVIEW] Simulated email to: ${client.email}`);
-      console.log(`   Subject: ${emailSubject}`);
-      console.log(`   Action URL: ${pushUrl}`);
+    try {
+      await dispatchEmail({
+        to: client.email,
+        subject: emailSubject,
+        text: emailText,
+        html: emailHtml,
+        replyTo: MICROSOFT_EMAIL || SMTP_USER || 'Admin@corporate-mart.com',
+        fromName: 'Corporate Mart'
+      });
       emailSent = true;
+      console.log(`✉️ [EMAIL] Alert sent to ${client.email} (${emailSubject})`);
+    } catch (err) {
+      console.warn(`⚠️ [EMAIL] Failed sending email to ${client.email}:`, err.message);
     }
   }
 
@@ -338,25 +482,20 @@ async function sendPasswordResetOtpEmail({ email, name, otp }) {
     note: 'For security reasons, never share this one-time code with anyone, including Corporate Mart staff.'
   });
 
-  if (transporter) {
-    try {
-      await transporter.sendMail({
-        from: senderEmail,
-        to: email,
-        replyTo: SMTP_USER,
-        subject,
-        text,
-        html
-      });
-      console.log(`✉️ [EMAIL] Password reset OTP sent to ${email}`);
-      return true;
-    } catch (err) {
-      console.warn(`⚠️ [EMAIL] Failed sending OTP email to ${email}:`, err.message);
-      return false;
-    }
-  } else {
-    console.log(`✉️ [EMAIL PREVIEW] Password reset OTP for ${email}: ${otp}`);
+  try {
+    await dispatchEmail({
+      to: email,
+      subject,
+      text,
+      html,
+      replyTo: MICROSOFT_EMAIL || SMTP_USER || 'Admin@corporate-mart.com',
+      fromName: 'Corporate Mart Security'
+    });
+    console.log(`✉️ [EMAIL] Password reset OTP sent to ${email}`);
     return true;
+  } catch (err) {
+    console.warn(`⚠️ [EMAIL] Failed sending OTP email to ${email}:`, err.message);
+    return false;
   }
 }
 
@@ -365,7 +504,7 @@ async function sendPasswordResetOtpEmail({ email, name, otp }) {
  */
 async function sendPasswordChangedConfirmationEmail({ email, name }) {
   const subject = `✅ Corporate Mart: Your password was successfully updated`;
-  const text = `Hello ${name || 'User'},\n\nThis is a confirmation that your Corporate Mart account password was updated successfully.\n\nIf you did not perform this change, please contact us immediately at contact@corporatemart.in.\n\nCorporate Mart Security Team`;
+  const text = `Hello ${name || 'User'},\n\nThis is a confirmation that your Corporate Mart account password was updated successfully.\n\nIf you did not perform this change, please contact us immediately at contact@corporate-mart.com.\n\nCorporate Mart Security Team`;
 
   const html = buildEmailTemplate({
     heading: 'Account Security Alert',
@@ -380,28 +519,23 @@ async function sendPasswordChangedConfirmationEmail({ email, name }) {
     `,
     buttonText: 'Open Login Page',
     buttonUrl: `${APP_URL}/client`,
-    note: 'If you did not request or make this change, please contact support immediately at contact@corporatemart.in.'
+    note: 'If you did not request or make this change, please contact support immediately at contact@corporate-mart.com.'
   });
 
-  if (transporter) {
-    try {
-      await transporter.sendMail({
-        from: senderEmail,
-        to: email,
-        replyTo: SMTP_USER,
-        subject,
-        text,
-        html
-      });
-      console.log(`✉️ [EMAIL] Password change confirmation sent to ${email}`);
-      return true;
-    } catch (err) {
-      console.warn(`⚠️ [EMAIL] Failed sending password change confirmation to ${email}:`, err.message);
-      return false;
-    }
-  } else {
-    console.log(`✉️ [EMAIL PREVIEW] Password change confirmation for ${email}`);
+  try {
+    await dispatchEmail({
+      to: email,
+      subject,
+      text,
+      html,
+      replyTo: MICROSOFT_EMAIL || SMTP_USER || 'Admin@corporate-mart.com',
+      fromName: 'Corporate Mart Security'
+    });
+    console.log(`✉️ [EMAIL] Password change confirmation sent to ${email}`);
     return true;
+  } catch (err) {
+    console.warn(`⚠️ [EMAIL] Failed sending password change confirmation to ${email}:`, err.message);
+    return false;
   }
 }
 
@@ -409,7 +543,7 @@ async function sendPasswordChangedConfirmationEmail({ email, name }) {
  * Send new lead/inquiry notification email to admin
  */
 async function sendLeadNotificationToAdmin({ name, phone, email, service, details, source }) {
-  const adminEmail = SMTP_USER || 'yashd9404@gmail.com';
+  const adminEmail = process.env.ADMIN_EMAIL || MICROSOFT_EMAIL || SMTP_USER || 'Admin@corporate-mart.com';
   const subject = `🤖 New Lead from Chatbot: ${name || 'Prospective Client'} (${service || 'Inquiry'})`;
   const text = `
 New Lead Received from CorporateMart Virtual Assistant Chatbot:
@@ -444,24 +578,21 @@ Timestamp: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
     note: 'Lead has also been queued in the Operations Portal inquiries desk.'
   });
 
-  if (transporter) {
-    try {
-      await transporter.sendMail({
-        from: senderEmail,
-        to: adminEmail,
-        replyTo: email || adminEmail,
-        subject,
-        text,
-        html
-      });
-      console.log(`✉️ [EMAIL] Lead notification email sent to admin (${adminEmail}) for ${name}`);
-      return true;
-    } catch (err) {
-      console.warn(`⚠️ [EMAIL] Failed sending lead notification email to ${adminEmail}:`, err.message);
-      return false;
-    }
+  try {
+    await dispatchEmail({
+      to: adminEmail,
+      subject,
+      text,
+      html,
+      replyTo: email || adminEmail,
+      fromName: 'Corporate Mart Bot'
+    });
+    console.log(`✉️ [EMAIL] Lead notification email sent to admin (${adminEmail}) for ${name}`);
+    return true;
+  } catch (err) {
+    console.warn(`⚠️ [EMAIL] Failed sending lead notification email to ${adminEmail}:`, err.message);
+    return false;
   }
-  return true;
 }
 
 module.exports = {
@@ -469,5 +600,7 @@ module.exports = {
   sendPasswordResetOtpEmail,
   sendPasswordChangedConfirmationEmail,
   sendLeadNotificationToAdmin,
+  dispatchEmail,
+  sendEmailViaGraph,
   VAPID_PUBLIC_KEY
 };

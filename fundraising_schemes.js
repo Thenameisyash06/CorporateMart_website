@@ -1100,6 +1100,15 @@
       });
     });
 
+    const btnWhatsappPro = document.getElementById('btnWhatsappPro');
+    if (btnWhatsappPro) {
+      btnWhatsappPro.addEventListener('click', () => {
+        const userEmail = (state.user && state.user.email) ? state.user.email : '';
+        const msg = `Hi CorporateMart team, I want to activate CorporateMart Pro Access (₹99)${userEmail ? ' for my account: ' + userEmail : ''}. Please share the UPI QR / payment details.`;
+        window.open(`https://wa.me/917041554148?text=${encodeURIComponent(msg)}`, '_blank');
+      });
+    }
+
     const pricingSignInLink = document.getElementById('pricingSignInLink');
     if (pricingSignInLink) {
       pricingSignInLink.addEventListener('click', () => {
@@ -1307,73 +1316,9 @@
       return;
     }
 
-    try {
-      const res = await fetch('/api/payment/create-order', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${state.token}`
-        },
-        body: JSON.stringify({ planId })
-      });
-
-      const orderData = await res.json();
-      if (!res.ok) {
-        throw new Error(orderData.error || 'Could not initiate payment order');
-      }
-
-      if (orderData.isDemo) {
-        const confirmMsg = `💳 Developer Test Gateway Active:\n\nConfirm test payment for ${orderData.planName} (₹${orderData.amount / 100})?\n\n(No real card required in test sandbox mode)`;
-        if (confirm(confirmMsg)) {
-          await verifyPaymentOnServer({
-            orderId: orderData.orderId,
-            paymentId: 'pay_sim_' + Date.now(),
-            signature: 'simulated_sig_success',
-            planId
-          });
-        }
-        return;
-      }
-
-      if (typeof Razorpay !== 'undefined') {
-        const rzpOptions = {
-          key: orderData.keyId,
-          amount: orderData.amount,
-          currency: orderData.currency,
-          name: 'CorporateMart Pro',
-          description: orderData.planName,
-          order_id: orderData.orderId,
-          prefill: {
-            name: state.user.name,
-            email: state.user.email,
-            contact: state.user.phone || ''
-          },
-          theme: {
-            color: '#1676bb'
-          },
-          method: {
-            upi: true,
-            card: true,
-            netbanking: true,
-            wallet: true
-          },
-          handler: async function (response) {
-            await verifyPaymentOnServer({
-              orderId: response.razorpay_order_id,
-              paymentId: response.razorpay_payment_id,
-              signature: response.razorpay_signature,
-              planId
-            });
-          }
-        };
-        const rzp = new Razorpay(rzpOptions);
-        rzp.open();
-      } else {
-        alert('Payment gateway failed to load. Please check your internet connection.');
-      }
-    } catch (err) {
-      alert('Checkout error: ' + err.message);
-    }
+    const userEmail = state.user.email || '';
+    const text = `Hi CorporateMart team, I want to activate CorporateMart Pro Access (₹99) for my registered account: ${userEmail}. Please verify my payment.`;
+    window.open(`https://wa.me/917041554148?text=${encodeURIComponent(text)}`, '_blank');
   }
 
   async function verifyPaymentOnServer(payload) {

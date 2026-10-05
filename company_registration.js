@@ -3,11 +3,11 @@
    =========================================================
    To connect your forms to Web3Forms:
    1. Get your free Access Key from https://web3forms.com
-   2. Replace "YOUR_ACCESS_KEY_HERE" below with your Access Key
+   2. Replace "be37ec80-ab81-41dd-992a-4229dbf48650" below with your Access Key
    (Alternatively, you can set it directly in each HTML file inside:
-    <input type="hidden" name="access_key" value="YOUR_ACCESS_KEY_HERE">)
+    <input type="hidden" name="access_key" value="be37ec80-ab81-41dd-992a-4229dbf48650">)
 ========================================================= */
-const WEB3FORMS_ACCESS_KEY = "f9e8e977-8a5c-4979-8cf0-e303edbcac00";
+const WEB3FORMS_ACCESS_KEY = "be37ec80-ab81-41dd-992a-4229dbf48650";
 
 async function handleWeb3FormsSubmit(event, form, successElement) {
     event.preventDefault();
@@ -29,7 +29,7 @@ async function handleWeb3FormsSubmit(event, form, successElement) {
 
     // If access_key in form is placeholder or missing, inject the JS constant
     const currentKey = formData.get("access_key");
-    if (!currentKey || currentKey === "YOUR_ACCESS_KEY_HERE") {
+    if (!currentKey || currentKey === "be37ec80-ab81-41dd-992a-4229dbf48650") {
         formData.set("access_key", WEB3FORMS_ACCESS_KEY);
     }
 
@@ -1535,7 +1535,13 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.appendChild(btn);
   }
 
+  function isCareerPage() {
+    var p = (window.location.pathname || "").toLowerCase();
+    return p.indexOf("career") !== -1 || !!document.querySelector(".career-hero, .career-form-card, #careerFullForm");
+  }
+
   function ensureLeadModal() {
+    if (isCareerPage()) return null;
     var modal = document.getElementById("leadModal");
     if (modal) return modal;
 
@@ -1549,7 +1555,7 @@ document.addEventListener("DOMContentLoaded", () => {
       '    <p>Share your details and our expert will contact you shortly.</p>' +
       '  </div>' +
       '  <form id="leadModalForm" class="lead-modal-form" novalidate method="POST" action="https://api.web3forms.com/submit">' +
-      '    <input type="hidden" name="access_key" value="f9e8e977-8a5c-4979-8cf0-e303edbcac00">' +
+      '    <input type="hidden" name="access_key" value="be37ec80-ab81-41dd-992a-4229dbf48650">' +
       '    <input type="hidden" name="subject" value="New Consultation Lead: Service Page">' +
       '    <input type="hidden" name="from_name" value="Corporate Mart Website">' +
       '    <input type="checkbox" name="botcheck" class="hidden" style="display:none">' +
@@ -1661,7 +1667,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function openLeadModal() {
+    if (isCareerPage()) return;
     var modal = ensureLeadModal();
+    if (!modal) return;
     detectCurrentService();
 
     var successMsg = modal.querySelector(".cr-form-success");
@@ -1708,6 +1716,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   function initLeadSystem() {
+    if (isCareerPage()) {
+      return; // Do not initialize lead modal or popup on career page
+    }
+
     ensureLeadModal();
     ensureFloatingLeadButton();
 

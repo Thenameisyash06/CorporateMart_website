@@ -39,6 +39,25 @@ app.use(cors());
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
+// Strict Security Guard: Prevent public exposure of backend code, databases, configs, and dotfiles
+app.use((req, res, next) => {
+  const p = req.path.toLowerCase();
+  if (
+    p.startsWith('/server') ||
+    p.startsWith('/node_modules') ||
+    p.startsWith('/.git') ||
+    p.startsWith('/scratch') ||
+    p.startsWith('/data') ||
+    p.includes('.env') ||
+    p.endsWith('.json') ||
+    p.endsWith('.lock') ||
+    p.endsWith('.md')
+  ) {
+    return res.status(404).send('Not Found');
+  }
+  next();
+});
+
 // Serve static frontend files from parent directory with HTML extension support and video caching
 app.use(express.static(path.join(__dirname, '..'), {
   extensions: ['html'],
@@ -647,10 +666,17 @@ const PLANS = {
 
 app.get('/api/config', (req, res) => {
   const rzpKey = (process.env.RAZORPAY_KEY_ID || '').trim();
-  const rzpSecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
+  const isLive = rzpKey.startsWith('rzp_live_');
+
   res.json({
-    razorpayKeyId: rzpKey || 'rzp_test_demo',
-    isLiveConfigured: !!(rzpKey && rzpSecret && !rzpKey.includes('demo')),
+    razorpayKeyId: isLive ? rzpKey : '',
+    isLiveConfigured: isLive,
+    isOnlinePaymentEnabled: isLive,
+    directUpi: {
+      vpa: '7041554148@upi',
+      whatsappPhone: '+917041554148',
+      amount: 99
+    },
     plans: PLANS
   });
 });
@@ -665,58 +691,52 @@ app.post('/api/payment/create-order', requireAuth, async (req, res) => {
 
     const rzpKey = (process.env.RAZORPAY_KEY_ID || '').trim();
     const rzpSecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
+    const isLive = rzpKey.startsWith('rzp_live_');
 
-    if (rzpKey && rzpSecret && !rzpKey.includes('demo')) {
-      // Real or Live Test Razorpay API Call
-      const authHeader = 'Basic ' + Buffer.from(rzpKey + ':' + rzpSecret).toString('base64');
-      const orderPayload = {
-        amount: plan.amount * 100, // paise
-        currency: 'INR',
-        receipt: 'rcpt_' + req.userId.slice(-6) + '_' + Date.now(),
-        notes: {
-          userId: req.userId,
-          planId: plan.id,
-          userEmail: req.user.email
-        }
-      };
-
-      const response = await fetch('https://api.razorpay.com/v1/orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': authHeader
-        },
-        body: JSON.stringify(orderPayload)
-      });
-
-      const orderData = await response.json();
-      if (!response.ok) {
-        throw new Error(orderData.error ? orderData.error.description : 'Failed to create Razorpay order');
-      }
-
-      return res.json({
-        success: true,
-        orderId: orderData.id,
-        amount: orderData.amount,
-        currency: 'INR',
-        keyId: rzpKey,
-        planId: plan.id,
-        planName: plan.name,
-        isDemo: false
+    // Online payment is disabled until live Razorpay keys are linked
+    if (!isLive || !rzpSecret) {
+      return res.status(403).json({
+        error: 'Online payment gateway is temporarily disabled during merchant domain verification. Please subscribe via direct UPI / WhatsApp (+91 7041554148).'
       });
     }
 
-    // Instant Developer / Simulated Sandbox Mode (when real merchant keys not yet configured in .env)
-    const demoOrderId = 'order_sim_' + Date.now() + '_' + crypto.randomBytes(4).toString('hex');
+    // Live Razorpay API Call
+    const authHeader = 'Basic ' + Buffer.from(rzpKey + ':' + rzpSecret).toString('base64');
+    const orderPayload = {
+      amount: plan.amount * 100, // paise
+      currency: 'INR',
+      receipt: 'rcpt_' + req.userId.slice(-6) + '_' + Date.now(),
+      notes: {
+        userId: req.userId,
+        planId: plan.id,
+        userEmail: req.user.email
+      }
+    };
+
+    const response = await fetch('https://api.razorpay.com/v1/orders', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': authHeader
+      },
+      body: JSON.stringify(orderPayload)
+    });
+
+    const orderData = await response.json();
+    if (!response.ok) {
+      throw new Error(orderData.error ? orderData.error.description : 'Failed to create Razorpay order');
+    }
+
     return res.json({
       success: true,
-      orderId: demoOrderId,
-      amount: plan.amount * 100,
+      orderId: orderData.id,
+      amount: orderData.amount,
       currency: 'INR',
-      keyId: 'rzp_test_simulated',
+      keyId: rzpKey,
       planId: plan.id,
       planName: plan.name,
-      isDemo: true
+      isLive: true,
+      isDemo: false
     });
   } catch (err) {
     console.error('Error creating order:', err);
@@ -732,23 +752,25 @@ app.post('/api/payment/verify', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Invalid plan' });
     }
 
+    const rzpKey = (process.env.RAZORPAY_KEY_ID || '').trim();
     const rzpSecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
+    const isLive = rzpKey.startsWith('rzp_live_');
 
-    // If live Razorpay keys are in use, verify HMAC SHA256 signature
-    if (rzpSecret && !rzpSecret.includes('demo')) {
-      const generatedSignature = crypto
-        .createHmac('sha256', rzpSecret)
-        .update(orderId + '|' + paymentId)
-        .digest('hex');
+    // Reject simulated or test payments
+    if (!isLive || !rzpSecret) {
+      return res.status(403).json({
+        error: 'Online payment gateway is temporarily disabled. Please subscribe via direct UPI / WhatsApp (+91 7041554148).'
+      });
+    }
 
-      if (generatedSignature !== signature) {
-        return res.status(400).json({ error: 'Cryptographic signature verification failed: Invalid payment' });
-      }
-    } else {
-      // In demo mode, ensure orderId and paymentId exist
-      if (!orderId || !paymentId) {
-        return res.status(400).json({ error: 'Missing payment details' });
-      }
+    // Strict HMAC SHA256 signature verification in Live Mode
+    const generatedSignature = crypto
+      .createHmac('sha256', rzpSecret)
+      .update(orderId + '|' + paymentId)
+      .digest('hex');
+
+    if (generatedSignature !== signature) {
+      return res.status(400).json({ error: 'Cryptographic signature verification failed: Invalid payment' });
     }
 
     // Activate subscription in database
@@ -775,6 +797,72 @@ app.post('/api/payment/verify', requireAuth, async (req, res) => {
   } catch (err) {
     console.error('Error verifying payment:', err);
     res.status(500).json({ error: err.message || 'Payment verification failed' });
+  }
+});
+
+// Admin / Staff Manual Pro Activation API
+app.post('/api/admin/users/activate-subscription', requireStaff, async (req, res) => {
+  try {
+    const { email, durationDays = 30, note } = req.body || {};
+    if (!email) {
+      return res.status(400).json({ error: 'User email is required' });
+    }
+    const cleanEmail = String(email).trim().toLowerCase();
+    const user = await db.findUserByEmail(cleanEmail);
+    if (!user) {
+      return res.status(404).json({
+        error: `User "${cleanEmail}" not found. Please ask the user to register an account first on corporate-mart.com/fundraising.`
+      });
+    }
+
+    const userId = user.id || (user._id ? user._id.toString() : '');
+    const updatedUser = await db.updateUserSubscription(userId, {
+      plan: 'pro',
+      durationDays: parseInt(durationDays, 10) || 30
+    });
+
+    await db.recordTransaction({
+      userId,
+      orderId: 'admin_manual_' + Date.now(),
+      paymentId: 'manual_admin_upi',
+      amount: 99,
+      planId: 'pro_99',
+      status: 'success'
+    });
+
+    // Notify user via Microsoft Graph Email
+    try {
+      if (typeof notifications.dispatchEmail === 'function') {
+        notifications.dispatchEmail({
+          to: user.email,
+          subject: '🎉 CorporateMart Pro Access Activated Successfully',
+          html: `
+            <div style="font-family:sans-serif; padding:20px; color:#1e293b;">
+              <h2 style="color:#0284c7;">Welcome to CorporateMart Pro!</h2>
+              <p>Dear <strong>${user.name || 'Member'}</strong>,</p>
+              <p>Your <strong>CorporateMart Pro Access</strong> has been activated successfully for <strong>${durationDays} days</strong>.</p>
+              <p>You can now view and apply for all 25+ government grants, venture pools, and funding schemes.</p>
+              <p style="margin:24px 0;">
+                <a href="${process.env.APP_URL || 'https://corporate-mart.com'}/fundraising.html" style="background:#2563eb; color:#ffffff; padding:12px 24px; text-decoration:none; border-radius:6px; font-weight:700; display:inline-block;">
+                  Access Pro Schemes Now &rarr;
+                </a>
+              </p>
+              <p style="font-size:12px; color:#64748b;">Note: ${note || 'Manual activation verified by CorporateMart Operations.'}</p>
+            </div>
+          `,
+          fromName: 'Corporate Mart Funding Desk'
+        }).catch(e => console.warn('Email dispatch warning:', e.message));
+      }
+    } catch (e) {}
+
+    res.json({
+      success: true,
+      message: `Pro membership successfully activated for ${user.email} (${durationDays} days).`,
+      user: updatedUser
+    });
+  } catch (err) {
+    console.error('Error manually activating subscription:', err);
+    res.status(500).json({ error: err.message || 'Failed to activate subscription' });
   }
 });
 

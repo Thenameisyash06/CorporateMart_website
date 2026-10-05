@@ -1587,8 +1587,32 @@ body.dark-mode .cp-scheme-footer {
     border-radius: 10px;
   }
   .cp-ad-img {
-    height: 125px;
+    height: 85px;
+    max-width: min(260px, calc(100vw - 64px));
+    width: auto;
     border-radius: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cp-ads-scroll-wrapper {
+    gap: 10px;
+  }
+  .cp-ads-group {
+    gap: 10px;
+  }
+  .cp-ad-img {
+    height: 78px;
+    max-width: min(240px, calc(100vw - 48px));
+    border-radius: 9px;
+  }
+}
+
+@media (max-width: 360px) {
+  .cp-ad-img {
+    height: 70px;
+    max-width: min(215px, calc(100vw - 36px));
+    border-radius: 8px;
   }
 }
 

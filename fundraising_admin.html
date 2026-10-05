@@ -576,7 +576,7 @@
       <form id="loginGateForm">
         <div class="form-group" style="text-align: left; margin-bottom: 14px;">
           <label class="form-label" for="adminLoginEmail">Admin Email</label>
-          <input type="email" id="adminLoginEmail" class="form-control" placeholder="admin@corporatemart.in" required value="admin@corporatemart.in">
+          <input type="email" id="adminLoginEmail" class="form-control" placeholder="Admin@corporate-mart.com" required value="Admin@corporate-mart.com">
         </div>
         <div class="form-group" style="text-align: left; margin-bottom: 20px;">
           <label class="form-label" for="adminLoginPassword">Password</label>
@@ -665,6 +665,9 @@
       </button>
       <button type="button" class="tab-btn" data-tab="delete">
         <span>🗑️</span> Delete Scheme
+      </button>
+      <button type="button" class="tab-btn" data-tab="subscriptions">
+        <span>👑</span> Pro Subscriptions
       </button>
     </div>
 
@@ -962,6 +965,65 @@
 
         <div id="deleteSearchResults" class="scheme-items-list">
           <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: PRO SUBSCRIPTIONS MANAGEMENT -->
+    <section id="tab-subscriptions" class="tab-panel">
+      <div class="panel-box">
+        <div class="panel-header">
+          <h2 class="panel-title"><span>👑</span> Pro Subscriptions &amp; Manual Activation</h2>
+          <p class="panel-subtitle">Manually activate Pro access for users who paid via direct UPI / WhatsApp, or manage membership duration.</p>
+        </div>
+
+        <!-- Manual Activation Form -->
+        <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+          <h3 style="font-size: 16px; margin: 0 0 8px; color: var(--text);">⚡ Instant Manual Pro Activation</h3>
+          <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 16px;">
+            Enter the registered email of the user who paid ₹99 via UPI/WhatsApp. Their account will immediately be granted full Pro access and a confirmation email will be sent automatically.
+          </p>
+          <form id="manualSubForm" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
+            <div style="flex: 2; min-width: 240px;">
+              <label class="form-label" for="manualUserEmail">User Email Address <span class="required">*</span></label>
+              <input type="email" id="manualUserEmail" class="form-control" placeholder="client@example.com" required>
+            </div>
+            <div style="flex: 1; min-width: 140px;">
+              <label class="form-label" for="manualDuration">Duration</label>
+              <select id="manualDuration" class="form-control">
+                <option value="30" selected>30 Days (Standard ₹99)</option>
+                <option value="60">60 Days</option>
+                <option value="90">90 Days</option>
+                <option value="365">1 Year (365 Days)</option>
+              </select>
+            </div>
+            <div style="flex: 1; min-width: 180px;">
+              <label class="form-label" for="manualNote">Payment Note</label>
+              <input type="text" id="manualNote" class="form-control" placeholder="UPI Ref: 421098..." value="UPI Payment Verified">
+            </div>
+            <div>
+              <button type="submit" class="btn btn-primary" id="btnActivateSub" style="height: 42px; display: inline-flex; align-items: center; gap: 6px;">
+                <span>⚡</span> Activate Pro Access
+              </button>
+            </div>
+          </form>
+          <div id="manualSubResult" style="margin-top: 14px; font-size: 13.5px; padding: 12px; border-radius: 8px; display: none;"></div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h3 style="font-size: 16px; margin: 0; color: var(--text);">Direct Payment Details for Customers</h3>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 16px;">
+            <div style="font-size: 12px; font-weight: 700; color: #1e40af; text-transform: uppercase;">Official UPI VPA</div>
+            <div style="font-size: 18px; font-weight: 800; color: #1e3a8a; margin-top: 4px;">7041554148@upi</div>
+            <div style="font-size: 12px; color: #3b82f6; margin-top: 2px;">Pay ₹99 &amp; share screenshot on WhatsApp</div>
+          </div>
+          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px;">
+            <div style="font-size: 12px; font-weight: 700; color: #166534; text-transform: uppercase;">WhatsApp Support Desk</div>
+            <div style="font-size: 18px; font-weight: 800; color: #14532d; margin-top: 4px;">+91 7041554148</div>
+            <div style="font-size: 12px; color: #22c55e; margin-top: 2px;">Available for instant activation &amp; queries</div>
+          </div>
         </div>
       </div>
     </section>
@@ -1425,6 +1487,57 @@
           btnConfirmDelete.textContent = 'Delete Scheme';
         }
       });
+
+      // Manual Pro Subscription Form Submit
+      const manualSubForm = document.getElementById('manualSubForm');
+      const manualSubResult = document.getElementById('manualSubResult');
+      const btnActivateSub = document.getElementById('btnActivateSub');
+
+      if (manualSubForm) {
+        manualSubForm.addEventListener('submit', async e => {
+          e.preventDefault();
+          const email = document.getElementById('manualUserEmail').value.trim();
+          const durationDays = document.getElementById('manualDuration').value;
+          const note = document.getElementById('manualNote').value.trim();
+
+          btnActivateSub.disabled = true;
+          btnActivateSub.innerHTML = '<span>⏳</span> Activating...';
+          manualSubResult.style.display = 'none';
+
+          try {
+            const res = await fetch('/api/admin/users/activate-subscription', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+              },
+              body: JSON.stringify({ email, durationDays, note })
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to activate subscription');
+
+            manualSubResult.style.display = 'block';
+            manualSubResult.style.background = '#dcfce7';
+            manualSubResult.style.color = '#15803d';
+            manualSubResult.style.border = '1px solid #86efac';
+            manualSubResult.innerHTML = '<strong>✔ Success:</strong> ' + data.message;
+            showAlert('👑 Pro access successfully granted to ' + email, 'success');
+            manualSubForm.reset();
+            document.getElementById('manualNote').value = 'UPI Payment Verified';
+          } catch (err) {
+            manualSubResult.style.display = 'block';
+            manualSubResult.style.background = '#fee2e2';
+            manualSubResult.style.color = '#b91c1c';
+            manualSubResult.style.border = '1px solid #fca5a5';
+            manualSubResult.innerHTML = '<strong>⚠️ Error:</strong> ' + err.message;
+            showAlert(err.message, 'error');
+          } finally {
+            btnActivateSub.disabled = false;
+            btnActivateSub.innerHTML = '<span>⚡</span> Activate Pro Access';
+          }
+        });
+      }
 
       document.addEventListener('DOMContentLoaded', () => {
         verifyAdminAuth();

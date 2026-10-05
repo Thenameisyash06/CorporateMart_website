@@ -14,7 +14,7 @@ async function runTests() {
   console.log('✔ DB File initialized');
 
   // 2. Test User Registration & Password Hashing
-  const testEmail = 'test_' + Date.now() + '@corporatemart.in';
+  const testEmail = 'test_' + Date.now() + '@corporate-mart.com';
   const user = await db.createUser({
     name: 'Rohan Sharma',
     email: testEmail,

@@ -798,6 +798,18 @@ body.dark-mode .theme-icon-dark { display: none; }
   color: var(--ops-purple);
 }
 
+/* Search / Filter Bar */
+.ops-filter-bar {
+  margin-bottom: 16px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.ops-filter-bar .ops-input {
+  width: 100%;
+}
+
 /* Tab Bar */
 .ops-tabs-bar {
   display: flex;

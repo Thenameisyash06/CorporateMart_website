@@ -864,6 +864,12 @@ body.dark-mode .form-success-msg {
   z-index: 3;
 }
 
+#showCertificateBtn,
+.si-flip-front .si-flip-btn,
+.si-consult-card .si-flip-btn {
+  display: none !important;
+}
+
 .si-flip-btn,
 .cr-flip-btn {
   border: 1px solid var(--cr-border, #e8edf4);

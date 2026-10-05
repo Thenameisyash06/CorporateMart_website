@@ -1,4 +1,4 @@
-const WEB3FORMS_ACCESS_KEY = "f9e8e977-8a5c-4979-8cf0-e303edbcac00";
+const WEB3FORMS_ACCESS_KEY = "be37ec80-ab81-41dd-992a-4229dbf48650";
 if (typeof window !== "undefined") {
     window.WEB3FORMS_ACCESS_KEY = WEB3FORMS_ACCESS_KEY;
 }
@@ -23,7 +23,7 @@ async function handleWeb3FormsSubmit(event, form, successElement) {
 
     // If access_key in form is placeholder or missing, inject the JS constant
     const currentKey = formData.get("access_key");
-    if (!currentKey || currentKey === "YOUR_ACCESS_KEY_HERE") {
+    if (!currentKey || currentKey === "be37ec80-ab81-41dd-992a-4229dbf48650") {
         formData.set("access_key", WEB3FORMS_ACCESS_KEY);
     }
 
