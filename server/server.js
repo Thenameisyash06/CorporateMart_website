@@ -82,6 +82,22 @@ app.get('/admin/schemes', (req, res) => res.sendFile(path.join(__dirname, '..', 
 app.get('/fundraising-admin', (req, res) => res.sendFile(path.join(__dirname, '..', 'fundraising_admin.html')));
 app.get('/fundraising_admin', (req, res) => res.sendFile(path.join(__dirname, '..', 'fundraising_admin.html')));
 
+// Legacy SEO 301 Redirects for Old Google Sitelinks & Outdated URLs
+app.get(['/contact', '/contact-us', '/contact.html'], (req, res) => res.redirect(301, '/contact_us.html'));
+app.get(['/about', '/about-us', '/about.html'], (req, res) => res.redirect(301, '/about_us.html'));
+app.get(['/funding', '/funding.html'], (req, res) => res.redirect(301, '/fundraising.html'));
+app.get(['/certification', '/certifications', '/certification.html'], (req, res) => res.redirect(301, '/trademark_and_ip.html'));
+app.get(['/digital', '/digital.html'], (req, res) => res.redirect(301, '/Digital/web_solutions/web_application.html'));
+app.get(['/digital-marketing'], (req, res) => res.redirect(301, '/Digital/digital_marketing/seo_optimization.html'));
+app.get(['/gst', '/gst-services', '/gst-accounting', '/gst.html'], (req, res) => res.redirect(301, '/gst_services.html'));
+app.get(['/accounting', '/accounting.html'], (req, res) => res.redirect(301, '/account_financial_service.html'));
+app.get(['/faq'], (req, res) => res.redirect(301, '/faqs.html'));
+app.get(['/blog'], (req, res) => res.redirect(301, '/blogs.html'));
+app.get(['/careers'], (req, res) => res.redirect(301, '/career.html'));
+app.get(['/terms'], (req, res) => res.redirect(301, '/terms_of_use.html'));
+app.get(['/privacy'], (req, res) => res.redirect(301, '/privacy_policy.html'));
+app.get(['/refund'], (req, res) => res.redirect(301, '/refund_policy.html'));
+
 // Optional Auth Helper: checks if valid token is provided
 async function extractUser(req) {
   const authHeader = req.headers.authorization;
