@@ -22,8 +22,19 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="client.css">
+  <script>
+    (function(){
+      try {
+        if (localStorage.getItem('cp_theme') === 'light') {
+          document.documentElement.classList.remove('dark-mode');
+        } else {
+          document.documentElement.classList.add('dark-mode');
+        }
+      } catch(e) {}
+    })();
+  </script>
 </head>
-<body class="cp-body">
+<body class="cp-body dark-mode">
 
   <!-- ========================================== -->
   <!-- CLIENT LOGIN OVERLAY                       -->

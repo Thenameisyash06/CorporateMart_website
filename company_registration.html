@@ -177,13 +177,24 @@
             border-color 0.3s ease;
     }
     </style>
+    <script>
+      (function(){
+        try {
+          if (localStorage.getItem("theme") === "light") {
+            document.documentElement.classList.remove("dark-mode");
+          } else {
+            document.documentElement.classList.add("dark-mode");
+          }
+        } catch(e) {}
+      })();
+    </script>
 </head>
 
-<body>
+<body class="dark-mode">
 <div class="page-loader" id="pageLoader">
 
     <div class="loader-logo-wrapper" id="loaderLogoWrapper">
-        <img src="icons/Your_paragraph_text__8_-removebg-preview.png" class="loader-logo" alt="CorporateMart - Business Registration & Compliance Portal">
+        <img src="icons/Your_paragraph_text__9_-removebg-preview.png" class="loader-logo" alt="CorporateMart - Business Registration & Compliance Portal">
 
         <div class="loader-circle"></div>
     </div>
@@ -239,9 +250,9 @@
           <span class="portal-cta-text">Client Portal</span>
           <span class="portal-cta-badge">Live</span>
         </a>
-<button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
-          <span class="theme-icon">☾</span>
-          <span class="theme-label">Dark</span>
+<button class="theme-toggle" id="themeToggle" type="button" aria-pressed="true" aria-label="Switch to light mode">
+          <span class="theme-icon">☀</span>
+          <span class="theme-label">Light</span>
         </button>
       </div>
     </div>
@@ -251,7 +262,7 @@
   <div class="header-row header-row-2">
     <div class="header-row-inner topbar">
       <a class="brand" href="index.html" aria-label="Home">
-        <img src="icons/Your_paragraph_text__8_-removebg-preview.png" alt="CorporateMart - Business Registration & Compliance Portal" class="navbar-logo" id="navbarLogo">
+        <img src="icons/Your_paragraph_text__9_-removebg-preview.png" alt="CorporateMart - Business Registration & Compliance Portal" class="navbar-logo" id="navbarLogo">
       </a>
 
       <nav class="service-nav" aria-label="Primary services">

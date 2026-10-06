@@ -126,13 +126,23 @@
     <link rel="stylesheet" href="company_registration.css">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="fundraising_schemes.css">
-    
+    <script>
+      (function(){
+        try {
+          if (localStorage.getItem("theme") === "light") {
+            document.documentElement.classList.remove("dark-mode");
+          } else {
+            document.documentElement.classList.add("dark-mode");
+          }
+        } catch(e) {}
+      })();
+    </script>
 </head>
 
-<body>
+<body class="dark-mode">
     <div class="page-loader" id="pageLoader">
         <div class="loader-logo-wrapper" id="loaderLogoWrapper">
-            <img src="icons/Your_paragraph_text__8_-removebg-preview.png" class="loader-logo" alt="CorporateMart - Business Registration & Compliance Portal">
+            <img src="icons/Your_paragraph_text__9_-removebg-preview.png" class="loader-logo" alt="CorporateMart - Business Registration & Compliance Portal">
             <div class="loader-circle"></div>
         </div>
     </div>

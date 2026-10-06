@@ -66,6 +66,7 @@ body.search-open {
 
 /* Dark mode */
 
+html.dark-mode .page-loader,
 body.dark-mode .page-loader {
     background: #101a29;
 }
@@ -2393,6 +2394,7 @@ body.dark-mode .bizhero-illustration {
 
 }
 
+html.dark-mode body,
 body.dark-mode {
   --bg: #101827;
   --white: #182235;

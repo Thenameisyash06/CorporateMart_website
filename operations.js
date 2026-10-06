@@ -76,8 +76,11 @@
   // ==========================================
   function initTheme() {
     const savedTheme = localStorage.getItem('ops_theme');
-    if (savedTheme === 'dark') {
+    const isDark = (savedTheme !== 'light'); // Default to dark theme for new visitors
+    if (isDark) {
       document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
     }
     opsThemeToggle.addEventListener('click', () => {
       document.body.classList.toggle('dark-mode');

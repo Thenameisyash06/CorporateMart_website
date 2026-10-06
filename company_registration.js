@@ -705,6 +705,7 @@ const navbar_logo = document.querySelector('.navbar-logo');
 
 function applyTheme(dark){
     document.body.classList.toggle("dark-mode", dark);
+    document.documentElement.classList.toggle("dark-mode", dark);
     if(themeIcon) themeIcon.textContent = dark ? "☀" : "☾";
     if(themeLabel) themeLabel.textContent = dark ? "Light" : "Dark";
     const targetLogo = dark ? "Your_paragraph_text__9_-removebg-preview.png" : "Your_paragraph_text__8_-removebg-preview.png";
@@ -783,8 +784,10 @@ window.addEventListener("resize", () => {
     });
 });
 
-// Initial load: restore the saved theme instantly, never animated.
-applyTheme(localStorage.getItem("theme")==="dark");
+// Initial load: default to dark theme for new visitors unless explicitly set to light
+const savedTheme = localStorage.getItem("theme");
+const isDarkMode = savedTheme !== "light";
+applyTheme(isDarkMode);
 themeToggle?.addEventListener("click",()=>setTheme(!document.body.classList.contains("dark-mode")));
 
 // Auto-attach Web3Forms submit listener to all consultation/lead forms

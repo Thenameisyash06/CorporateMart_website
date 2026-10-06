@@ -14,8 +14,19 @@
   <link rel="stylesheet" href="operations.css">
   <link rel="manifest" href="/manifest-ops.json">
   <meta name="theme-color" content="#1e40af">
+  <script>
+    (function(){
+      try {
+        if (localStorage.getItem('ops_theme') === 'light') {
+          document.documentElement.classList.remove('dark-mode');
+        } else {
+          document.documentElement.classList.add('dark-mode');
+        }
+      } catch(e) {}
+    })();
+  </script>
 </head>
-<body class="ops-body">
+<body class="ops-body dark-mode">
 
   <!-- ========================================== -->
   <!-- AUTHENTICATION OVERLAY (STAFF LOGIN)       -->

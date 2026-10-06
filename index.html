@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -131,14 +131,25 @@
         background: transparent
       }
     </style>
+    <script>
+      (function(){
+        try {
+          if (localStorage.getItem("theme") === "light") {
+            document.documentElement.classList.remove("dark-mode");
+          } else {
+            document.documentElement.classList.add("dark-mode");
+          }
+        } catch(e) {}
+      })();
+    </script>
     <!-- <link rel="stylesheet" href="style2.css"> -->
 </head>
 
-<body>
+<body class="dark-mode">
     <div class="page-loader" id="pageLoader">
 
         <div class="loader-logo-wrapper" id="loaderLogoWrapper">
-            <img src="icons/Your_paragraph_text__8_-removebg-preview.png" class="loader-logo" alt="CorporateMart - Business Registration & Compliance Portal">
+            <img src="icons/Your_paragraph_text__9_-removebg-preview.png" class="loader-logo" alt="CorporateMart - Business Registration & Compliance Portal">
 
             <div class="loader-circle"></div>
         </div>
@@ -187,9 +198,9 @@
           </select>
         </label> -->
         
-        <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">
-          <span class="theme-icon">☾</span>
-          <span class="theme-label">Dark</span>
+        <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="true" aria-label="Switch to light mode">
+          <span class="theme-icon">☀</span>
+          <span class="theme-label">Light</span>
         </button>
         <a href="client.html" class="portal-cta-btn portal-cta-row1" id="headerTopPortalLink" title="Corporate Mart Client Portal">
           <span class="portal-cta-pulse"></span>
@@ -208,7 +219,7 @@
   <div class="header-row header-row-2">
     <div class="header-row-inner topbar">
       <a class="brand" href="index.html" aria-label="Home">
-        <img src="icons/Your_paragraph_text__8_-removebg-preview.png" alt="CorporateMart - Business Registration & Compliance Portal" class="navbar-logo" id="navbarLogo">
+        <img src="icons/Your_paragraph_text__9_-removebg-preview.png" alt="CorporateMart - Business Registration & Compliance Portal" class="navbar-logo" id="navbarLogo">
       </a>
 
       <nav class="service-nav" aria-label="Primary services">
@@ -1504,6 +1515,15 @@
           </article>
           <article class="tm-card tm-card-video">
             <div class="tm-thumb">
+              <img src="images/corporate_mart_testimonials_thumb.jpg" alt="Corporate Mart Testimonials - Private Limited in 7 days" loading="lazy" decoding="async">
+              <button type="button" class="tm-play" data-video="videos/WhatsApp Video 2026-10-06 at 12.58.45 PM.mp4" aria-label="Play testimonial video">▶</button>
+            </div>
+            <div class="tm-card-body">
+              <h3>Startup India Seamlessly</h3>
+            </div>
+          </article>
+          <article class="tm-card tm-card-video">
+            <div class="tm-thumb">
               <img src="images/corporate_mart_testimonials_thumb.jpg" alt="Corporate Mart Testimonials - Trademark without the headache" loading="lazy" decoding="async">
               <button type="button" class="tm-play" data-video="videos/WhatsApp Video 2026-09-12 at 11.34.57 AM.mp4" aria-label="Play testimonial video">▶</button>
             </div>
@@ -1561,7 +1581,7 @@
           <article class="tm-card tm-card-video">
             <div class="tm-thumb">
               <img src="images/corporate_mart_testimonials_thumb.jpg" alt="Corporate Mart Testimonials - GST &amp; ROC made simple" loading="lazy" decoding="async">
-              <button type="button" class="tm-play" data-video="videos/WhatsApp Video 2026-09-12 at 11.32.14 AM.mp4" aria-label="Play testimonial video">▶</button>
+              <button type="button" class="tm-play" data-video="videos/WhatsApp Video 2026-10-06 at 2.16.06 PM.mp4" aria-label="Play testimonial video">▶</button>
             </div>
             <div class="tm-card-body">
               <h3>Transparency throughout the process</h3>
@@ -1576,7 +1596,7 @@
               <h3>Beyond Expectation</h3>
             </div>
           </article>
-          <article class="tm-card tm-card-video">
+          <!-- <article class="tm-card tm-card-video">
             <div class="tm-thumb">
               <img src="images/corporate_mart_testimonials_thumb.jpg" alt="Corporate Mart Testimonials - GST &amp; ROC made simple" loading="lazy" decoding="async">
               <button type="button" class="tm-play" data-video="videos/WhatsApp Video 2026-09-28 at 10.55.48 AM.mp4" aria-label="Play testimonial video">▶</button>
@@ -1584,7 +1604,7 @@
             <div class="tm-card-body">
               <h3>True Transparency</h3>
             </div>
-          </article>
+          </article> -->
           <article class="tm-card tm-card-video">
             <div class="tm-thumb">
               <img src="images/corporate_mart_testimonials_thumb.jpg" alt="Corporate Mart Testimonials - GST &amp; ROC made simple" loading="lazy" decoding="async">
@@ -1601,15 +1621,6 @@
             </div>
             <div class="tm-card-body">
               <h3>Butter smooth process</h3>
-            </div>
-          </article>
-          <article class="tm-card tm-card-video">
-            <div class="tm-thumb">
-              <img src="images/corporate_mart_testimonials_thumb.jpg" alt="Corporate Mart Testimonials - GST &amp; ROC made simple" loading="lazy" decoding="async">
-              <button type="button" class="tm-play" data-video="videos/WhatsApp Video 2026-09-30 at 12.30.05 PM.mp4" aria-label="Play testimonial video">▶</button>
-            </div>
-            <div class="tm-card-body">
-              <h3>Professional process with Quick Approval</h3>
             </div>
           </article>
         </div>
