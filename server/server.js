@@ -107,7 +107,10 @@ async function extractUser(req) {
   if (!payload || !payload.id) return null;
 
   try {
-    const user = await db.findUserById(payload.id);
+    let user = await db.findUserById(payload.id);
+    if (!user) {
+      user = await db.findFundraisingUserById(payload.id);
+    }
     if (user) return user;
   } catch (err) {
     console.warn('extractUser DB lookup warning:', err.message);
@@ -577,7 +580,7 @@ app.post('/api/leads', async (req, res) => {
 });
 
 // ==========================================
-// 2. AUTHENTICATION APIS
+// 2. AUTHENTICATION APIS (FUNDRAISING PORTAL - DEDICATED COLLECTION)
 // ==========================================
 app.post('/api/auth/register', async (req, res) => {
   try {
@@ -591,12 +594,12 @@ app.post('/api/auth/register', async (req, res) => {
 
     const cleanEmail = email.trim().toLowerCase();
     const cleanPhone = String(phone || '').trim();
-    const existing = await db.findUserByEmail(cleanEmail);
+    const existing = await db.findFundraisingUserByEmail(cleanEmail);
     if (existing) {
-      return res.status(400).json({ error: 'An account with this email already exists' });
+      return res.status(400).json({ error: 'An account with this email already exists in fundraising' });
     }
 
-    const user = await db.createUser({ name, email: cleanEmail, phone: cleanPhone, password });
+    const user = await db.createFundraisingUser({ name, email: cleanEmail, phone: cleanPhone, password });
     const token = db.createToken({ id: user.id, email: user.email, role: user.role });
 
     res.status(201).json({
@@ -618,7 +621,15 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     const cleanEmail = email.trim().toLowerCase();
-    const rawUser = await db.findUserByEmail(cleanEmail);
+    let rawUser = await db.findFundraisingUserByEmail(cleanEmail);
+    // Backward compatibility & admin fallback to User collection if not yet migrated
+    if (!rawUser) {
+      const fallbackUser = await db.findUserByEmail(cleanEmail);
+      if (fallbackUser && (fallbackUser.role === 'admin' || fallbackUser.role === 'user')) {
+        rawUser = fallbackUser;
+      }
+    }
+
     if (!rawUser) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
@@ -660,7 +671,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
     const cleanEmail = email.trim().toLowerCase();
     const cleanPhone = phone.trim();
 
-    await db.resetUserPassword({ email: cleanEmail, phone: cleanPhone, newPassword });
+    await db.resetFundraisingUserPassword({ email: cleanEmail, phone: cleanPhone, newPassword });
 
     res.json({
       success: true,
@@ -790,7 +801,7 @@ app.post('/api/payment/verify', requireAuth, async (req, res) => {
     }
 
     // Activate subscription in database
-    const updatedUser = await db.updateUserSubscription(req.userId, {
+    const updatedUser = await db.updateFundraisingUserSubscription(req.userId, {
       plan: 'pro',
       durationDays: plan.durationDays
     });
@@ -824,7 +835,10 @@ app.post('/api/admin/users/activate-subscription', requireStaff, async (req, res
       return res.status(400).json({ error: 'User email is required' });
     }
     const cleanEmail = String(email).trim().toLowerCase();
-    const user = await db.findUserByEmail(cleanEmail);
+    let user = await db.findFundraisingUserByEmail(cleanEmail);
+    if (!user) {
+      user = await db.findUserByEmail(cleanEmail);
+    }
     if (!user) {
       return res.status(404).json({
         error: `User "${cleanEmail}" not found. Please ask the user to register an account first on corporate-mart.com/fundraising.`
@@ -832,7 +846,7 @@ app.post('/api/admin/users/activate-subscription', requireStaff, async (req, res
     }
 
     const userId = user.id || (user._id ? user._id.toString() : '');
-    const updatedUser = await db.updateUserSubscription(userId, {
+    const updatedUser = await db.updateFundraisingUserSubscription(userId, {
       plan: 'pro',
       durationDays: parseInt(durationDays, 10) || 30
     });

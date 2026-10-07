@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const mongoose = require('mongoose');
 
 const User = require('./models/User');
+const FundraisingUser = require('./models/FundraisingUser');
 const Transaction = require('./models/Transaction');
 const { VisitorRecord, VisitorStats } = require('./models/Visitor');
 const PortalCase = require('./models/PortalCase');
@@ -131,16 +132,10 @@ initMongo().catch(() => {});
 function seedDefaultAdmin(data) {
   let modified = false;
   if (!Array.isArray(data.users)) data.users = [];
+  if (!Array.isArray(data.fundraising_users)) data.fundraising_users = [];
 
-  // Ensure yashd9405@gmail.com is admin
-  // const yash = data.users.find(u => u.email && u.email.toLowerCase() === 'yashd9405@gmail.com');
-  // if (yash && yash.role !== 'admin') {
-  //   yash.role = 'admin';
-  //   modified = true;
-  // }
-
-  // Ensure Admin@corporate-mart.com exists as an admin
-  const adminExists = data.users.find(u => u.email && (u.email.toLowerCase() === 'admin@corporate-mart.com' || u.email.toLowerCase() === 'Admin@corporate-mart.com'));
+  // Ensure Admin@corporate-mart.com exists as an admin in users
+  const adminExists = data.users.find(u => u.email && (u.email.toLowerCase() === 'admin@corporate-mart.com' || u.email.toLowerCase() === 'admin@corporate-mart.com'));
   if (!adminExists) {
     const { salt, hash } = hashPassword('Admin@123');
     data.users.unshift({
@@ -160,6 +155,30 @@ function seedDefaultAdmin(data) {
   } else {
     adminExists.email = 'Admin@corporate-mart.com';
     adminExists.role = 'admin';
+    modified = true;
+  }
+
+  // Ensure Admin@corporate-mart.com exists as an admin in fundraising_users
+  const fAdminExists = data.fundraising_users.find(u => u.email && (u.email.toLowerCase() === 'admin@corporate-mart.com' || u.email.toLowerCase() === 'admin@corporate-mart.com'));
+  if (!fAdminExists) {
+    const { salt, hash } = hashPassword('Admin@123');
+    data.fundraising_users.unshift({
+      id: 'usr_fadmin_corporatemart',
+      name: 'CorporateMart Admin',
+      email: 'Admin@corporate-mart.com',
+      phone: '+919876543210',
+      salt,
+      passwordHash: hash,
+      role: 'admin',
+      plan: 'pro',
+      isSubscribed: true,
+      subscriptionExpiresAt: '2030-01-01T00:00:00.000Z',
+      createdAt: new Date().toISOString()
+    });
+    modified = true;
+  } else {
+    fAdminExists.email = 'Admin@corporate-mart.com';
+    fAdminExists.role = 'admin';
     modified = true;
   }
 
@@ -261,6 +280,7 @@ function verifyPassword(password, salt, storedHash) {
 async function seedMongoAdmin() {
   try {
     if (!mongoose.connection || mongoose.connection.readyState !== 1) return;
+    // 1. Seed/ensure Admin in User collection (Operations/Client portal)
     const adminUser = await User.findOne({
       $or: [
         { email: 'admin@corporate-mart.com' },
@@ -301,6 +321,50 @@ async function seedMongoAdmin() {
       }
       if (needsSave) {
         await adminUser.save();
+      }
+    }
+
+    // 2. Seed/ensure Admin in FundraisingUser collection (Fundraising portal)
+    const fAdminUser = await FundraisingUser.findOne({
+      $or: [
+        { email: 'admin@corporate-mart.com' },
+        { email: 'Admin@corporate-mart.com' },
+        { email: 'admin@corporatemart.in' }
+      ]
+    });
+    if (!fAdminUser) {
+      const { salt, hash } = hashPassword('Admin@123');
+      await FundraisingUser.create({
+        name: 'CorporateMart Admin',
+        email: 'Admin@corporate-mart.com',
+        phone: '+919876543210',
+        salt,
+        passwordHash: hash,
+        role: 'admin',
+        plan: 'pro',
+        isSubscribed: true,
+        subscriptionExpiresAt: new Date('2030-01-01T00:00:00.000Z')
+      });
+    } else {
+      let fNeedsSave = false;
+      if (fAdminUser.email !== 'Admin@corporate-mart.com') {
+        fAdminUser.email = 'Admin@corporate-mart.com';
+        fNeedsSave = true;
+      }
+      if (fAdminUser.role !== 'admin') {
+        fAdminUser.role = 'admin';
+        fNeedsSave = true;
+      }
+      if (fAdminUser.plan !== 'pro') {
+        fAdminUser.plan = 'pro';
+        fNeedsSave = true;
+      }
+      if (!fAdminUser.isSubscribed) {
+        fAdminUser.isSubscribed = true;
+        fNeedsSave = true;
+      }
+      if (fNeedsSave) {
+        await fAdminUser.save();
       }
     }
   } catch (err) {
@@ -409,17 +473,34 @@ async function findUserById(id) {
         }
       }
       if (user) return user.toObject();
+
+      // Check FundraisingUser if not found in User collection
+      let fUser = null;
+      if (mongoose.Types.ObjectId.isValid(id) && !String(id).startsWith('usr_')) {
+        fUser = await FundraisingUser.findById(id).exec();
+      }
+      if (!fUser) {
+        if (mongoose.Types.ObjectId.isValid(id)) {
+          fUser = await FundraisingUser.findOne({ $or: [{ _id: id }, { id: id }] }).exec();
+        } else {
+          fUser = await FundraisingUser.findOne({ id: id }).exec();
+        }
+      }
+      if (fUser) return fUser.toObject();
     } catch (e) {
       console.warn('Mongo query error, falling back to local DB:', e.message);
     }
   }
 
   const localDb = readDB();
-  const localUser = localDb.users.find(u => u.id === id || (id === 'usr_admin_corporatemart' && (u.email && (u.email.toLowerCase() === 'admin@corporate-mart.com' || u.email.toLowerCase() === 'Admin@corporate-mart.com'))));
+  const localUser = localDb.users.find(u => u.id === id || (id === 'usr_admin_corporatemart' && (u.email && (u.email.toLowerCase() === 'admin@corporate-mart.com' || u.email.toLowerCase() === 'admin@corporate-mart.com'))));
   if (localUser) return localUser;
 
+  const localFUser = (localDb.fundraising_users || []).find(u => u.id === id || (id === 'usr_fadmin_corporatemart' && (u.email && (u.email.toLowerCase() === 'admin@corporate-mart.com' || u.email.toLowerCase() === 'admin@corporate-mart.com'))));
+  if (localFUser) return localFUser;
+
   // Static fallback for default operations admin
-  if (id === 'usr_admin_corporatemart') {
+  if (id === 'usr_admin_corporatemart' || id === 'usr_fadmin_corporatemart') {
     return {
       id: 'usr_admin_corporatemart',
       name: 'CorporateMart Admin',
@@ -431,6 +512,52 @@ async function findUserById(id) {
   }
 
   return null;
+}
+
+// Dedicated Fundraising User Lookup & Management
+async function findFundraisingUserByEmail(email) {
+  const cleanEmail = String(email).trim().toLowerCase();
+  await ensureMongoConnected();
+
+  if (mongoose.connection && mongoose.connection.readyState === 1) {
+    try {
+      const escaped = cleanEmail.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+      const user = await FundraisingUser.findOne({ email: new RegExp('^' + escaped + '$', 'i') }).exec();
+      if (user) return user.toObject();
+    } catch (e) {
+      console.warn('Mongo query fundraising error, falling back to local DB:', e.message);
+    }
+  }
+
+  const localDb = readDB();
+  return (localDb.fundraising_users || []).find(u => u.email && u.email.toLowerCase() === cleanEmail) || null;
+}
+
+async function findFundraisingUserById(id) {
+  if (!id) return null;
+  await ensureMongoConnected();
+
+  if (mongoose.connection && mongoose.connection.readyState === 1) {
+    try {
+      let user = null;
+      if (mongoose.Types.ObjectId.isValid(id) && !String(id).startsWith('usr_')) {
+        user = await FundraisingUser.findById(id).exec();
+      }
+      if (!user) {
+        if (mongoose.Types.ObjectId.isValid(id)) {
+          user = await FundraisingUser.findOne({ $or: [{ _id: id }, { id: id }] }).exec();
+        } else {
+          user = await FundraisingUser.findOne({ id: id }).exec();
+        }
+      }
+      if (user) return user.toObject();
+    } catch (e) {
+      console.warn('Mongo fundraising query error, falling back to local DB:', e.message);
+    }
+  }
+
+  const localDb = readDB();
+  return (localDb.fundraising_users || []).find(u => u.id === id || (id === 'usr_fadmin_corporatemart' && (u.email && u.email.toLowerCase() === 'admin@corporate-mart.com'))) || null;
 }
 
 async function savePushSubscription(userId, subscription) {
@@ -524,6 +651,58 @@ async function createUser({ name, email, phone = '', password, role = 'user' }) 
   return sanitizeUser(user);
 }
 
+async function createFundraisingUser({ name, email, phone = '', password, role = 'user' }) {
+  const cleanEmail = String(email).trim().toLowerCase();
+  const cleanPhone = String(phone || '').trim();
+  const userRole = (role === 'admin' || cleanEmail === 'admin@corporate-mart.com' || cleanEmail === 'Admin@corporate-mart.com') ? 'admin' : 'user';
+  await ensureMongoConnected();
+  const existing = await findFundraisingUserByEmail(cleanEmail);
+  if (existing) {
+    throw new Error('An account with this email already exists in fundraising');
+  }
+
+  const { salt, hash } = hashPassword(password);
+
+  if (mongoose.connection && mongoose.connection.readyState === 1) {
+    try {
+      const userDoc = await FundraisingUser.create({
+        name: name.trim(),
+        email: cleanEmail,
+        phone: cleanPhone,
+        salt,
+        passwordHash: hash,
+        role: userRole,
+        plan: 'free',
+        isSubscribed: false,
+        subscriptionExpiresAt: null
+      });
+      return sanitizeUser(userDoc.toObject());
+    } catch (e) {
+      console.warn('Mongo create fundraising user error, falling back to local DB:', e.message);
+    }
+  }
+
+  const localDb = readDB();
+  if (!Array.isArray(localDb.fundraising_users)) localDb.fundraising_users = [];
+  const user = {
+    id: 'usr_f_' + crypto.randomBytes(8).toString('hex'),
+    name: name.trim(),
+    email: cleanEmail,
+    phone: cleanPhone,
+    salt,
+    passwordHash: hash,
+    role: userRole,
+    plan: 'free',
+    subscriptionExpiresAt: null,
+    createdAt: new Date().toISOString()
+  };
+
+  localDb.fundraising_users.push(user);
+  writeDB(localDb);
+
+  return sanitizeUser(user);
+}
+
 async function updateUserSubscription(userId, { plan, durationDays }) {
   const now = Date.now();
   await ensureMongoConnected();
@@ -578,6 +757,71 @@ async function updateUserSubscription(userId, { plan, durationDays }) {
 
   writeDB(localDb);
   return sanitizeUser(localDb.users[userIndex]);
+}
+
+async function updateFundraisingUserSubscription(userId, { plan, durationDays }) {
+  const now = Date.now();
+  await ensureMongoConnected();
+
+  if (isMongoConnected) {
+    try {
+      let userDoc = null;
+      if (mongoose.Types.ObjectId.isValid(userId)) {
+        userDoc = await FundraisingUser.findById(userId);
+      }
+      if (!userDoc) {
+        userDoc = await FundraisingUser.findOne({ id: userId });
+      }
+
+      if (userDoc) {
+        let baseTime = now;
+        if (userDoc.subscriptionExpiresAt) {
+          const currentExpiry = new Date(userDoc.subscriptionExpiresAt).getTime();
+          if (currentExpiry > now) {
+            baseTime = currentExpiry;
+          }
+        }
+
+        const newExpiry = new Date(baseTime + durationDays * 24 * 60 * 60 * 1000);
+        userDoc.plan = plan;
+        userDoc.isSubscribed = true;
+        userDoc.subscriptionExpiresAt = newExpiry;
+        await userDoc.save();
+
+        return sanitizeUser(userDoc.toObject());
+      }
+    } catch (e) {
+      console.warn('Mongo update fundraising subscription error, falling back to local DB:', e.message);
+    }
+  }
+
+  const localDb = readDB();
+  localDb.fundraising_users = localDb.fundraising_users || [];
+  const userIndex = localDb.fundraising_users.findIndex(u => u.id === userId);
+  if (userIndex === -1) {
+    // Also check localDb.users as fallback
+    try {
+      return await updateUserSubscription(userId, { plan, durationDays });
+    } catch (e) {
+      throw new Error('Fundraising user not found');
+    }
+  }
+
+  let baseTime = now;
+  if (localDb.fundraising_users[userIndex].subscriptionExpiresAt) {
+    const currentExpiry = new Date(localDb.fundraising_users[userIndex].subscriptionExpiresAt).getTime();
+    if (currentExpiry > now) {
+      baseTime = currentExpiry;
+    }
+  }
+
+  const newExpiry = new Date(baseTime + durationDays * 24 * 60 * 60 * 1000).toISOString();
+  localDb.fundraising_users[userIndex].plan = plan;
+  localDb.fundraising_users[userIndex].isSubscribed = true;
+  localDb.fundraising_users[userIndex].subscriptionExpiresAt = newExpiry;
+
+  writeDB(localDb);
+  return sanitizeUser(localDb.fundraising_users[userIndex]);
 }
 
 async function recordTransaction({ userId, orderId, paymentId, amount, planId, status = 'success' }) {
@@ -664,6 +908,51 @@ async function resetUserPassword({ email, phone, newPassword }) {
   writeDB(localDb);
 
   return sanitizeUser(localDb.users[userIndex]);
+}
+
+async function resetFundraisingUserPassword({ email, phone, newPassword }) {
+  const cleanEmail = String(email).trim().toLowerCase();
+  const { salt, hash } = hashPassword(newPassword);
+  await ensureMongoConnected();
+
+  if (mongoose.connection && mongoose.connection.readyState === 1) {
+    try {
+      const userDoc = await FundraisingUser.findOne({ email: cleanEmail });
+      if (userDoc) {
+        if (userDoc.phone && !matchesPhone(userDoc.phone, phone)) {
+          throw new Error('Phone number does not match our records for this account');
+        }
+
+        userDoc.salt = salt;
+        userDoc.passwordHash = hash;
+        await userDoc.save();
+        return sanitizeUser(userDoc.toObject());
+      }
+    } catch (e) {
+      if (e.message.includes('Phone number')) {
+        throw e;
+      }
+      console.warn('Mongo reset fundraising password error, falling back to local DB:', e.message);
+    }
+  }
+
+  const localDb = readDB();
+  localDb.fundraising_users = localDb.fundraising_users || [];
+  const userIndex = localDb.fundraising_users.findIndex(u => u.email.toLowerCase() === cleanEmail);
+  if (userIndex === -1) {
+    // Also check localDb.users as fallback
+    return resetUserPassword({ email, phone, newPassword });
+  }
+
+  if (localDb.fundraising_users[userIndex].phone && !matchesPhone(localDb.fundraising_users[userIndex].phone, phone)) {
+    throw new Error('Phone number does not match our records for this account');
+  }
+
+  localDb.fundraising_users[userIndex].salt = salt;
+  localDb.fundraising_users[userIndex].passwordHash = hash;
+  writeDB(localDb);
+
+  return sanitizeUser(localDb.fundraising_users[userIndex]);
 }
 
 async function setUserResetOtp(email, otp, expiresAt) {
@@ -1090,7 +1379,9 @@ async function deletePortalClient(clientId) {
     try {
       const isObjectId = mongoose.Types.ObjectId.isValid(clientId);
       const q = isObjectId ? { $or: [{ _id: clientId }, { id: clientId }] } : { id: clientId };
-      await User.deleteOne(q);
+      // STRICT FILTER: Only delete if role === 'client' in the User collection!
+      // This strictly guarantees that fundraising users and admin accounts can NEVER be deleted from Operations portal!
+      await User.deleteOne({ ...q, role: 'client' });
       await PortalCase.deleteMany({ clientId });
       await PortalDocument.deleteMany({ clientId });
       await PortalTicket.deleteMany({ clientId });
@@ -1100,7 +1391,7 @@ async function deletePortalClient(clientId) {
   }
 
   const local = readDB();
-  local.users = (local.users || []).filter(u => u.id !== clientId && (!u._id || u._id.toString() !== clientId));
+  local.users = (local.users || []).filter(u => !(u.role === 'client' && (u.id === clientId || (u._id && u._id.toString() === clientId))));
   local.portal_cases = (local.portal_cases || []).filter(c => c.clientId !== clientId);
   local.portal_documents = (local.portal_documents || []).filter(d => d.clientId !== clientId);
   local.portal_tickets = (local.portal_tickets || []).filter(t => t.clientId !== clientId);
@@ -1111,8 +1402,8 @@ async function deletePortalClient(clientId) {
 async function createPortalClient({ name, companyName, email, phone, password }) {
   const cleanEmail = String(email || '').trim().toLowerCase();
   const existing = await findUserByEmail(cleanEmail);
-  if (existing) {
-    throw new Error('A user or client with this email already exists.');
+  if (existing && existing.role === 'client') {
+    throw new Error('A client with this email already exists in client portal.');
   }
 
   const { salt, hash } = hashPassword(password || 'Client@123');
@@ -1979,6 +2270,13 @@ module.exports = {
   resetUserPassword,
   verifyPassword,
   updateUserSubscription,
+  // Fundraising Dedicated Collection Exports
+  FundraisingUser,
+  findFundraisingUserByEmail,
+  findFundraisingUserById,
+  createFundraisingUser,
+  updateFundraisingUserSubscription,
+  resetFundraisingUserPassword,
   recordTransaction,
   createToken,
   verifyToken,
