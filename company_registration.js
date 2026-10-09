@@ -1424,23 +1424,27 @@ document.addEventListener("DOMContentLoaded", () => {
   if (window.__cmVisitorCounterInitialized) return;
   window.__cmVisitorCounterInitialized = true;
 
+  var DB_BASELINE = 276;
+  var STORAGE_KEY = 'cm_visitor_id';
+  var CACHE_KEY = 'cm_cached_visitor_count';
+
   function initVisitorCounter() {
-    var container = document.querySelector('.visitor-counter-display') || document.getElementById('visitorCounterDisplay');
-    if (!container) return;
+    var containers = document.querySelectorAll('.visitor-counter-display, #visitorCounterDisplay');
+    if (!containers || containers.length === 0) return;
 
     function renderDigits(count) {
-      var num = Math.max(0, parseInt(count, 10) || 0);
+      var num = Math.max(DB_BASELINE, parseInt(count, 10) || DB_BASELINE);
       var str = String(num).padStart(6, '0');
       var html = '<div class="visitor-digit-grid" aria-label="Unique Visitors: ' + num + '">';
       for (var i = 0; i < str.length; i++) {
         html += '<span class="visitor-digit">' + str[i] + '</span>';
       }
       html += '</div>';
-      container.innerHTML = html;
+      containers.forEach(function (c) {
+        c.innerHTML = html;
+      });
     }
 
-    var STORAGE_KEY = 'cm_visitor_id';
-    var CACHE_KEY = 'cm_cached_visitor_count';
     var visitorId = '';
     try {
       visitorId = localStorage.getItem(STORAGE_KEY);
@@ -1452,36 +1456,69 @@ document.addEventListener("DOMContentLoaded", () => {
       visitorId = 'cm_' + Date.now().toString(36);
     }
 
-    var cached = 29;
+    // Immediately render highest verified count (never render old mock 29/30/31)
+    var cached = DB_BASELINE;
     try {
       var stored = localStorage.getItem(CACHE_KEY);
-      if (stored) cached = parseInt(stored, 10) || 29;
+      if (stored) {
+        var parsed = parseInt(stored, 10);
+        if (parsed >= DB_BASELINE) {
+          cached = parsed;
+        } else {
+          localStorage.removeItem(CACHE_KEY);
+        }
+      }
     } catch (e) {}
     renderDigits(cached);
 
-    var apiUrl = '/api/visitors/hit';
-    if (window.location.protocol === 'file:') {
-      apiUrl = 'http://localhost:3000/api/visitors/hit';
+    // Build endpoints list: prioritize origin, fallback to port 5000 if opened on dev port (5500, etc.)
+    var endpoints = ['/api/visitors/hit'];
+    if (window.location.protocol === 'file:' || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+      if (window.location.port !== '5000') {
+        endpoints.unshift('http://localhost:5000/api/visitors/hit');
+      }
     }
 
-    fetch(apiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ visitorId: visitorId })
-    })
-      .then(function (res) {
-        if (!res.ok) throw new Error('Status ' + res.status);
-        return res.json();
+    function tryFetchHit(index) {
+      if (index >= endpoints.length) {
+        // Fallback to read-only GET /api/visitors/count
+        fetch('/api/visitors/count')
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            if (d && typeof d.count === 'number' && d.count >= DB_BASELINE) {
+              renderDigits(d.count);
+              try { localStorage.setItem(CACHE_KEY, d.count); } catch (e) {}
+            }
+          })
+          .catch(function () {});
+        return;
+      }
+
+      var url = endpoints[index];
+      fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ visitorId: visitorId })
       })
-      .then(function (data) {
-        if (data && typeof data.count === 'number') {
-          renderDigits(data.count);
-          try {
-            localStorage.setItem(CACHE_KEY, data.count);
-          } catch (e) {}
-        }
-      })
-      .catch(function () {});
+        .then(function (res) {
+          if (!res.ok) throw new Error('Status ' + res.status);
+          return res.json();
+        })
+        .then(function (data) {
+          if (data && typeof data.count === 'number') {
+            var finalCount = Math.max(DB_BASELINE, data.count);
+            renderDigits(finalCount);
+            try {
+              localStorage.setItem(CACHE_KEY, finalCount);
+            } catch (e) {}
+          }
+        })
+        .catch(function () {
+          tryFetchHit(index + 1);
+        });
+    }
+
+    tryFetchHit(0);
   }
 
   if (document.readyState === 'loading') {

@@ -103,6 +103,32 @@
     }
   }
 
+  // Password Visibility Toggle (Show/Hide)
+  document.addEventListener('click', (e) => {
+    const toggleBtn = e.target.closest('.btn-toggle-password');
+    if (!toggleBtn) return;
+    e.preventDefault();
+    const wrapper = toggleBtn.closest('.password-input-wrapper') || toggleBtn.parentElement;
+    if (!wrapper) return;
+    const input = wrapper.querySelector('input');
+    if (!input) return;
+    const showIcon = toggleBtn.querySelector('.eye-icon-show');
+    const hideIcon = toggleBtn.querySelector('.eye-icon-hide');
+    if (input.type === 'password') {
+      input.type = 'text';
+      toggleBtn.setAttribute('aria-label', 'Hide password');
+      toggleBtn.setAttribute('title', 'Hide password');
+      if (showIcon) showIcon.style.display = 'none';
+      if (hideIcon) hideIcon.style.display = 'inline-block';
+    } else {
+      input.type = 'password';
+      toggleBtn.setAttribute('aria-label', 'Show password');
+      toggleBtn.setAttribute('title', 'Show password');
+      if (showIcon) showIcon.style.display = 'inline-block';
+      if (hideIcon) hideIcon.style.display = 'none';
+    }
+  });
+
   // ==========================================
   // 3. AUTHENTICATION & SESSION
   // ==========================================
@@ -136,6 +162,10 @@
     authToken = '';
     currentUser = null;
     localStorage.removeItem('ops_token');
+    const opsEmailEl = document.getElementById('opsEmail');
+    const opsPassEl = document.getElementById('opsPassword');
+    if (opsEmailEl) opsEmailEl.value = '';
+    if (opsPassEl) opsPassEl.value = '';
     authOverlay.classList.remove('hidden');
     if (msg) {
       opsLoginError.textContent = msg;
@@ -144,7 +174,11 @@
   }
 
   async function checkAuth() {
+    const opsEmailEl = document.getElementById('opsEmail');
+    const opsPassEl = document.getElementById('opsPassword');
     if (!authToken) {
+      if (opsEmailEl) opsEmailEl.value = '';
+      if (opsPassEl) opsPassEl.value = '';
       authOverlay.classList.remove('hidden');
       return;
     }
@@ -208,6 +242,10 @@
       authToken = data.token;
       currentUser = data.user;
       localStorage.setItem('ops_token', authToken);
+      const opsPassEl = document.getElementById('opsPassword');
+      if (opsPassEl) opsPassEl.value = '';
+      const opsEmailEl = document.getElementById('opsEmail');
+      if (opsEmailEl) opsEmailEl.value = '';
       authOverlay.classList.add('hidden');
       renderStaffProfile();
       showToast(`Welcome back, ${currentUser.name}!`, 'success');
@@ -224,6 +262,10 @@
       authToken = '';
       currentUser = null;
       localStorage.removeItem('ops_token');
+      const opsEmailEl = document.getElementById('opsEmail');
+      const opsPassEl = document.getElementById('opsPassword');
+      if (opsEmailEl) opsEmailEl.value = '';
+      if (opsPassEl) opsPassEl.value = '';
       authOverlay.classList.remove('hidden');
       showToast('Logged out of operations portal.');
     });

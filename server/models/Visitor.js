@@ -34,7 +34,7 @@ const visitorStatsSchema = new mongoose.Schema({
   },
   uniqueCount: {
     type: Number,
-    default: 29
+    default: 276
   },
   lastUpdated: {
     type: Date,

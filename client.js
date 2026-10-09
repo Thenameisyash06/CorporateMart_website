@@ -87,6 +87,32 @@
     }
   }
 
+  // Password Visibility Toggle (Show/Hide)
+  document.addEventListener('click', (e) => {
+    const toggleBtn = e.target.closest('.btn-toggle-password');
+    if (!toggleBtn) return;
+    e.preventDefault();
+    const wrapper = toggleBtn.closest('.password-input-wrapper') || toggleBtn.parentElement;
+    if (!wrapper) return;
+    const input = wrapper.querySelector('input');
+    if (!input) return;
+    const showIcon = toggleBtn.querySelector('.eye-icon-show');
+    const hideIcon = toggleBtn.querySelector('.eye-icon-hide');
+    if (input.type === 'password') {
+      input.type = 'text';
+      toggleBtn.setAttribute('aria-label', 'Hide password');
+      toggleBtn.setAttribute('title', 'Hide password');
+      if (showIcon) showIcon.style.display = 'none';
+      if (hideIcon) hideIcon.style.display = 'inline-block';
+    } else {
+      input.type = 'password';
+      toggleBtn.setAttribute('aria-label', 'Show password');
+      toggleBtn.setAttribute('title', 'Show password');
+      if (showIcon) showIcon.style.display = 'inline-block';
+      if (hideIcon) hideIcon.style.display = 'none';
+    }
+  });
+
   // ==========================================
   // 3. PWA DOWNLOAD SUGGESTION & SERVICE WORKER
   // ==========================================

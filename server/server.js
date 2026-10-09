@@ -8,6 +8,7 @@ const multer = require('multer');
 const mongoose = require('mongoose');
 const db = require('./db');
 const notifications = require('./notifications');
+const businessPlanAI = require('./business_plan_ai');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -576,6 +577,59 @@ app.post('/api/leads', async (req, res) => {
   } catch (err) {
     console.error('Lead proxy submission error:', err);
     return res.status(500).json({ error: 'Failed to record lead' });
+  }
+});
+
+// ==========================================
+// 1.1 BUSINESS SETUP ARCHITECT (PURE LIVE LLM GENERATION)
+// ==========================================
+app.post('/api/business-plan', async (req, res) => {
+  try {
+    const { query, state, teamCount, sector } = req.body || {};
+    if (!query || typeof query !== 'string' || !query.trim()) {
+      return res.status(400).json({ error: 'Query is required to generate a business setup plan' });
+    }
+
+    const result = await businessPlanAI.generatePlanWithLLM({
+      query: query.trim(),
+      state: state ? String(state).trim() : null,
+      teamCount: teamCount ? Number(teamCount) : null,
+      sector: sector ? String(sector).trim() : null
+    });
+
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error('Business plan generation error:', err);
+    return res.status(500).json({ success: false, error: err.message || 'Failed to generate business setup plan' });
+  }
+});
+
+// Interactive dynamic chat follow-up for business setup plan
+app.post('/api/business-plan/chat', async (req, res) => {
+  try {
+    const { message, activeBlueprint, chatHistory } = req.body || {};
+    if (!message || typeof message !== 'string' || !message.trim()) {
+      return res.status(400).json({ success: false, error: 'Message is required' });
+    }
+
+    const result = await businessPlanAI.answerFollowUpWithLLM({
+      message: message.trim(),
+      activeBlueprint,
+      chatHistory: Array.isArray(chatHistory) ? chatHistory : []
+    });
+
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error('Business plan chat follow-up error:', err);
+    return res.status(500).json({ success: false, error: err.message || 'Failed to process follow-up' });
   }
 });
 

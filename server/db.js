@@ -21,7 +21,7 @@ const VISITORS_FILE = IS_SERVERLESS
   ? path.join('/tmp', 'visitors.json')
   : path.join(__dirname, 'data', 'visitors.json');
 const JWT_SECRET = process.env.JWT_SECRET || 'corporatemart_super_secret_jwt_token_2026_99x!';
-const INITIAL_VISITOR_COUNT = parseInt(process.env.INITIAL_VISITOR_COUNT, 10) || 29;
+const INITIAL_VISITOR_COUNT = parseInt(process.env.INITIAL_VISITOR_COUNT, 10) || 276;
 
 let isMongoConnected = false;
 let mongoPromise = null;
@@ -1171,14 +1171,20 @@ async function recordVisitorHit(visitorId, clientIp, userAgent) {
 
   if (isConnectedToMongo()) {
     try {
-      // Initialize stats document if missing
+      // Initialize stats document if missing or lower than records
       let stats = await VisitorStats.findOne({ key: 'global_visitor_stats' });
+      const recordCount = await VisitorRecord.countDocuments();
+      const baseline = Math.max(INITIAL_VISITOR_COUNT, recordCount);
+
       if (!stats) {
         stats = await VisitorStats.create({
           key: 'global_visitor_stats',
-          uniqueCount: INITIAL_VISITOR_COUNT,
+          uniqueCount: baseline,
           lastUpdated: new Date()
         });
+      } else if (stats.uniqueCount < baseline) {
+        stats.uniqueCount = baseline;
+        await stats.save();
       }
 
       // Check if visitor is already recorded
@@ -1201,7 +1207,8 @@ async function recordVisitorHit(visitorId, clientIp, userAgent) {
         lastSeen: new Date()
       });
 
-      stats.uniqueCount += 1;
+      const updatedRecordCount = await VisitorRecord.countDocuments();
+      stats.uniqueCount = Math.max((stats.uniqueCount || 0) + 1, updatedRecordCount);
       stats.lastUpdated = new Date();
       await stats.save();
 
@@ -1222,6 +1229,9 @@ async function recordVisitorHit(visitorId, clientIp, userAgent) {
 
   // Local file storage engine
   const local = readVisitorsDB();
+  if (typeof local.count !== 'number' || local.count < INITIAL_VISITOR_COUNT) {
+    local.count = INITIAL_VISITOR_COUNT;
+  }
   if (local.uniqueKeys && local.uniqueKeys[primaryKey]) {
     return {
       count: local.count,
@@ -1234,7 +1244,7 @@ async function recordVisitorHit(visitorId, clientIp, userAgent) {
     firstSeen: new Date().toISOString(),
     ipHash
   };
-  local.count = (local.count || 0) + 1;
+  local.count = Math.max((local.count || 0) + 1, INITIAL_VISITOR_COUNT + 1);
   writeVisitorsDB(local);
 
   return {
@@ -1247,11 +1257,23 @@ async function getVisitorCount() {
   if (isConnectedToMongo()) {
     try {
       const stats = await VisitorStats.findOne({ key: 'global_visitor_stats' });
-      if (stats) return stats.uniqueCount;
-    } catch (e) {}
+      const recordCount = await VisitorRecord.countDocuments();
+      if (stats) {
+        const count = Math.max(stats.uniqueCount || 0, recordCount, INITIAL_VISITOR_COUNT);
+        if (stats.uniqueCount !== count) {
+          stats.uniqueCount = count;
+          await stats.save().catch(() => {});
+        }
+        return count;
+      } else if (recordCount > 0) {
+        return Math.max(recordCount, INITIAL_VISITOR_COUNT);
+      }
+    } catch (e) {
+      console.warn('Error reading mongo visitor stats:', e.message);
+    }
   }
   const local = readVisitorsDB();
-  return typeof local.count === 'number' ? local.count : INITIAL_VISITOR_COUNT;
+  return typeof local.count === 'number' && local.count >= INITIAL_VISITOR_COUNT ? local.count : INITIAL_VISITOR_COUNT;
 }
 
 // ==========================================

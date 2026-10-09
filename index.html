@@ -126,6 +126,7 @@
 
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="chatbot.css">
+    <link rel="stylesheet" href="business-planner-modal.css">
     <style>
       body.dark-mode .site-header{
         background: transparent
@@ -1936,20 +1937,29 @@
       </div>
     </div>
 
-    <!-- Get Customized Plan CTA -->
+    <!-- Get Customized Plan / AI Business Planner CTA -->
     <div class="plans-custom-action">
       <div class="plans-custom-divider">
         <span>OR</span>
       </div>
-      <p class="plans-custom-subtitle">Need a custom combination or specialized business services?</p>
-      <button type="button" class="plans-custom-btn" id="openCustomPlanBtn" data-open-custom-plan aria-haspopup="dialog">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="8" x2="12" y2="16"></line>
-          <line x1="8" y1="12" x2="16" y2="12"></line>
-        </svg>
-        <span>Get Customized Plan</span>
-      </button>
+      <p class="plans-custom-subtitle">Need a customized package or an instant legal &amp; compliance blueprint for your new venture?</p>
+      <div class="plans-custom-btn-group">
+        <button type="button" class="plans-custom-btn" id="openCustomPlanBtn" data-open-custom-plan aria-haspopup="dialog">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="16"></line>
+            <line x1="8" y1="12" x2="16" y2="12"></line>
+          </svg>
+          <span>Get Customized Plan</span>
+        </button>
+        <button type="button" class="plans-custom-btn plans-ai-planner-btn" id="openPlanBusinessBtn" data-open-plan-biz aria-haspopup="dialog">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+          <span>Plan Your Business</span>
+          <span class="plans-btn-badge">AI Blueprint</span>
+        </button>
+      </div>
     </div>
   </div>
 </section>
@@ -2081,6 +2091,70 @@
       <p class="plan-form-note">100% confidential. We will contact you during Mon to Sat, 10 AM to 7 PM.</p>
       <div class="cr-form-success" id="customPlanFormSuccess" style="display:none;">Thanks! Your customized plan request has been received. Our expert will contact you shortly.</div>
     </form>
+  </div>
+</div>
+
+<!-- ========== BUSINESS PLANNER CHATBOT MODAL (CASHIFY MOMENT) ========== -->
+<div class="biz-planner-modal" id="bizPlannerModal" aria-hidden="true">
+  <div class="biz-planner-backdrop" data-close-biz-planner></div>
+  <div class="biz-planner-dialog" role="dialog" aria-modal="true" aria-labelledby="bizPlannerModalTitle">
+    <!-- Header -->
+    <div class="biz-planner-header">
+      <div class="biz-planner-header-info">
+        <div class="biz-planner-avatar">
+          <div class="biz-planner-avatar-badge">⚡</div>
+          <span class="biz-planner-online-dot"></span>
+        </div>
+        <div class="biz-planner-titles">
+          <div class="biz-planner-eyebrow">
+            <span class="biz-planner-tag">AI ARCHITECT</span>
+            <span>INSTANT SETUP BLUEPRINT</span>
+          </div>
+          <h2 id="bizPlannerModalTitle">Business Setup Architect</h2>
+          <p id="bizPlannerModalSub">Tell us what you want to start &amp; where • Get your tailored roadmap in seconds</p>
+        </div>
+      </div>
+      <div class="biz-planner-header-actions">
+        <button type="button" class="biz-planner-action-btn" id="bizPlannerRestartBtn" title="Start Over / Clear Chat" aria-label="Start Over">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1 4 1 10 7 10"></polyline>
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+          </svg>
+          <span>Start Over</span>
+        </button>
+        <button type="button" class="biz-planner-close-btn" data-close-biz-planner aria-label="Close dialog">&times;</button>
+      </div>
+    </div>
+
+    <!-- Chat Conversation Body -->
+    <div class="biz-planner-body" id="bizPlannerBody">
+      <!-- Conversation injected here -->
+    </div>
+
+    <!-- Chat Footer & Input Form -->
+    <div class="biz-planner-footer">
+      <form class="biz-planner-form" id="bizPlannerForm">
+        <input 
+          type="text" 
+          class="biz-planner-input" 
+          id="bizPlannerInput" 
+          placeholder="e.g. Food business in Gujarat with 2 partners..." 
+          autocomplete="off" 
+        />
+        <button type="submit" class="biz-planner-send-btn" id="bizPlannerSendBtn" aria-label="Generate Blueprint">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+          <span class="biz-planner-send-text">Generate</span>
+        </button>
+      </form>
+      <div class="biz-planner-footer-note">
+        <span>⚡ Powered by CorporateMart AI Architect &amp; Live LLM</span>
+        <span>•</span>
+        <span>Verified for MCA, GST, FSSAI &amp; State Acts</span>
+      </div>
+    </div>
   </div>
 </div>
 <!-- ========== OUR APPROACH (category tabs) ========== -->
@@ -2621,9 +2695,9 @@
               <span class="visitor-digit">0</span>
               <span class="visitor-digit">0</span>
               <span class="visitor-digit">0</span>
-              <span class="visitor-digit">0</span>
               <span class="visitor-digit">2</span>
-              <span class="visitor-digit">9</span>
+              <span class="visitor-digit">7</span>
+              <span class="visitor-digit">6</span>
             </div>
           </div>
         </div>
@@ -3448,6 +3522,8 @@
     <script src="script.js"></script>
     <script src="kavach_hero.js" defer></script>
     <script src="chatbot.js" defer></script>
+    <script src="business-planner-modal.js" defer></script>
 </body>
 
 </html>
+

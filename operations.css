@@ -1712,3 +1712,58 @@ body.dark-mode .theme-icon-dark { display: none; }
   }
 }
 
+/* Password Visibility Toggle */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-input-wrapper input {
+  width: 100%;
+  padding-right: 44px !important;
+}
+
+.btn-toggle-password {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  border-radius: 6px;
+  transition: color 0.15s ease, background-color 0.15s ease;
+  z-index: 5;
+  user-select: none;
+  line-height: 1;
+}
+
+.btn-toggle-password:hover {
+  color: var(--ops-primary, #2563eb);
+  background-color: rgba(37, 99, 235, 0.08);
+}
+
+.btn-toggle-password:focus-visible {
+  outline: 2px solid var(--ops-primary, #2563eb);
+  outline-offset: 1px;
+}
+
+.dark-mode .btn-toggle-password,
+body.dark-mode .btn-toggle-password {
+  color: #64748b;
+}
+
+.dark-mode .btn-toggle-password:hover,
+body.dark-mode .btn-toggle-password:hover {
+  color: #38bdf8;
+  background-color: rgba(56, 189, 248, 0.12);
+}
+
+
