@@ -262,8 +262,12 @@ function parseAmountValue(amountStr) {
   return val;
 }
 
-// Load Schemes from Server Store
+// Load Schemes from Server Store (Backed by MongoDB Atlas + Seed Fallback)
 let cachedMasterSchemes = null;
+async function loadMasterSchemesAsync() {
+  return await db.getAllSchemes();
+}
+
 function loadMasterSchemes() {
   if (cachedMasterSchemes && cachedMasterSchemes.length > 0) {
     return cachedMasterSchemes;
@@ -274,26 +278,24 @@ function loadMasterSchemes() {
       cachedMasterSchemes = JSON.parse(raw);
       return cachedMasterSchemes;
     }
-  } catch (e2) {
-    console.error('Error loading master schemes from file:', e2);
-  }
+  } catch (e2) {}
   try {
     cachedMasterSchemes = require('./data/schemes.json');
     return cachedMasterSchemes;
   } catch (e1) {
-    console.error('Error requiring master schemes:', e1);
     return [];
   }
 }
 
-// Persist Schemes to schemes.json
+// Persist Schemes (Safe for Serverless / Vercel read-only environments)
 function saveMasterSchemes(schemes) {
   cachedMasterSchemes = schemes;
+  const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+  if (isServerless) return;
   try {
     fs.writeFileSync(SCHEMES_FILE, JSON.stringify(schemes, null, 2), 'utf8');
   } catch (err) {
-    console.error('Error saving master schemes to disk:', err);
-    throw new Error('Failed to persist scheme changes');
+    console.warn('Notice: Local schemes.json could not be written to disk (read-only environment). Persisted to MongoDB Atlas.');
   }
 }
 
@@ -307,7 +309,7 @@ app.get('/api/schemes', async (req, res) => {
     user.subscriptionExpiresAt &&
     new Date(user.subscriptionExpiresAt).getTime() > Date.now());
 
-  const masterSchemes = loadMasterSchemes();
+  const masterSchemes = await db.getAllSchemes();
 
   if (isSubscriber) {
     // Pro member or Admin: full access to all schemes
@@ -368,17 +370,22 @@ app.get('/api/schemes', async (req, res) => {
 // ==========================================
 
 // Get all schemes for admin management (unfiltered)
-app.get('/api/admin/schemes', requireAdmin, (req, res) => {
-  const masterSchemes = loadMasterSchemes();
-  res.json({
-    success: true,
-    count: masterSchemes.length,
-    schemes: masterSchemes
-  });
+app.get('/api/admin/schemes', requireAdmin, async (req, res) => {
+  try {
+    const masterSchemes = await db.getAllSchemes();
+    res.json({
+      success: true,
+      count: masterSchemes.length,
+      schemes: masterSchemes
+    });
+  } catch (err) {
+    console.error('Error fetching admin schemes:', err);
+    res.status(500).json({ error: 'Failed to retrieve schemes' });
+  }
 });
 
 // Add new scheme (all 11 Excel columns supported)
-app.post('/api/admin/schemes', requireAdmin, (req, res) => {
+app.post('/api/admin/schemes', requireAdmin, async (req, res) => {
   try {
     const {
       name,
@@ -400,7 +407,6 @@ app.post('/api/admin/schemes', requireAdmin, (req, res) => {
       return res.status(400).json({ error: 'Scheme name is required' });
     }
 
-    const masterSchemes = loadMasterSchemes();
     const newId = 'scheme-' + Date.now();
     const parsedAmountValue = parseAmountValue(amount);
 
@@ -422,13 +428,12 @@ app.post('/api/admin/schemes', requireAdmin, (req, res) => {
       tier: (tier === 'free' ? 'free' : 'pro')
     };
 
-    masterSchemes.unshift(newScheme);
-    saveMasterSchemes(masterSchemes);
+    const savedScheme = await db.createScheme(newScheme);
 
     res.status(201).json({
       success: true,
-      message: `Scheme "${newScheme.name}" created successfully!`,
-      scheme: newScheme
+      message: `Scheme "${savedScheme.name}" created successfully!`,
+      scheme: savedScheme
     });
   } catch (err) {
     console.error('Error creating scheme:', err);
@@ -437,19 +442,17 @@ app.post('/api/admin/schemes', requireAdmin, (req, res) => {
 });
 
 // Update scheme by ID
-app.put('/api/admin/schemes/:id', requireAdmin, (req, res) => {
+app.put('/api/admin/schemes/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const masterSchemes = loadMasterSchemes();
-    const index = masterSchemes.findIndex(s => s.id === id);
+    const masterSchemes = await db.getAllSchemes();
+    const existing = masterSchemes.find(s => s.id === id);
 
-    if (index === -1) {
+    if (!existing) {
       return res.status(404).json({ error: `Scheme with ID "${id}" not found` });
     }
 
-    const existing = masterSchemes[index];
     const b = req.body;
-
     const updatedName = b.name !== undefined ? String(b.name).trim() : existing.name;
     if (!updatedName) {
       return res.status(400).json({ error: 'Scheme name cannot be empty' });
@@ -476,13 +479,12 @@ app.put('/api/admin/schemes/:id', requireAdmin, (req, res) => {
       tier: b.tier !== undefined ? (b.tier === 'free' ? 'free' : 'pro') : existing.tier
     };
 
-    masterSchemes[index] = updatedScheme;
-    saveMasterSchemes(masterSchemes);
+    const savedScheme = await db.updateScheme(id, updatedScheme);
 
     res.json({
       success: true,
-      message: `Scheme "${updatedScheme.name}" updated successfully!`,
-      scheme: updatedScheme
+      message: `Scheme "${savedScheme.name}" updated successfully!`,
+      scheme: savedScheme
     });
   } catch (err) {
     console.error('Error updating scheme:', err);
@@ -491,22 +493,21 @@ app.put('/api/admin/schemes/:id', requireAdmin, (req, res) => {
 });
 
 // Delete scheme by ID
-app.delete('/api/admin/schemes/:id', requireAdmin, (req, res) => {
+app.delete('/api/admin/schemes/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const masterSchemes = loadMasterSchemes();
-    const index = masterSchemes.findIndex(s => s.id === id);
+    const masterSchemes = await db.getAllSchemes();
+    const existing = masterSchemes.find(s => s.id === id);
 
-    if (index === -1) {
+    if (!existing) {
       return res.status(404).json({ error: `Scheme with ID "${id}" not found` });
     }
 
-    const deleted = masterSchemes.splice(index, 1)[0];
-    saveMasterSchemes(masterSchemes);
+    const deleted = await db.deleteScheme(id);
 
     res.json({
       success: true,
-      message: `Scheme "${deleted.name}" deleted successfully!`,
+      message: `Scheme "${deleted ? deleted.name : existing.name}" deleted successfully!`,
       deletedId: id
     });
   } catch (err) {

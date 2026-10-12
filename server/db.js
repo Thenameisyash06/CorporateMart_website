@@ -12,6 +12,7 @@ const PortalCase = require('./models/PortalCase');
 const PortalDocument = require('./models/PortalDocument');
 const PortalOrder = require('./models/PortalOrder');
 const PortalTicket = require('./models/PortalTicket');
+const Scheme = require('./models/Scheme');
 
 const IS_SERVERLESS = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 const DB_FILE = IS_SERVERLESS
@@ -2282,10 +2283,166 @@ async function getPortalDocumentByFileName(fileNameOrUrl) {
   return docs.find(d => d.fileName === cleanName || d.fileUrl === fileNameOrUrl || (d.fileUrl && d.fileUrl.endsWith(cleanName)));
 }
 
+// ==========================================
+// MASTER SCHEMES (MONGODB ATLAS + SEED FALLBACK)
+// ==========================================
+let cachedMasterSchemes = null;
+
+function loadLocalSchemesFile() {
+  if (cachedMasterSchemes && cachedMasterSchemes.length > 0) {
+    return cachedMasterSchemes;
+  }
+  const schemesPath = path.join(__dirname, 'data', 'schemes.json');
+  try {
+    if (fs.existsSync(schemesPath)) {
+      const raw = fs.readFileSync(schemesPath, 'utf8');
+      cachedMasterSchemes = JSON.parse(raw);
+      return cachedMasterSchemes;
+    }
+  } catch (e) {
+    console.warn('Error reading schemes.json:', e.message);
+  }
+  try {
+    cachedMasterSchemes = require('./data/schemes.json');
+    return cachedMasterSchemes;
+  } catch (e) {
+    return [];
+  }
+}
+
+function trySaveLocalSchemesFile(schemes) {
+  cachedMasterSchemes = schemes;
+  if (IS_SERVERLESS) return; // Do not attempt disk write on read-only serverless lambdas
+  try {
+    const schemesPath = path.join(__dirname, 'data', 'schemes.json');
+    fs.writeFileSync(schemesPath, JSON.stringify(schemes, null, 2), 'utf8');
+  } catch (err) {
+    console.warn('Notice: Local schemes.json could not be written to disk (read-only environment):', err.message);
+  }
+}
+
+async function getAllSchemes() {
+  const isConnected = await ensureMongoConnected();
+  if (isConnected) {
+    try {
+      const count = await Scheme.countDocuments();
+      if (count === 0) {
+        console.log('ℹ [DB] Seeding master schemes into MongoDB Atlas for the first time...');
+        const initial = loadLocalSchemesFile();
+        if (Array.isArray(initial) && initial.length > 0) {
+          await Scheme.insertMany(initial, { ordered: false });
+          console.log(`✔ [DB] Seeded ${initial.length} master schemes into MongoDB Atlas!`);
+        }
+      }
+      const mongoSchemes = await Scheme.find({}).sort({ createdAt: -1 }).lean();
+      cachedMasterSchemes = mongoSchemes.map(s => {
+        const { _id, __v, ...rest } = s;
+        return rest;
+      });
+      return cachedMasterSchemes;
+    } catch (err) {
+      console.warn('⚠️ [DB] Error fetching schemes from MongoDB Atlas, falling back to local store:', err.message);
+    }
+  }
+
+  return loadLocalSchemesFile();
+}
+
+async function createScheme(schemeData) {
+  const isConnected = await ensureMongoConnected();
+  if (isConnected) {
+    try {
+      const doc = new Scheme(schemeData);
+      await doc.save();
+      const saved = doc.toObject();
+      const { _id, __v, ...cleanScheme } = saved;
+
+      const current = await getAllSchemes();
+      const existingIdx = current.findIndex(s => s.id === cleanScheme.id);
+      if (existingIdx !== -1) {
+        current[existingIdx] = cleanScheme;
+      } else {
+        current.unshift(cleanScheme);
+      }
+      trySaveLocalSchemesFile(current);
+      return cleanScheme;
+    } catch (err) {
+      console.error('Error creating scheme in MongoDB Atlas:', err);
+      throw err;
+    }
+  }
+
+  const localList = loadLocalSchemesFile();
+  localList.unshift(schemeData);
+  trySaveLocalSchemesFile(localList);
+  return schemeData;
+}
+
+async function updateScheme(id, updateData) {
+  const isConnected = await ensureMongoConnected();
+  if (isConnected) {
+    try {
+      const updatedDoc = await Scheme.findOneAndUpdate(
+        { id },
+        { $set: { ...updateData, updatedAt: new Date() } },
+        { returnDocument: 'after', upsert: true }
+      ).lean();
+
+      const current = await getAllSchemes();
+      trySaveLocalSchemesFile(current);
+      if (updatedDoc) {
+        const { _id, __v, ...clean } = updatedDoc;
+        return clean;
+      }
+      return updateData;
+    } catch (err) {
+      console.error('Error updating scheme in MongoDB Atlas:', err);
+      throw err;
+    }
+  }
+
+  const localList = loadLocalSchemesFile();
+  const index = localList.findIndex(s => s.id === id);
+  if (index !== -1) {
+    localList[index] = { ...localList[index], ...updateData };
+    trySaveLocalSchemesFile(localList);
+    return localList[index];
+  }
+  return null;
+}
+
+async function deleteScheme(id) {
+  const isConnected = await ensureMongoConnected();
+  if (isConnected) {
+    try {
+      const deletedDoc = await Scheme.findOneAndDelete({ id }).lean();
+      const current = await getAllSchemes();
+      trySaveLocalSchemesFile(current);
+      return deletedDoc;
+    } catch (err) {
+      console.error('Error deleting scheme from MongoDB Atlas:', err);
+      throw err;
+    }
+  }
+
+  const localList = loadLocalSchemesFile();
+  const index = localList.findIndex(s => s.id === id);
+  if (index !== -1) {
+    const deleted = localList.splice(index, 1)[0];
+    trySaveLocalSchemesFile(localList);
+    return deleted;
+  }
+  return null;
+}
+
 module.exports = {
   initDB,
   initMongo,
   isConnectedToMongo,
+  getAllSchemes,
+  createScheme,
+  updateScheme,
+  deleteScheme,
   findUserByEmail,
   findUserById,
   createUser,
