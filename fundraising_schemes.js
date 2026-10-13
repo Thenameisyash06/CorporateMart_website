@@ -367,7 +367,19 @@
     }
 
     // 4. Sorting
-    if (state.sortBy === 'deadline-asc') {
+    if (state.sortBy === 'default') {
+      // Public / free schemes ALWAYS appear at the top of all schemes
+      list.sort((a, b) => {
+        const aFree = (a.tier === 'free' || !a.isLocked) ? 1 : 0;
+        const bFree = (b.tier === 'free' || !b.isLocked) ? 1 : 0;
+        if (aFree !== bFree) return bFree - aFree;
+        if (aFree && bFree) {
+          if (a.id === 'scheme-1') return -1;
+          if (b.id === 'scheme-1') return 1;
+        }
+        return 0;
+      });
+    } else if (state.sortBy === 'deadline-asc') {
       list.sort((a, b) => {
         const expA = isDeadlineExpired(a.deadline);
         const expB = isDeadlineExpired(b.deadline);
@@ -1126,6 +1138,14 @@
       });
     });
 
+    const btnPayOnline = document.getElementById('btnPayOnlineRazorpay');
+    if (btnPayOnline) {
+      btnPayOnline.addEventListener('click', () => {
+        const plan = btnPayOnline.getAttribute('data-plan') || 'pro_99';
+        startSubscriptionCheckout(plan);
+      });
+    }
+
     const btnWhatsappPro = document.getElementById('btnWhatsappPro');
     if (btnWhatsappPro) {
       btnWhatsappPro.addEventListener('click', () => {
@@ -1333,18 +1353,117 @@
     document.body.style.overflow = '';
   }
 
+  function ensureRazorpayScript() {
+    return new Promise((resolve) => {
+      if (typeof window.Razorpay === 'function') return resolve(true);
+      const existing = document.querySelector('script[src*="checkout.razorpay.com"]');
+      if (existing) {
+        existing.addEventListener('load', () => resolve(true));
+        existing.addEventListener('error', () => resolve(false));
+        setTimeout(() => resolve(typeof window.Razorpay === 'function'), 1500);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.head.appendChild(script);
+    });
+  }
+
   async function startSubscriptionCheckout(planId) {
     if (!state.user || !state.token) {
-      state.pendingPlanId = planId;
+      state.pendingPlanId = planId || 'pro_99';
       closePricingModal();
       openAuthModal('register');
       showAuthError('Please create an account or sign in to activate your Pro subscription.');
       return;
     }
 
-    const userEmail = state.user.email || '';
-    const text = `Hi CorporateMart team, I want to activate CorporateMart Pro Access (₹99) for my registered account: ${userEmail}. Please verify my payment.`;
-    window.open(`https://wa.me/917041554148?text=${encodeURIComponent(text)}`, '_blank');
+    const payBtn = document.getElementById('btnPayOnlineRazorpay') || document.querySelector('.btn-select-plan');
+    const originalText = payBtn ? payBtn.innerHTML : '';
+    if (payBtn) {
+      payBtn.disabled = true;
+      payBtn.innerHTML = '⚡ Initializing Secure Razorpay...';
+    }
+
+    try {
+      const rzpReady = await ensureRazorpayScript();
+      if (!rzpReady || typeof window.Razorpay !== 'function') {
+        throw new Error('Razorpay checkout library could not be loaded. Please check your internet connection or use direct UPI payment.');
+      }
+
+      const res = await fetch('/api/payment/create-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${state.token}`
+        },
+        body: JSON.stringify({ planId: planId || 'pro_99' })
+      });
+
+      const orderData = await res.json();
+      if (!res.ok || !orderData.success) {
+        throw new Error(orderData.error || 'Failed to initialize payment gateway.');
+      }
+
+      const options = {
+        key: orderData.keyId,
+        amount: orderData.amount,
+        currency: orderData.currency || 'INR',
+        name: 'Corporate Mart',
+        description: orderData.planName || 'CorporateMart Pro Access (30 Days)',
+        order_id: orderData.orderId,
+        prefill: {
+          name: (state.user && state.user.name) ? state.user.name : '',
+          email: (state.user && state.user.email) ? state.user.email : '',
+          contact: (state.user && state.user.phone) ? state.user.phone : ''
+        },
+        theme: {
+          color: '#1676bb'
+        },
+        modal: {
+          ondismiss: function () {
+            if (payBtn) {
+              payBtn.disabled = false;
+              payBtn.innerHTML = originalText;
+            }
+          }
+        },
+        handler: async function (response) {
+          if (payBtn) {
+            payBtn.innerHTML = '🔒 Verifying Payment...';
+          }
+          await verifyPaymentOnServer({
+            orderId: response.razorpay_order_id,
+            paymentId: response.razorpay_payment_id,
+            signature: response.razorpay_signature,
+            planId: orderData.planId
+          });
+          if (payBtn) {
+            payBtn.disabled = false;
+            payBtn.innerHTML = originalText;
+          }
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (resp) {
+        if (payBtn) {
+          payBtn.disabled = false;
+          payBtn.innerHTML = originalText;
+        }
+        alert('Payment Failed: ' + (resp.error ? resp.error.description : 'Transaction cancelled or failed.'));
+      });
+      rzp.open();
+    } catch (err) {
+      if (payBtn) {
+        payBtn.disabled = false;
+        payBtn.innerHTML = originalText;
+      }
+      alert('Payment Initialization Failed: ' + err.message);
+    }
   }
 
   async function verifyPaymentOnServer(payload) {
@@ -1390,6 +1509,16 @@
       if (res.ok) {
         const data = await res.json();
         if (data && data.schemes) {
+          data.schemes.sort((a, b) => {
+            const aFree = a.tier === 'free' ? 1 : 0;
+            const bFree = b.tier === 'free' ? 1 : 0;
+            if (aFree !== bFree) return bFree - aFree;
+            if (a.tier === 'free' && b.tier === 'free') {
+              if (a.id === 'scheme-1') return -1;
+              if (b.id === 'scheme-1') return 1;
+            }
+            return 0;
+          });
           state.schemes = data.schemes;
           state.isSubscriber = !!(data.isSubscriber || data.isAdmin || (state.user && state.user.role === 'admin'));
           return;

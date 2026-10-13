@@ -760,8 +760,11 @@ async function updateUserSubscription(userId, { plan, durationDays }) {
   return sanitizeUser(localDb.users[userIndex]);
 }
 
-async function updateFundraisingUserSubscription(userId, { plan, durationDays }) {
+async function updateFundraisingUserSubscription(userId, { plan = 'pro', durationDays = 30, subscriptionExpiresAt = null } = {}) {
   const now = Date.now();
+  let validDays = Number(durationDays);
+  if (isNaN(validDays) || validDays <= 0) validDays = 30;
+
   await ensureMongoConnected();
 
   if (isMongoConnected) {
@@ -775,16 +778,21 @@ async function updateFundraisingUserSubscription(userId, { plan, durationDays })
       }
 
       if (userDoc) {
-        let baseTime = now;
-        if (userDoc.subscriptionExpiresAt) {
-          const currentExpiry = new Date(userDoc.subscriptionExpiresAt).getTime();
-          if (currentExpiry > now) {
-            baseTime = currentExpiry;
+        let newExpiry;
+        if (subscriptionExpiresAt) {
+          newExpiry = new Date(subscriptionExpiresAt);
+        } else {
+          let baseTime = now;
+          if (userDoc.subscriptionExpiresAt) {
+            const currentExpiry = new Date(userDoc.subscriptionExpiresAt).getTime();
+            if (currentExpiry > now) {
+              baseTime = currentExpiry;
+            }
           }
+          newExpiry = new Date(baseTime + validDays * 24 * 60 * 60 * 1000);
         }
 
-        const newExpiry = new Date(baseTime + durationDays * 24 * 60 * 60 * 1000);
-        userDoc.plan = plan;
+        userDoc.plan = plan || 'pro';
         userDoc.isSubscribed = true;
         userDoc.subscriptionExpiresAt = newExpiry;
         await userDoc.save();
@@ -802,24 +810,29 @@ async function updateFundraisingUserSubscription(userId, { plan, durationDays })
   if (userIndex === -1) {
     // Also check localDb.users as fallback
     try {
-      return await updateUserSubscription(userId, { plan, durationDays });
+      return await updateUserSubscription(userId, { plan, durationDays: validDays, subscriptionExpiresAt });
     } catch (e) {
       throw new Error('Fundraising user not found');
     }
   }
 
-  let baseTime = now;
-  if (localDb.fundraising_users[userIndex].subscriptionExpiresAt) {
-    const currentExpiry = new Date(localDb.fundraising_users[userIndex].subscriptionExpiresAt).getTime();
-    if (currentExpiry > now) {
-      baseTime = currentExpiry;
+  let newExpiryIso;
+  if (subscriptionExpiresAt) {
+    newExpiryIso = new Date(subscriptionExpiresAt).toISOString();
+  } else {
+    let baseTime = now;
+    if (localDb.fundraising_users[userIndex].subscriptionExpiresAt) {
+      const currentExpiry = new Date(localDb.fundraising_users[userIndex].subscriptionExpiresAt).getTime();
+      if (currentExpiry > now) {
+        baseTime = currentExpiry;
+      }
     }
+    newExpiryIso = new Date(baseTime + validDays * 24 * 60 * 60 * 1000).toISOString();
   }
 
-  const newExpiry = new Date(baseTime + durationDays * 24 * 60 * 60 * 1000).toISOString();
-  localDb.fundraising_users[userIndex].plan = plan;
+  localDb.fundraising_users[userIndex].plan = plan || 'pro';
   localDb.fundraising_users[userIndex].isSubscribed = true;
-  localDb.fundraising_users[userIndex].subscriptionExpiresAt = newExpiry;
+  localDb.fundraising_users[userIndex].subscriptionExpiresAt = newExpiryIso;
 
   writeDB(localDb);
   return sanitizeUser(localDb.fundraising_users[userIndex]);
@@ -2338,6 +2351,15 @@ async function getAllSchemes() {
       cachedMasterSchemes = mongoSchemes.map(s => {
         const { _id, __v, ...rest } = s;
         return rest;
+      }).sort((a, b) => {
+        const aFree = a.tier === 'free' ? 1 : 0;
+        const bFree = b.tier === 'free' ? 1 : 0;
+        if (aFree !== bFree) return bFree - aFree;
+        if (a.tier === 'free' && b.tier === 'free') {
+          if (a.id === 'scheme-1') return -1;
+          if (b.id === 'scheme-1') return 1;
+        }
+        return 0;
       });
       return cachedMasterSchemes;
     } catch (err) {
@@ -2345,7 +2367,17 @@ async function getAllSchemes() {
     }
   }
 
-  return loadLocalSchemesFile();
+  const localList = loadLocalSchemesFile();
+  return localList.sort((a, b) => {
+    const aFree = a.tier === 'free' ? 1 : 0;
+    const bFree = b.tier === 'free' ? 1 : 0;
+    if (aFree !== bFree) return bFree - aFree;
+    if (a.tier === 'free' && b.tier === 'free') {
+      if (a.id === 'scheme-1') return -1;
+      if (b.id === 'scheme-1') return 1;
+    }
+    return 0;
+  });
 }
 
 async function createScheme(schemeData) {

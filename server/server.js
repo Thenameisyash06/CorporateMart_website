@@ -311,6 +311,18 @@ app.get('/api/schemes', async (req, res) => {
 
   const masterSchemes = await db.getAllSchemes();
 
+  // Always ensure public/free schemes are positioned at the very top of all schemes
+  masterSchemes.sort((a, b) => {
+    const aFree = a.tier === 'free' ? 1 : 0;
+    const bFree = b.tier === 'free' ? 1 : 0;
+    if (aFree !== bFree) return bFree - aFree;
+    if (a.tier === 'free' && b.tier === 'free') {
+      if (a.id === 'scheme-1') return -1;
+      if (b.id === 'scheme-1') return 1;
+    }
+    return 0;
+  });
+
   if (isSubscriber) {
     // Pro member or Admin: full access to all schemes
     const fullSchemes = masterSchemes.map(s => ({
@@ -748,12 +760,13 @@ const PLANS = {
 
 app.get('/api/config', (req, res) => {
   const rzpKey = (process.env.RAZORPAY_KEY_ID || '').trim();
-  const isLive = rzpKey.startsWith('rzp_live_');
+  const rzpSecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
+  const isKeyConfigured = (rzpKey.startsWith('rzp_live_') || rzpKey.startsWith('rzp_test_')) && Boolean(rzpSecret);
 
   res.json({
-    razorpayKeyId: isLive ? rzpKey : '',
-    isLiveConfigured: isLive,
-    isOnlinePaymentEnabled: isLive,
+    razorpayKeyId: isKeyConfigured ? rzpKey : '',
+    isLiveConfigured: rzpKey.startsWith('rzp_live_'),
+    isOnlinePaymentEnabled: isKeyConfigured,
     directUpi: {
       vpa: '7041554148@upi',
       whatsappPhone: '+917041554148',
@@ -773,12 +786,12 @@ app.post('/api/payment/create-order', requireAuth, async (req, res) => {
 
     const rzpKey = (process.env.RAZORPAY_KEY_ID || '').trim();
     const rzpSecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
-    const isLive = rzpKey.startsWith('rzp_live_');
+    const isConfigured = (rzpKey.startsWith('rzp_live_') || rzpKey.startsWith('rzp_test_')) && Boolean(rzpSecret);
 
-    // Online payment is disabled until live Razorpay keys are linked
-    if (!isLive || !rzpSecret) {
+    // Online payment check
+    if (!isConfigured) {
       return res.status(403).json({
-        error: 'Online payment gateway is temporarily disabled during merchant domain verification. Please subscribe via direct UPI / WhatsApp (+91 7041554148).'
+        error: 'Online payment gateway is temporarily unavailable. Please subscribe via direct UPI / WhatsApp (+91 7041554148).'
       });
     }
 
@@ -836,10 +849,9 @@ app.post('/api/payment/verify', requireAuth, async (req, res) => {
 
     const rzpKey = (process.env.RAZORPAY_KEY_ID || '').trim();
     const rzpSecret = (process.env.RAZORPAY_KEY_SECRET || '').trim();
-    const isLive = rzpKey.startsWith('rzp_live_');
+    const isConfigured = (rzpKey.startsWith('rzp_live_') || rzpKey.startsWith('rzp_test_')) && Boolean(rzpSecret);
 
-    // Reject simulated or test payments
-    if (!isLive || !rzpSecret) {
+    if (!isConfigured) {
       return res.status(403).json({
         error: 'Online payment gateway is temporarily disabled. Please subscribe via direct UPI / WhatsApp (+91 7041554148).'
       });
