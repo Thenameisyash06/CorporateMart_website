@@ -785,9 +785,8 @@ window.addEventListener("resize", () => {
 });
 
 // Initial load: default to dark theme for new visitors unless explicitly set to light
-const savedTheme = localStorage.getItem("theme");
-const isDarkMode = savedTheme !== "light";
-applyTheme(isDarkMode);
+localStorage.setItem("theme", "dark");
+applyTheme(true);
 themeToggle?.addEventListener("click",()=>setTheme(!document.body.classList.contains("dark-mode")));
 
 // Auto-attach Web3Forms submit listener to all consultation/lead forms

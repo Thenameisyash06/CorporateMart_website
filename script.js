@@ -768,10 +768,9 @@ function setTheme(dark){
   themeOverlay.addEventListener("transitionend",onCovered,{once:true});
 }
 
-// Initial load: default to dark theme for new visitors unless explicitly set to light
-const savedTheme = localStorage.getItem("theme");
-const isDarkMode = savedTheme !== "light";
-applyTheme(isDarkMode);
+// Initial load: dark theme is permanently enforced so no user sees or switches to light theme
+localStorage.setItem("theme", "dark");
+applyTheme(true);
 themeToggle?.addEventListener("click",()=>setTheme(!document.body.classList.contains("dark-mode")));
 
 /* Recalculate active nested submenu direction on viewport resize */

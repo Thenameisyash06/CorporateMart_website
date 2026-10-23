@@ -135,11 +135,7 @@
     <script>
       (function(){
         try {
-          if (localStorage.getItem("theme") === "light") {
-            document.documentElement.classList.remove("dark-mode");
-          } else {
-            document.documentElement.classList.add("dark-mode");
-          }
+          document.documentElement.classList.add("dark-mode");
         } catch(e) {}
       })();
     </script>
@@ -199,10 +195,10 @@
           </select>
         </label> -->
         
-        <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="true" aria-label="Switch to light mode">
+        <!-- <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="true" aria-label="Switch to light mode">
           <span class="theme-icon">☀</span>
           <span class="theme-label">Light</span>
-        </button>
+        </button> -->
         <a href="client.html" class="portal-cta-btn portal-cta-row1" id="headerTopPortalLink" title="Corporate Mart Client Portal">
           <span class="portal-cta-pulse"></span>
           <svg class="portal-cta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">

@@ -55,14 +55,9 @@
   }
 
   function initTheme() {
-    const savedTheme = localStorage.getItem('cp_theme');
-    const isDark = (savedTheme !== 'light'); // Default to dark theme for new visitors
-    if (isDark) {
-      document.body.classList.add('dark-mode');
-    } else {
-      document.body.classList.remove('dark-mode');
-    }
-    updatePortalLogo(isDark);
+    localStorage.setItem('cp_theme', 'dark');
+    document.body.classList.add('dark-mode');
+    updatePortalLogo(true);
     if (cpThemeToggle) {
       cpThemeToggle.addEventListener('click', () => {
         document.body.classList.toggle('dark-mode');

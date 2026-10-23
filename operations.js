@@ -75,18 +75,15 @@
   // 2. THEME & MOBILE MENU
   // ==========================================
   function initTheme() {
-    const savedTheme = localStorage.getItem('ops_theme');
-    const isDark = (savedTheme !== 'light'); // Default to dark theme for new visitors
-    if (isDark) {
-      document.body.classList.add('dark-mode');
-    } else {
-      document.body.classList.remove('dark-mode');
+    localStorage.setItem('ops_theme', 'dark');
+    document.body.classList.add('dark-mode');
+    if (opsThemeToggle) {
+      opsThemeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        localStorage.setItem('ops_theme', isDark ? 'dark' : 'light');
+      });
     }
-    opsThemeToggle.addEventListener('click', () => {
-      document.body.classList.toggle('dark-mode');
-      const isDark = document.body.classList.contains('dark-mode');
-      localStorage.setItem('ops_theme', isDark ? 'dark' : 'light');
-    });
   }
 
   function initMobileMenu() {
