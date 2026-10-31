@@ -753,9 +753,11 @@ app.post('/api/auth/forgot-password', async (req, res) => {
 // 3. SUBSCRIPTION & PAYMENT APIS
 // ==========================================
 const PLANS = {
-  pro_99: { id: 'pro_99', name: 'CorporateMart Pro Access', amount: 99, durationDays: 30 },
-  monthly: { id: 'pro_99', name: 'CorporateMart Pro Access', amount: 99, durationDays: 30 },
-  annual: { id: 'pro_99', name: 'CorporateMart Pro Access', amount: 99, durationDays: 30 }
+  pro_99: { id: 'pro_99', name: 'CorporateMart Pro Annual Access (1 Year)', amount: 1099, durationDays: 365 },
+  pro_1099: { id: 'pro_99', name: 'CorporateMart Pro Annual Access (1 Year)', amount: 1099, durationDays: 365 },
+  pro_annual: { id: 'pro_99', name: 'CorporateMart Pro Annual Access (1 Year)', amount: 1099, durationDays: 365 },
+  monthly: { id: 'pro_99', name: 'CorporateMart Pro Annual Access (1 Year)', amount: 1099, durationDays: 365 },
+  annual: { id: 'pro_99', name: 'CorporateMart Pro Annual Access (1 Year)', amount: 1099, durationDays: 365 }
 };
 
 app.get('/api/config', (req, res) => {
@@ -770,7 +772,7 @@ app.get('/api/config', (req, res) => {
     directUpi: {
       vpa: '7041554148@upi',
       whatsappPhone: '+917041554148',
-      amount: 99
+      amount: 1099
     },
     plans: PLANS
   });
@@ -779,7 +781,7 @@ app.get('/api/config', (req, res) => {
 app.post('/api/payment/create-order', requireAuth, async (req, res) => {
   try {
     const { planId } = req.body;
-    const plan = PLANS[planId];
+    const plan = PLANS[planId] || PLANS["pro_99"];
     if (!plan) {
       return res.status(400).json({ error: 'Invalid plan selected' });
     }
@@ -842,7 +844,7 @@ app.post('/api/payment/create-order', requireAuth, async (req, res) => {
 app.post('/api/payment/verify', requireAuth, async (req, res) => {
   try {
     const { orderId, paymentId, signature, planId } = req.body;
-    const plan = PLANS[planId];
+    const plan = PLANS[planId] || PLANS["pro_99"];
     if (!plan) {
       return res.status(400).json({ error: 'Invalid plan' });
     }
@@ -897,7 +899,7 @@ app.post('/api/payment/verify', requireAuth, async (req, res) => {
 // Admin / Staff Manual Pro Activation API
 app.post('/api/admin/users/activate-subscription', requireStaff, async (req, res) => {
   try {
-    const { email, durationDays = 30, note } = req.body || {};
+    const { email, durationDays = 365, note } = req.body || {};
     if (!email) {
       return res.status(400).json({ error: 'User email is required' });
     }
@@ -915,14 +917,14 @@ app.post('/api/admin/users/activate-subscription', requireStaff, async (req, res
     const userId = user.id || (user._id ? user._id.toString() : '');
     const updatedUser = await db.updateFundraisingUserSubscription(userId, {
       plan: 'pro',
-      durationDays: parseInt(durationDays, 10) || 30
+      durationDays: parseInt(durationDays, 10) || 365
     });
 
     await db.recordTransaction({
       userId,
       orderId: 'admin_manual_' + Date.now(),
       paymentId: 'manual_admin_upi',
-      amount: 99,
+      amount: 1099,
       planId: 'pro_99',
       status: 'success'
     });

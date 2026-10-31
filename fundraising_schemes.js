@@ -1150,7 +1150,7 @@
     if (btnWhatsappPro) {
       btnWhatsappPro.addEventListener('click', () => {
         const userEmail = (state.user && state.user.email) ? state.user.email : '';
-        const msg = `Hi CorporateMart team, I want to activate CorporateMart Pro Access (₹99)${userEmail ? ' for my account: ' + userEmail : ''}. Please share the UPI QR / payment details.`;
+        const msg = `Hi CorporateMart team, I want to activate CorporateMart Pro Annual Access (₹1,099/yr - ₹99/mo)${userEmail ? ' for my account: ' + userEmail : ''}. Please share the UPI QR / payment details.`;
         window.open(`https://wa.me/917041554148?text=${encodeURIComponent(msg)}`, '_blank');
       });
     }
@@ -1413,7 +1413,7 @@
         amount: orderData.amount,
         currency: orderData.currency || 'INR',
         name: 'Corporate Mart',
-        description: orderData.planName || 'CorporateMart Pro Access (30 Days)',
+        description: orderData.planName || 'CorporateMart Pro Annual Access (1 Year)',
         order_id: orderData.orderId,
         prefill: {
           name: (state.user && state.user.name) ? state.user.name : '',

@@ -704,7 +704,8 @@ async function createFundraisingUser({ name, email, phone = '', password, role =
   return sanitizeUser(user);
 }
 
-async function updateUserSubscription(userId, { plan, durationDays }) {
+async function updateUserSubscription(userId, { plan = "pro", durationDays = 365 } = {}) {
+  const validDays = Number(durationDays) || 365;
   const now = Date.now();
   await ensureMongoConnected();
 
@@ -727,7 +728,7 @@ async function updateUserSubscription(userId, { plan, durationDays }) {
           }
         }
 
-        const newExpiry = new Date(baseTime + durationDays * 24 * 60 * 60 * 1000);
+        const newExpiry = new Date(baseTime + validDays * 24 * 60 * 60 * 1000);
         userDoc.plan = plan;
         userDoc.isSubscribed = true;
         userDoc.subscriptionExpiresAt = newExpiry;
@@ -752,7 +753,7 @@ async function updateUserSubscription(userId, { plan, durationDays }) {
     }
   }
 
-  const newExpiry = new Date(baseTime + durationDays * 24 * 60 * 60 * 1000).toISOString();
+  const newExpiry = new Date(baseTime + validDays * 24 * 60 * 60 * 1000).toISOString();
   localDb.users[userIndex].plan = plan;
   localDb.users[userIndex].subscriptionExpiresAt = newExpiry;
 
@@ -760,10 +761,10 @@ async function updateUserSubscription(userId, { plan, durationDays }) {
   return sanitizeUser(localDb.users[userIndex]);
 }
 
-async function updateFundraisingUserSubscription(userId, { plan = 'pro', durationDays = 30, subscriptionExpiresAt = null } = {}) {
+async function updateFundraisingUserSubscription(userId, { plan = 'pro', durationDays = 365, subscriptionExpiresAt = null } = {}) {
   const now = Date.now();
   let validDays = Number(durationDays);
-  if (isNaN(validDays) || validDays <= 0) validDays = 30;
+  if (isNaN(validDays) || validDays <= 0) validDays = 365;
 
   await ensureMongoConnected();
 
