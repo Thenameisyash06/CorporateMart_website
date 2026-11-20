@@ -6,8 +6,9 @@
 (function () {
   "use strict";
 
-  const HELPLINE_PHONE = "7041554148";
-  const WHATSAPP_PHONE = "917041554148";
+  const HELPLINE_PHONE = "+91 90810 00886";
+  const HELPLINE_TEL = "+919081000886";
+  const WHATSAPP_PHONE = "919081000886";
   const ASSISTANT_AVATAR_IMG = "images/ai_female_assistant.jpg";
   const WEB3FORMS_ACCESS_KEY = (typeof window !== "undefined" && window.WEB3FORMS_ACCESS_KEY) || "be37ec80-ab81-41dd-992a-4229dbf48650";
 
@@ -106,7 +107,7 @@
             </div>
             <div class="cm-bot-title-group">
               <h3>Priya • Virtual Assistant</h3>
-              <p><span>🟢</span> Online • Verified Compliance Desk</p>
+              <p><span>🟢</span> Online</p>
             </div>
           </div>
           <div class="cm-bot-header-actions">
@@ -289,6 +290,11 @@
           askName();
         }
       });
+
+      appendMessage(
+        "bot",
+        `📞 For any query, you can also call us directly at <a href="tel:${HELPLINE_TEL}" class="cm-bot-call-link"><strong>${HELPLINE_PHONE}</strong></a>.`
+      );
     }, 450);
   }
 
@@ -519,7 +525,7 @@
               </svg>
               Chat on WhatsApp Now
             </a>
-            <a href="tel:${HELPLINE_PHONE}" class="cm-bot-cta-btn cm-bot-cta-call">
+            <a href="tel:${HELPLINE_TEL}" class="cm-bot-cta-btn cm-bot-cta-call">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.02-.24 11.36 11.36 0 003.58.57 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1 11.36 11.36 0 00.57 3.58 1 1 0 01-.24 1.02l-2.2 2.19z"/>
               </svg>

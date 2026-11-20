@@ -321,6 +321,35 @@ body.cm-bot-active .cm-bot-btn-icon-close {
   font-weight: 500;
 }
 
+.cm-bot-title-group p a,
+.cm-bot-phone-link {
+  color: #93c5fd;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  transition: color 0.15s ease, opacity 0.15s ease;
+}
+
+.cm-bot-title-group p a:hover,
+.cm-bot-title-group p a:focus-visible,
+.cm-bot-phone-link:hover,
+.cm-bot-phone-link:focus-visible {
+  color: #ffffff;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.cm-bot-phone-link svg {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+  opacity: 0.95;
+}
+
 .cm-bot-header-actions {
   display: flex;
   align-items: center;
@@ -453,6 +482,23 @@ body.cm-bot-active .cm-bot-btn-icon-close {
   color: #ffffff;
   border-bottom-right-radius: 4px;
   box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28);
+}
+
+.cm-msg-bubble a {
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s ease;
+}
+
+.cm-msg-bubble a:hover,
+.cm-msg-bubble a:focus-visible {
+  color: #1d4ed8;
+}
+
+.cm-msg-row.user .cm-msg-bubble a {
+  color: #ffffff;
 }
 
 .cm-msg-time {
