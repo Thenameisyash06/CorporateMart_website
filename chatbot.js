@@ -10,7 +10,9 @@
   const HELPLINE_TEL = "+919081000886";
   const WHATSAPP_PHONE = "919081000886";
   const ASSISTANT_AVATAR_IMG = "images/ai_female_assistant.jpg";
-  const WEB3FORMS_ACCESS_KEY = (typeof window !== "undefined" && window.WEB3FORMS_ACCESS_KEY) || "be37ec80-ab81-41dd-992a-4229dbf48650";
+  // Web3Forms submission is handled securely server-side via /api/leads using process.env.WEB3FORMS_ACCESS_KEY.
+  // Optional client-side override can be provided via window.WEB3FORMS_ACCESS_KEY.
+  const WEB3FORMS_ACCESS_KEY = (typeof window !== "undefined" && window.WEB3FORMS_ACCESS_KEY) || "";
 
   let leadData = {
     service: "",
@@ -384,9 +386,13 @@
     }, 500);
   }
 
-  // Transmit lead to Web3Forms directly from the client browser
+  // Transmit lead to Web3Forms directly from the client browser (only if window.WEB3FORMS_ACCESS_KEY is set)
   async function transmitLeadToWeb3Forms(lead) {
     const accessKey = (typeof window !== "undefined" && window.WEB3FORMS_ACCESS_KEY) || WEB3FORMS_ACCESS_KEY;
+    if (!accessKey) {
+      // Key is kept private on the server; submission is safely handled by /api/leads
+      return false;
+    }
     const subjectLine = `🤖 New Virtual Assistant Chat Lead: ${lead.name || 'Client'} (${lead.service || 'Inquiry'})`;
 
     const fields = {
@@ -478,10 +484,14 @@
         localStorage.setItem("corporateMart_leadService", leadData.service);
       } catch (e) {}
 
-      // 1. Submit directly to Web3Forms from the client side
-      transmitLeadToWeb3Forms(leadData);
+      // 1. Submit to Web3Forms directly only if client-side key is explicitly configured
+      if (WEB3FORMS_ACCESS_KEY || (typeof window !== "undefined" && window.WEB3FORMS_ACCESS_KEY)) {
+        transmitLeadToWeb3Forms(leadData);
+      }
 
-      // 2. Also register lead directly to backend DB / Operations Portal if server is available
+      // 2. Primary secure handler: Register lead via backend /api/leads proxy.
+      // The server securely relays to Web3Forms using process.env.WEB3FORMS_ACCESS_KEY,
+      // records the lead in MongoDB / Operations Portal, and notifies the admin.
       try {
         const payload = {
           name: leadData.name,
