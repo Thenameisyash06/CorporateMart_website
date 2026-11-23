@@ -2098,10 +2098,25 @@ window.addEventListener("resize", () => {
       if (eyebrow) eyebrow.textContent = "GET QUOTATION";
       if (titleEl) titleEl.textContent = "Tell us what you need";
       if (desc) desc.textContent = "Please share your details to proceed with generating your quotation.";
+      if (form) {
+        form.reset();
+        var submitBtn = form.querySelector("button[type='submit']");
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = 'Proceed to Quotation <span>→</span>';
+        }
+      }
     } else {
       if (eyebrow) eyebrow.textContent = "FREE CONSULTATION";
       if (titleEl) titleEl.textContent = "Tell us what you need";
       if (desc) desc.textContent = "Share your details and our expert will contact you shortly.";
+      if (form) {
+        var submitBtn = form.querySelector("button[type='submit']");
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = 'Get Free Consultation <span>→</span>';
+        }
+      }
     }
 
     var successMsg = modal.querySelector(".cr-form-success");
@@ -3720,30 +3735,19 @@ window.addEventListener("resize", () => {
     function handleOpenQuotationClick(e) {
         if (e) e.preventDefault();
 
-        var isFilled = false;
-        try {
-            isFilled = localStorage.getItem("corporateMart_leadSubmitted") === "true";
-        } catch (err) {
-            isFilled = false;
-        }
-
-        if (isFilled) {
-            // Already filled lead form -> proceed directly to quotation form
-            openQuotationModalDirect();
+        // Always require user to fill the lead form first every time they request a quotation
+        window.pendingQuotationAfterLead = true;
+        if (typeof window.openLeadModal === "function") {
+            window.openLeadModal(true);
         } else {
-            // Not filled yet -> open lead modal form first
-            window.pendingQuotationAfterLead = true;
-            if (typeof window.openLeadModal === "function") {
-                window.openLeadModal(true);
-            } else {
-                var leadM = document.getElementById("leadModal");
-                if (leadM) {
-                    leadM.classList.add("is-open");
-                    leadM.setAttribute("aria-hidden", "false");
-                    document.body.style.overflow = "hidden";
-                    var nameField = document.getElementById("leadName");
-                    if (nameField) setTimeout(function () { nameField.focus(); }, 200);
-                }
+            var leadM = document.getElementById("leadModal");
+            if (leadM) {
+                leadM.setAttribute("data-for-quotation", "true");
+                leadM.classList.add("is-open");
+                leadM.setAttribute("aria-hidden", "false");
+                document.body.style.overflow = "hidden";
+                var nameField = document.getElementById("leadName");
+                if (nameField) setTimeout(function () { nameField.focus(); }, 200);
             }
         }
     }
